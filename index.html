@@ -8,13 +8,13 @@
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
     :root {
-      --bg:       #0B0B0B;
-      --surface:  #151515;
-      --surface2: #1C1C1C;
-      --surface3: #242424;
-      --text:     #F0EDE8;
-      --muted:    #777;
-      --border:   #252525;
+      --bg:       #FFFFFF;
+      --surface:  #F5F5F5;
+      --surface2: #EEEEEE;
+      --surface3: #E6E6E6;
+      --text:     #111111;
+      --muted:    #888888;
+      --border:   #E0E0E0;
       --coral:    #FF6B47;
       --coral2:   #FF8C6A;
       --teal:     #00CDA8;
@@ -278,45 +278,75 @@
     .pc-photo img { width: 100%; height: 100%; object-fit: cover; }
     .pc-photo-bottom {
       position: absolute; bottom: 0; left: 0; right: 0;
-      background: linear-gradient(transparent, rgba(11,11,11,0.95));
+      background: linear-gradient(transparent, rgba(0,0,0,0.82));
       padding: 40px 16px 14px;
     }
+    .pc-photo-progress {
+      position: absolute; top: 10px; left: 10px; right: 10px;
+      display: flex; gap: 4px; z-index: 2;
+    }
+    .photo-prog {
+      flex: 1; height: 3px; border-radius: 2px;
+      background: rgba(255,255,255,0.4);
+    }
+    .photo-prog.active { background: rgba(255,255,255,0.9); }
+
     .pc-name-row {
       display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;
     }
-    .pc-name { font-size: 26px; font-weight: 800; }
-    .pc-age { font-size: 20px; font-weight: 400; color: rgba(240,237,232,0.75); }
+    .pc-name { font-size: 26px; font-weight: 800; color: white; }
+    .pc-age { font-size: 20px; font-weight: 400; color: rgba(255,255,255,0.75); }
     .pc-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .pc-city { font-size: 13px; color: var(--muted); }
-    .pc-dot { color: var(--border); }
+    .pc-city { font-size: 13px; color: rgba(255,255,255,0.75); }
+    .pc-dot { color: rgba(255,255,255,0.4); }
 
 
     .pc-voice {
-      background: var(--surface2); border-radius: 14px; padding: 12px 14px;
-      display: flex; align-items: center; gap: 10px; cursor: pointer;
-      margin-bottom: 14px;
+      background: var(--surface); border-radius: 14px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px; cursor: pointer;
+      margin-bottom: 14px; border: 1px solid var(--border);
     }
     .voice-play {
-      width: 34px; height: 34px; border-radius: 50%;
+      width: 40px; height: 40px; border-radius: 50%;
       background: var(--coral); display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 14px;
+      flex-shrink: 0; font-size: 13px; color: white;
     }
+    .voice-info { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .voice-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .voice-wave-row { display: flex; align-items: center; gap: 8px; }
     .voice-wave {
-      flex: 1; display: flex; align-items: center; gap: 2px; height: 28px;
+      flex: 1; display: flex; align-items: center; gap: 2px; height: 22px;
     }
     .wave-bar {
-      width: 3px; border-radius: 2px; background: var(--border);
-      transition: background 0.2s;
+      width: 3px; border-radius: 2px;
+      background: var(--coral); opacity: 0.3;
+      transition: opacity 0.2s;
     }
-    .wave-bar.active { background: var(--coral); }
-    .voice-dur { font-size: 11px; color: var(--muted); }
+    .wave-bar.playing { opacity: 1; }
+    .voice-dur { font-size: 11px; color: var(--muted); flex-shrink: 0; }
 
-    .pc-answers { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-    .answer-block {
-      background: var(--surface); border-radius: 14px; padding: 14px;
+    .pc-answers { margin-bottom: 4px; }
+    .answer-carousel {
+      display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory;
+      scrollbar-width: none; padding-bottom: 2px;
     }
-    .ans-q { font-size: 11px; font-weight: 700; color: var(--coral); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-    .ans-a { font-size: 14px; color: var(--text); line-height: 1.5; }
+    .answer-carousel::-webkit-scrollbar { display: none; }
+    .answer-card {
+      flex: 0 0 calc(50% - 4px); scroll-snap-align: start;
+      background: var(--surface); border-radius: 16px;
+      padding: 14px 12px; display: flex; flex-direction: column; gap: 6px;
+      border: 1px solid var(--border); min-height: 148px;
+    }
+    .ac-emoji { font-size: 22px; }
+    .ac-label { font-size: 10px; font-weight: 800; color: var(--coral); text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3; }
+    .ac-text { font-size: 13px; color: var(--text); line-height: 1.5; flex: 1; }
+    .ac-page { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .carousel-dots { display: flex; justify-content: center; gap: 5px; padding: 10px 0 14px; }
+    .carousel-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border); transition: all 0.2s;
+    }
+    .carousel-dot.active { background: var(--coral); width: 18px; border-radius: 3px; }
 
     .pc-interests { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
     .interest-chip {
@@ -336,13 +366,14 @@
     }
     .btn-pass {
       flex: 1; padding: 18px 12px; border-radius: 18px;
-      background: var(--surface2); color: var(--pass);
-      border: 1.5px solid rgba(255,76,76,0.3);
-      font-size: 17px; font-weight: 800; cursor: pointer;
-      transition: all 0.15s; letter-spacing: 0.2px;
-      box-shadow: 0 4px 20px rgba(255,76,76,0.12);
+      background: white; color: var(--text);
+      border: 1.5px solid var(--border);
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
     }
-    .btn-pass:active { background: rgba(255,76,76,0.18); transform: scale(0.96); }
+    .btn-pass:active { background: var(--surface); transform: scale(0.96); }
+    .pass-x { color: var(--pass); font-size: 17px; font-weight: 800; }
     .btn-connect {
       flex: 2; padding: 18px 12px; border-radius: 18px;
       background: linear-gradient(135deg, var(--coral), var(--coral2));
@@ -350,6 +381,7 @@
       font-size: 17px; font-weight: 800; cursor: pointer;
       transition: all 0.15s; letter-spacing: 0.2px;
       box-shadow: 0 6px 24px rgba(255,107,71,0.45);
+      display: flex; align-items: center; justify-content: center;
     }
     .btn-connect:active { opacity: 0.88; transform: scale(0.96); }
     .btn-connect:disabled {
@@ -389,14 +421,14 @@
     /* spotlight */
     .spotlight-pill {
       display: flex; align-items: center; gap: 6px;
-      background: linear-gradient(135deg, rgba(250,204,21,0.15), rgba(251,146,60,0.15));
-      border: 1px solid rgba(250,204,21,0.35);
-      border-radius: 50px; padding: 6px 12px;
-      font-size: 12px; font-weight: 700; color: #FBBF24;
+      background: white;
+      border: 1.5px solid var(--coral);
+      border-radius: 50px; padding: 6px 14px;
+      font-size: 12px; font-weight: 700; color: var(--coral);
       cursor: pointer; transition: all 0.2s;
     }
-    .spotlight-pill.active { background: linear-gradient(135deg, rgba(250,204,21,0.3), rgba(251,146,60,0.3)); }
-    .spotlight-timer { font-size: 11px; color: #FCD34D; }
+    .spotlight-pill.active { background: rgba(255,107,71,0.08); }
+    .spotlight-timer { font-size: 11px; color: var(--coral2); }
 
     /* photo fullscreen */
     #photo-fs {
@@ -861,19 +893,19 @@
     .premium-banner {
       margin: 0 16px 14px; border-radius: 18px; overflow: hidden;
       cursor: pointer; position: relative;
-      background: linear-gradient(135deg, #1a0905, #0f0a00);
-      border: 1px solid rgba(255,107,71,0.25);
+      background: linear-gradient(135deg, rgba(255,107,71,0.08), rgba(255,140,106,0.06));
+      border: 1.5px solid rgba(255,107,71,0.2);
       padding: 18px 16px;
     }
     .premium-banner.active-premium {
-      background: linear-gradient(135deg, #001a12, #000f0a);
-      border-color: rgba(0,205,168,0.3);
+      background: linear-gradient(135deg, rgba(0,205,168,0.08), rgba(0,205,168,0.04));
+      border-color: rgba(0,205,168,0.25);
     }
     .pb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .pb-title { font-size: 16px; font-weight: 800; }
     .pb-crown { font-size: 22px; }
     .pb-perks { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
-    .pb-perk { font-size: 12px; color: rgba(240,237,232,0.65); display: flex; align-items: center; gap: 6px; }
+    .pb-perk { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
     .pb-perk::before { content: '✓'; color: var(--coral); font-weight: 700; }
     .premium-banner.active-premium .pb-perk::before { color: var(--teal); }
     .pb-btn {
@@ -919,7 +951,7 @@
     #match-overlay.show { display: flex; }
     .match-bg {
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 40%, rgba(255,107,71,0.3) 0%, rgba(11,11,11,0.94) 65%);
+      background: radial-gradient(ellipse at 50% 40%, rgba(255,107,71,0.3) 0%, rgba(255,255,255,0.94) 65%);
       backdrop-filter: blur(12px);
     }
     .match-body {
@@ -1159,9 +1191,14 @@
 <div id="app">
   <div class="top-bar">
     <div class="wordmark gradient-text">linked.</div>
-    <div class="spotlight-pill" id="spotlight-pill" onclick="doSpotlight()">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      <span id="spotlight-label">Spotlight</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="spotlight-pill" id="spotlight-pill" onclick="doSpotlight()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span id="spotlight-label">Spotlight</span>
+      </div>
+      <button class="icon-btn" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;width:36px;height:36px;padding:0" onclick="showToast('Filters coming soon!')">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+      </button>
     </div>
   </div>
 
@@ -1268,7 +1305,7 @@
       <div class="me-section" id="verify-section" onclick="openVerify()" style="cursor:pointer">
         <div class="me-row" style="padding:14px 16px">
           <div class="me-row-l">
-            <div class="me-icon" style="background:#0D1829"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="me-icon" style="background:#EBF2FF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
             <div>
               <div class="me-row-label" id="verify-row-label">Get Verified</div>
               <div style="font-size:11px;color:var(--muted);margin-top:2px" id="verify-row-sub">Show others your profile is real</div>
@@ -1282,28 +1319,28 @@
         <div class="me-sec-title">Discovery</div>
         <div class="me-row">
           <div class="me-row-l">
-            <div class="me-icon" style="background:#1A1000"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <div class="me-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
             <div class="me-row-label">Location</div>
           </div>
           <div class="me-row-val" id="me-city-val">Cape Town ›</div>
         </div>
         <div class="me-row">
           <div class="me-row-l">
-            <div class="me-icon" style="background:#0A1A14"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+            <div class="me-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
             <div class="me-row-label">Looking for</div>
           </div>
           <div class="me-row-val" id="me-looking-val">Dating ›</div>
         </div>
         <div class="me-row">
           <div class="me-row-l">
-            <div class="me-icon" style="background:#100A1A"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M12 2v20"/></svg></div>
+            <div class="me-icon" style="background:#F3EEFF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M12 2v20"/></svg></div>
             <div class="me-row-label">Distance</div>
           </div>
           <div class="me-row-val">50 km ›</div>
         </div>
         <div class="me-row">
           <div class="me-row-l">
-            <div class="me-icon" style="background:#1A100A"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FB923C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="20" height="11" rx="2"/><path d="M7 10V7a5 5 0 0110 0v3"/><line x1="12" y1="7" x2="12" y2="4"/></svg></div>
+            <div class="me-icon" style="background:#FFF0E8"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FB923C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="20" height="11" rx="2"/><path d="M7 10V7a5 5 0 0110 0v3"/><line x1="12" y1="7" x2="12" y2="4"/></svg></div>
             <div class="me-row-label">Age range</div>
           </div>
           <div class="me-row-val">18 – 35 ›</div>
@@ -1314,21 +1351,21 @@
         <div class="me-sec-title">Notifications</div>
         <div class="me-row">
           <div class="me-row-l">
-            <div class="me-icon" style="background:#1A0A00"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+            <div class="me-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
             <div class="me-row-label">New links</div>
           </div>
           <div class="toggle on" onclick="this.classList.toggle('on')"></div>
         </div>
         <div class="me-row">
           <div class="me-row-l">
-            <div class="me-icon" style="background:#0A0A1A"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#818CF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+            <div class="me-icon" style="background:#EEEEFF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#818CF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
             <div class="me-row-label">Messages</div>
           </div>
           <div class="toggle on" onclick="this.classList.toggle('on')"></div>
         </div>
         <div class="me-row">
           <div class="me-row-l">
-            <div class="me-icon" style="background:#001A14"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
+            <div class="me-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
             <div class="me-row-label">Show online status</div>
           </div>
           <div class="toggle" onclick="this.classList.toggle('on')"></div>
@@ -1408,7 +1445,7 @@
 
   <div class="sub-features">
     <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#1a0a06"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+      <div class="sub-feat-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
       <div class="sub-feat-text">
         <div class="sf-title">See who liked you</div>
         <div class="sf-sub">Know before you swipe — no more guessing games</div>
@@ -1416,7 +1453,7 @@
       <div class="sub-feat-badge">Plus</div>
     </div>
     <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#0a1a14"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+      <div class="sub-feat-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
       <div class="sub-feat-text">
         <div class="sf-title">Unlimited connects</div>
         <div class="sf-sub">No daily limits, connect with as many people as you want</div>
@@ -1424,7 +1461,7 @@
       <div class="sub-feat-badge">Plus</div>
     </div>
     <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#100a1a"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
+      <div class="sub-feat-icon" style="background:#F3EEFF"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
       <div class="sub-feat-text">
         <div class="sf-title">Weekly Spotlight</div>
         <div class="sf-sub">Get pushed to the top of Discover once a week</div>
@@ -1432,7 +1469,7 @@
       <div class="sub-feat-badge">Plus</div>
     </div>
     <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#1a1000"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <div class="sub-feat-icon" style="background:#FFFBE6"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
       <div class="sub-feat-text">
         <div class="sf-title">5 Sparks per day</div>
         <div class="sf-sub">Send guaranteed connections to the people you really like</div>
@@ -1440,7 +1477,7 @@
       <div class="sub-feat-badge gold">Gold</div>
     </div>
     <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#001a10"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <div class="sub-feat-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
       <div class="sub-feat-text">
         <div class="sf-title">Read receipts</div>
         <div class="sf-sub">See when your messages have been read</div>
@@ -1765,30 +1802,54 @@ function renderDiscover() {
 }
 
 function buildProfileCard(p) {
-  const userInterests = (S.user?.interests || []).map(i => i.replace(/^[\S]+\s/, '').toLowerCase());
-  const shared = p.interests.filter(i => {
-    const clean = i.toLowerCase().replace(/^[\S]+\s/, '');
-    return userInterests.some(u => u.includes(clean) || clean.includes(u));
-  });
+  const userInterests = (S.user?.interests || []).map(i => i.toLowerCase());
+  const shared = p.interests.filter(i => userInterests.some(u => u.includes(i.toLowerCase()) || i.toLowerCase().includes(u)));
 
-  const chips = p.interests.map(tag => {
+  const EMOJI = { Coffee:'☕', Running:'🏃', Art:'🎨', Food:'🍽️', Travel:'✈️', Photography:'📷', Gaming:'🎮', Dogs:'🐕', Outdoors:'🌿', Reading:'📚', Movies:'🎬', Yoga:'🧘', Wine:'🍷', Gym:'💪', Music:'🎧', Beach:'🌊', Culture:'🏛️', 'Live Music':'🎸', Adventure:'⛰️', Nightlife:'🌃', Cooking:'👨‍🍳', Wellness:'🌱', Hiking:'🥾', Tech:'💻', Dancing:'💃' };
+  const MAX_CHIPS = 4;
+  const visible = p.interests.slice(0, MAX_CHIPS);
+  const extra = p.interests.length - MAX_CHIPS;
+  const chips = visible.map(tag => {
     const isShared = shared.includes(tag);
-    return `<span class="interest-chip${isShared ? ' shared' : ''}">${isShared ? '✓ ' : ''}${tag}</span>`;
-  }).join('');
+    const emoji = EMOJI[tag] || '';
+    return `<span class="interest-chip${isShared ? ' shared' : ''}">${emoji ? emoji + ' ' : ''}${tag}</span>`;
+  }).join('') + (extra > 0 ? `<span class="interest-chip">+${extra}</span>` : '');
 
   const waveBars = Array.from({length: 28}, (_, i) => {
     const h = 20 + Math.random() * 80;
-    return `<div class="wave-bar" style="height:${h}%;animation-delay:${i*0.05}s"></div>`;
+    return `<div class="wave-bar" style="height:${h}%"></div>`;
   }).join('');
 
   const lookingClass = p.looking === 'dating' ? 'pill-dating' : p.looking === 'friends' ? 'pill-friends' : 'pill-anything';
-  const lookingLabel = p.looking === 'dating' ? 'Dating' : p.looking === 'friends' ? 'Friendship' : 'Open to anything';
+  const lookingLabel = p.looking === 'dating' ? '♡ Dating' : p.looking === 'friends' ? 'Friendship' : 'Open to anything';
+
+  const answerDefs = [
+    p.answers.sunday   ? { emoji:'☀️',  label:'Ideal Sunday',           text: p.answers.sunday }   : null,
+    p.answers.hottake  ? { emoji:'🔥',  label:'Hot Take',               text: p.answers.hottake }  : null,
+    p.answers.obsessed ? { emoji:'✨',  label:'Currently Obsessed With', text: p.answers.obsessed } : null,
+    p.answers.random   ? { emoji:'🎲',  label:'Most Random Fact',        text: p.answers.random }   : null,
+  ].filter(Boolean);
+
+  const answerCards = answerDefs.map((a, i) => `
+    <div class="answer-card">
+      <div class="ac-emoji">${a.emoji}</div>
+      <div class="ac-label">${a.label}</div>
+      <div class="ac-text">${a.text}</div>
+      <div class="ac-page">${i + 1} / ${answerDefs.length}</div>
+    </div>`).join('');
+
+  const dots = answerDefs.map((_, i) => `<div class="carousel-dot${i === 0 ? ' active' : ''}"></div>`).join('');
 
   const div = document.createElement('div');
   div.className = 'profile-card-full fade-in';
   div.dataset.id = p.id;
   div.innerHTML = `
     <div class="pc-photo" id="pc-photo-${p.id}">
+      <div class="pc-photo-progress">
+        <div class="photo-prog active"></div>
+        <div class="photo-prog"></div>
+        <div class="photo-prog"></div>
+      </div>
       <img src="${p.img}" alt="${p.name}" onclick="openPhoto('${p.img}','${p.name}',${p.age},'${p.city}')">
       <div class="swipe-hint swipe-hint-pass"  id="hint-pass-${p.id}"><div class="swipe-label">PASS</div></div>
       <div class="swipe-hint swipe-hint-link"  id="hint-link-${p.id}"><div class="swipe-label link-label">LINK</div></div>
@@ -1809,28 +1870,41 @@ function buildProfileCard(p) {
 
     <div class="pc-voice" onclick="playVoice(this)">
       <div class="voice-play">▶</div>
-      <div class="voice-wave">${waveBars}</div>
-      <div class="voice-dur">0:14</div>
+      <div class="voice-info">
+        <div class="voice-label">Hear ${p.name}'s voice</div>
+        <div class="voice-wave-row">
+          <div class="voice-wave">${waveBars}</div>
+          <div class="voice-dur">0:14</div>
+        </div>
+      </div>
     </div>
+
+    <div class="pc-interests" style="margin-bottom:14px">${chips}</div>
 
     <div class="pc-answers">
-      ${p.answers.sunday   ? `<div class="answer-block"><div class="ans-q">My ideal Sunday</div><div class="ans-a">${p.answers.sunday}</div></div>` : ''}
-      ${p.answers.hottake  ? `<div class="answer-block"><div class="ans-q">Hot take</div><div class="ans-a">${p.answers.hottake}</div></div>` : ''}
-      ${p.answers.obsessed ? `<div class="answer-block"><div class="ans-q">Currently obsessed with</div><div class="ans-a">${p.answers.obsessed}</div></div>` : ''}
-      ${p.answers.random   ? `<div class="answer-block"><div class="ans-q">Most random fact</div><div class="ans-a">${p.answers.random}</div></div>` : ''}
+      <div class="answer-carousel" id="ans-carousel-${p.id}">${answerCards}</div>
+      <div class="carousel-dots" id="ans-dots-${p.id}">${dots}</div>
     </div>
 
-    ${shared.length ? `<div style="font-size:11px;color:var(--teal);font-weight:700;margin-bottom:6px">✓ ${shared.length} shared interest${shared.length>1?'s':''}</div>` : ''}
-    <div class="pc-interests">${chips}</div>
-
     <div class="pc-actions">
-      <button class="btn-pass" onclick="doPass(${p.id})">Pass</button>
+      <button class="btn-pass" onclick="doPass(${p.id})"><span class="pass-x">✕</span> Not my vibe</button>
       <button class="btn-spark${S.sparksLeft <= 0 ? ' used' : ''}" onclick="doSpark(${p.id})" title="Spark — guaranteed connection"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></button>
       <button class="btn-connect" id="btn-connect-${p.id}" onclick="doConnect(${p.id})" ${S.connectsLeft <= 0 ? 'disabled' : ''}>
-        ${S.connectsLeft > 0 ? 'Connect' : 'No connects left'}
+        ${S.connectsLeft > 0 ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="white" style="margin-right:5px;flex-shrink:0"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>Link Up` : 'No connects left'}
       </button>
     </div>
   `;
+
+  // wire up carousel dot updates
+  const carousel = div.querySelector(`#ans-carousel-${p.id}`);
+  const dotsEl = div.querySelector(`#ans-dots-${p.id}`);
+  if (carousel && dotsEl) {
+    carousel.addEventListener('scroll', () => {
+      const idx = Math.round(carousel.scrollLeft / carousel.clientWidth * 2);
+      dotsEl.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+    }, { passive: true });
+  }
+
   return div;
 }
 
