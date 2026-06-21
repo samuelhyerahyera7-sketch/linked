@@ -365,23 +365,25 @@
       padding-top: 28px;
     }
     .btn-pass {
-      flex: 1; padding: 18px 12px; border-radius: 18px;
-      background: white; color: var(--text);
+      flex: 1; padding: 17px 8px; border-radius: 18px;
+      background: var(--surface2); color: var(--text);
       border: 1.5px solid var(--border);
-      font-size: 14px; font-weight: 700; cursor: pointer;
+      font-size: 13px; font-weight: 700; cursor: pointer;
       transition: all 0.15s;
-      display: flex; align-items: center; justify-content: center; gap: 7px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      white-space: nowrap;
     }
-    .btn-pass:active { background: var(--surface); transform: scale(0.96); }
-    .pass-x { color: var(--pass); font-size: 17px; font-weight: 800; }
+    .btn-pass:active { background: var(--surface3); transform: scale(0.96); }
+    .pass-x { color: var(--pass); font-size: 16px; font-weight: 800; flex-shrink: 0; }
     .btn-connect {
-      flex: 2; padding: 18px 12px; border-radius: 18px;
+      flex: 1; padding: 17px 8px; border-radius: 18px;
       background: linear-gradient(135deg, var(--coral), var(--coral2));
       color: white; border: none;
-      font-size: 17px; font-weight: 800; cursor: pointer;
+      font-size: 13px; font-weight: 800; cursor: pointer;
       transition: all 0.15s; letter-spacing: 0.2px;
-      box-shadow: 0 6px 24px rgba(255,107,71,0.45);
-      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 24px rgba(255,107,71,0.4);
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      white-space: nowrap;
     }
     .btn-connect:active { opacity: 0.88; transform: scale(0.96); }
     .btn-connect:disabled {
@@ -390,11 +392,12 @@
       box-shadow: none;
     }
     .btn-spark {
-      width: 56px; height: 56px; border-radius: 18px; flex-shrink: 0;
+      width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
       background: var(--surface2); border: 1.5px solid rgba(250,204,21,0.3);
-      font-size: 20px; cursor: pointer; transition: all 0.15s;
+      font-size: 18px; cursor: pointer; transition: all 0.15s;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(250,204,21,0.1);
+      box-shadow: 0 4px 12px rgba(250,204,21,0.1);
+      align-self: center;
     }
     .btn-spark:active { transform: scale(0.9); }
     .btn-spark.used { opacity: 0.35; cursor: default; }
@@ -528,6 +531,15 @@
     .convo-preview { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .convo-preview.unread { color: var(--text); font-weight: 500; }
     .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); flex-shrink: 0; }
+    .expiry-badge {
+      font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 50px;
+      background: rgba(250,204,21,0.15); color: #B45309; flex-shrink: 0;
+      border: 1px solid rgba(250,204,21,0.35);
+    }
+    .expiry-badge.urgent {
+      background: rgba(255,76,76,0.1); color: var(--pass);
+      border-color: rgba(255,76,76,0.3);
+    }
 
     .convo-empty {
       display: flex; flex-direction: column; align-items: center;
@@ -1777,6 +1789,9 @@ function startApp() {
   S.queue = shuffle([...PROFILES]);
   renderDiscover();
   buildSquads();
+  checkExpiredMatches();
+  // re-check expiry every hour
+  setInterval(checkExpiredMatches, 60 * 60 * 1000);
 }
 
 // ── DISCOVER ──────────────────────────────────────────────
@@ -1973,20 +1988,50 @@ function resetQueue() {
   renderDiscover();
 }
 
+// ── MATCH EXPIRY ──────────────────────────────────────────
+const MATCH_EXPIRY_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+function matchTimeRemaining(p) {
+  const hasUserMsg = (S.convos[p.id] || []).some(m => m.from === 'me');
+  if (hasUserMsg) return null;
+  const remaining = MATCH_EXPIRY_MS - (Date.now() - (p.matchedAt || Date.now()));
+  if (remaining <= 0) return 'expired';
+  const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+  const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+  if (days >= 2) return `${days}d left`;
+  if (days === 1) return '1d left';
+  if (hours > 0) return `${hours}h left`;
+  return 'Expires soon';
+}
+
+function checkExpiredMatches() {
+  const expired = S.matches.filter(p => matchTimeRemaining(p) === 'expired');
+  if (!expired.length) return;
+  expired.forEach(p => {
+    delete S.convos[p.id];
+    showToast(`Your match with ${p.name} expired — no message in 3 days 💨`);
+  });
+  S.matches = S.matches.filter(p => matchTimeRemaining(p) !== 'expired');
+  S.stats.matches = S.matches.length;
+  updateStats();
+  updateLinkedUI();
+}
+
 // ── MATCH ─────────────────────────────────────────────────
 function triggerMatch(p) {
-  S.matches.push(p);
+  const matchObj = Object.assign({}, p, { matchedAt: Date.now() });
+  S.matches.push(matchObj);
   S.stats.matches++;
-  S.convos[p.id] = [{
+  S.convos[matchObj.id] = [{
     from: 'them',
     text: `Hey ${S.user?.name || 'you'}! Glad we linked 😊 Love your profile answers by the way.`,
     time: nowTime(),
   }];
-  S.pendingMatch = p;
+  S.pendingMatch = matchObj;
   updateStats();
   updateLinkedUI();
-  document.getElementById('match-their-av').src = p.img;
-  document.getElementById('match-name').textContent = p.name;
+  document.getElementById('match-their-av').src = matchObj.img;
+  document.getElementById('match-name').textContent = matchObj.name;
   document.getElementById('match-overlay').classList.add('show');
 }
 
@@ -2033,6 +2078,10 @@ function updateLinkedUI() {
     const row = document.createElement('div');
     row.className = 'convo-row';
     const preview = last ? (last.from === 'me' ? 'You: ' + last.text : last.text) : 'Say something!';
+    const timeLeft = matchTimeRemaining(p);
+    const expiryBadge = timeLeft
+      ? `<span class="expiry-badge${timeLeft === '1d left' || timeLeft === 'Expires soon' ? ' urgent' : ''}">${timeLeft}</span>`
+      : '';
     row.innerHTML = `
       <div class="convo-ava"><img src="${p.img}" alt="${p.name}"></div>
       <div class="convo-body">
@@ -2042,7 +2091,7 @@ function updateLinkedUI() {
         </div>
         <div class="convo-preview${last && last.from === 'them' ? ' unread' : ''}">${preview}</div>
       </div>
-      ${last && last.from === 'them' ? '<div class="unread-dot"></div>' : ''}
+      ${expiryBadge || (last && last.from === 'them' ? '<div class="unread-dot"></div>' : '')}
     `;
     row.onclick = () => openChat(p);
     convoList.appendChild(row);
@@ -2163,7 +2212,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
   document.getElementById(tab + '-tab').classList.add('active');
   document.getElementById('nav-' + (tab === 'linked' ? 'linked' : tab)).classList.add('active');
-  if (tab === 'linked') updateLinkedUI();
+  if (tab === 'linked') { checkExpiredMatches(); updateLinkedUI(); }
 }
 
 // ── TOAST ─────────────────────────────────────────────────
