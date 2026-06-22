@@ -548,66 +548,56 @@
     .convo-empty .ce-icon { font-size: 44px; }
     .convo-empty p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
-    /* ─── SQUADS ─────────────────────────────────────────── */
-    #squads-tab { overflow-y: auto; }
-    .squads-header { padding: 20px 20px 16px; }
-    .squads-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
-    .squads-sub { font-size: 13px; color: var(--muted); }
-
-    .squad-section-label {
-      font-size: 11px; font-weight: 700; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.5px;
-      padding: 0 20px 10px;
+    /* ─── STANDOUTS ─────────────────────────────────────── */
+    #standouts-tab { overflow-y: auto; }
+    #standouts-tab.active { display: block; }
+    .standouts-header { padding: 20px 20px 4px; }
+    .standouts-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .standouts-sub { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .standouts-refresh-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50px; padding: 5px 12px;
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      margin-bottom: 16px;
     }
 
-    .squad-card {
-      margin: 0 16px 12px; background: var(--surface);
-      border-radius: 18px; overflow: hidden; cursor: pointer;
-    }
-    .squad-banner {
-      height: 100px; position: relative; overflow: hidden;
-    }
-    .squad-banner-faces {
-      display: flex; height: 100%; align-items: center;
-      justify-content: center; gap: -10px; background: var(--surface2);
-    }
-    .squad-face {
-      width: 58px; height: 58px; border-radius: 50%;
-      border: 2.5px solid var(--surface); overflow: hidden;
-      margin-left: -10px; flex-shrink: 0;
-    }
-    .squad-face:first-child { margin-left: 0; }
-    .squad-face img { width: 100%; height: 100%; object-fit: cover; }
-    .squad-info { padding: 14px; }
-    .squad-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-    .squad-name { font-size: 16px; font-weight: 700; }
-    .squad-count { font-size: 12px; color: var(--muted); }
-    .squad-desc { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
-    .squad-footer { display: flex; justify-content: space-between; align-items: center; }
-    .squad-vibe-tags { display: flex; gap: 6px; }
-    .squad-vtag {
-      padding: 4px 10px; border-radius: 50px;
-      background: var(--surface2); font-size: 11px; color: var(--muted);
-    }
-    .btn-join {
-      padding: 8px 18px; border-radius: 50px;
-      background: var(--teal-dim); color: var(--teal);
-      border: 1px solid rgba(0,205,168,0.25);
-      font-size: 13px; font-weight: 700; cursor: pointer;
-    }
-    .btn-requested {
-      padding: 8px 18px; border-radius: 50px;
-      background: var(--surface3); color: var(--muted);
+    .standout-card {
+      margin: 0 16px 16px; background: white;
+      border-radius: 20px; overflow: hidden;
       border: 1px solid var(--border);
-      font-size: 13px; font-weight: 600; cursor: default;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
-
-    .create-squad-btn {
-      margin: 4px 16px 24px; padding: 16px;
-      border-radius: 16px; background: var(--surface);
-      border: 1.5px dashed var(--border); cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      font-size: 14px; font-weight: 600; color: var(--muted); width: calc(100% - 32px);
+    .so-photo {
+      height: 230px; position: relative; overflow: hidden;
+    }
+    .so-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .so-photo-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.78));
+      padding: 36px 14px 12px;
+    }
+    .so-name { font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 6px; }
+    .so-city { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+    .so-prompt { padding: 14px 16px 10px; }
+    .so-prompt-label {
+      font-size: 10px; font-weight: 800; color: var(--coral);
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
+    }
+    .so-prompt-text { font-size: 14px; color: var(--text); line-height: 1.55; }
+    .so-actions { display: flex; gap: 8px; padding: 4px 14px 14px; }
+    .btn-so-spark {
+      flex: 1; padding: 13px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--coral), var(--coral2));
+      color: white; border: none; font-size: 14px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+      box-shadow: 0 4px 16px rgba(255,107,71,0.28);
+    }
+    .btn-so-view {
+      padding: 13px 18px; border-radius: 14px;
+      background: var(--surface); color: var(--text);
+      border: 1.5px solid var(--border);
+      font-size: 14px; font-weight: 600; cursor: pointer;
     }
 
     /* ─── CHAT VIEW ──────────────────────────────────────── */
@@ -714,8 +704,6 @@
     /* ─── ME (PROFILE) ───────────────────────────────────── */
     #me-tab { overflow-y: auto; padding-bottom: 28px; }
     #me-tab.active { display: block; }
-    #squads-tab { overflow-y: auto; }
-    #squads-tab.active { display: block; }
     .me-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 20px 0; }
     .me-title { font-size: 22px; font-weight: 800; }
 
@@ -1248,17 +1236,17 @@
       </div>
     </div>
 
-    <!-- SQUADS -->
-    <div class="tab-panel" id="squads-tab">
-      <div class="squads-header">
-        <div class="squads-title">Squads</div>
-        <div class="squads-sub">Hang out with groups. Less pressure, more fun.</div>
+    <!-- STANDOUTS -->
+    <div class="tab-panel" id="standouts-tab">
+      <div class="standouts-header">
+        <div class="standouts-title">Standouts</div>
+        <div class="standouts-sub">Curated profiles worth a second look</div>
+        <div class="standouts-refresh-pill">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Refreshes daily
+        </div>
       </div>
-      <div class="squad-section-label">Active near you</div>
-      <div id="squads-list"></div>
-      <button class="create-squad-btn" onclick="showToast('Squad creation coming soon 👀')">
-        <span style="font-size:18px">+</span> Create a squad
-      </button>
+      <div id="standouts-list"></div>
     </div>
 
     <!-- ME -->
@@ -1402,9 +1390,9 @@
       <span class="nav-lbl">Linked</span>
       <div class="nav-badge" id="badge-linked"></div>
     </button>
-    <button class="nav-btn" id="nav-squads" onclick="switchTab('squads')">
-      <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-      <span class="nav-lbl">Squads</span>
+    <button class="nav-btn" id="nav-standouts" onclick="switchTab('standouts')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+      <span class="nav-lbl">Standouts</span>
     </button>
     <button class="nav-btn" id="nav-me" onclick="switchTab('me')">
       <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -1624,13 +1612,6 @@ const PROFILES = [
   { id:12, name:'Priya', age:26, city:'Cape Town', looking:'friends', compat:86, dist:'5 km', bio:'', verified:true, interests:['Tech','Coffee','Yoga'], img:'https://randomuser.me/api/portraits/women/91.jpg', answers:{ sunday:'Farmers market, plant shop, existential crisis, repeat', hottake:'Manifesting without action is just daydreaming', obsessed:'Seed cycling and Notion boards nobody else understands', random:'I have 34 plants and they all have names and backstories' } },
 ];
 
-const SQUADS_DATA = [
-  { id:1, name:'Beach Braai Crew', desc:'We meet every other Sunday at Clifton for a braai and good vibes. All welcome.', count:6, vibe:['Outdoors','Food','Chill'], imgs:['https://randomuser.me/api/portraits/women/44.jpg','https://randomuser.me/api/portraits/men/22.jpg','https://randomuser.me/api/portraits/women/25.jpg'] },
-  { id:2, name:'Joburg Night Owls', desc:'Late-night food spots, jazz bars, and the kind of conversations you forget to take photos of.', count:4, vibe:['Music','Food','Nightlife'], imgs:['https://randomuser.me/api/portraits/men/36.jpg','https://randomuser.me/api/portraits/women/32.jpg','https://randomuser.me/api/portraits/men/48.jpg'] },
-  { id:3, name:'Cape Town Hikers 🏔️', desc:'Weekly hikes from easy to intense. Good music, worse jokes. Biscuits at the top always.', count:9, vibe:['Outdoors','Fitness','Nature'], imgs:['https://randomuser.me/api/portraits/women/77.jpg','https://randomuser.me/api/portraits/men/54.jpg','https://randomuser.me/api/portraits/women/91.jpg'] },
-  { id:4, name:'Gallery Hopping CPT', desc:'We do a different gallery or exhibition every Friday evening then find somewhere nice to eat after.', count:5, vibe:['Art','Culture','Food'], imgs:['https://randomuser.me/api/portraits/women/17.jpg','https://randomuser.me/api/portraits/women/62.jpg','https://randomuser.me/api/portraits/men/22.jpg'] },
-];
-
 const VIBES = ['Coffee','Running','Art','Food','Travel','Photography','Gaming','Dogs','Outdoors','Reading','Movies','Yoga','Wine','Gym','Music','Beach','Culture','Live Music','Adventure','Nightlife'];
 
 const REPLIES = [
@@ -1660,7 +1641,6 @@ let S = {
   isPremium: null,
   isVerified: false,
   stats: { connects: 0, matches: 0, passes: 0 },
-  joinedSquads: new Set(),
   selectedLooking: null,
 };
 
@@ -1788,7 +1768,7 @@ function startApp() {
 
   S.queue = shuffle([...PROFILES]);
   renderDiscover();
-  buildSquads();
+  buildStandouts();
   checkExpiredMatches();
   // re-check expiry every hour
   setInterval(checkExpiredMatches, 60 * 60 * 1000);
@@ -2143,44 +2123,60 @@ function sendMsg() {
   }, 1000 + Math.random() * 1000);
 }
 
-// ── SQUADS ────────────────────────────────────────────────
-function buildSquads() {
-  const list = document.getElementById('squads-list');
+// ── STANDOUTS ─────────────────────────────────────────────
+function buildStandouts() {
+  const list = document.getElementById('standouts-list');
+  if (!list) return;
   list.innerHTML = '';
-  SQUADS_DATA.forEach(sq => {
+
+  // Seeded daily shuffle so picks feel curated and change each day
+  let seed = new Date().toDateString().split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  const picks = [...PROFILES].sort(() => rand() - 0.5).slice(0, 6);
+
+  const PROMPT_LABELS = { sunday:'Ideal Sunday', hottake:'Hot Take', obsessed:'Currently Obsessed With', random:'Most Random Fact' };
+
+  picks.forEach(p => {
+    const featuredKey = ['hottake','obsessed','sunday','random'].find(k => p.answers[k]);
+    if (!featuredKey) return;
     const card = document.createElement('div');
-    card.className = 'squad-card';
-    const faces = sq.imgs.map(img => `<div class="squad-face"><img src="${img}" alt=""></div>`).join('');
-    const joined = S.joinedSquads.has(sq.id);
+    card.className = 'standout-card';
     card.innerHTML = `
-      <div class="squad-banner">
-        <div class="squad-banner-faces">${faces}</div>
+      <div class="so-photo">
+        <img src="${p.img}" alt="${p.name}">
+        <div class="so-photo-overlay">
+          <div class="so-name">
+            ${p.name}, ${p.age}
+            ${p.verified ? `<span class="verified-badge"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : ''}
+          </div>
+          <div class="so-city">${p.city} · ${p.dist}</div>
+        </div>
       </div>
-      <div class="squad-info">
-        <div class="squad-top">
-          <div class="squad-name">${sq.name}</div>
-          <div class="squad-count">${sq.count} members</div>
-        </div>
-        <div class="squad-desc">${sq.desc}</div>
-        <div class="squad-footer">
-          <div class="squad-vibe-tags">${sq.vibe.map(v => `<span class="squad-vtag">${v}</span>`).join('')}</div>
-          ${joined
-            ? `<button class="btn-requested">Requested</button>`
-            : `<button class="btn-join" onclick="joinSquad(${sq.id},this)">Join</button>`
-          }
-        </div>
+      <div class="so-prompt">
+        <div class="so-prompt-label">${PROMPT_LABELS[featuredKey]}</div>
+        <div class="so-prompt-text">${p.answers[featuredKey]}</div>
+      </div>
+      <div class="so-actions">
+        <button class="btn-so-spark" onclick="doStandoutSpark(${p.id})">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Send Spark
+        </button>
+        <button class="btn-so-view" onclick="switchTab('discover');showToast('Browse ${p.name}\'s full profile in Discover')">View</button>
       </div>
     `;
     list.appendChild(card);
   });
 }
 
-function joinSquad(id, btn) {
-  S.joinedSquads.add(id);
-  btn.className = 'btn-requested';
-  btn.textContent = 'Requested';
-  btn.disabled = true;
-  showToast('Request sent! The squad will get back to you 👋');
+function doStandoutSpark(profileId) {
+  if (S.sparksLeft <= 0) { openSub('sparks'); return; }
+  const p = PROFILES.find(x => x.id === profileId);
+  if (!p) return;
+  S.sparksLeft--;
+  S.stats.connects++;
+  updateStats();
+  showToast(`⚡ Spark sent to ${p.name}! They'll definitely notice.`);
+  setTimeout(() => triggerMatch(p), 1000);
 }
 
 // ── PROFILE ───────────────────────────────────────────────
@@ -2211,7 +2207,8 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
   document.getElementById(tab + '-tab').classList.add('active');
-  document.getElementById('nav-' + (tab === 'linked' ? 'linked' : tab)).classList.add('active');
+  const navId = tab === 'linked' ? 'linked' : tab === 'standouts' ? 'standouts' : tab;
+  document.getElementById('nav-' + navId).classList.add('active');
   if (tab === 'linked') { checkExpiredMatches(); updateLinkedUI(); }
 }
 
