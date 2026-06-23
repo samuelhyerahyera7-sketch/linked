@@ -741,6 +741,48 @@
       color: var(--text); font-size: 14px; outline: none; font-family: inherit;
     }
     .chat-input:focus { border-color: var(--coral); }
+    .mic-btn {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      background: var(--surface2); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); transition: all 0.2s;
+    }
+    .mic-btn.recording {
+      background: #FF3B30; color: white;
+      animation: recPulse 1.2s ease-in-out infinite;
+    }
+    @keyframes recPulse {
+      0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,59,48,0.4); }
+      50%      { transform: scale(1.06); box-shadow: 0 0 0 8px rgba(255,59,48,0); }
+    }
+    .rec-indicator {
+      flex: 1; display: none; align-items: center; gap: 8px;
+      font-size: 14px; color: #FF3B30; font-weight: 600;
+    }
+    .rec-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #FF3B30;
+      animation: recPulse 1s ease-in-out infinite;
+    }
+    .chat-bar.recording .chat-input { display: none; }
+    .chat-bar.recording .chat-send  { display: none; }
+    .chat-bar.recording .rec-indicator { display: flex; }
+    /* ─── voice message bubbles ─ */
+    .vb-wrap { display: flex; align-items: center; gap: 8px; min-width: 160px; }
+    .vb-play {
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 11px;
+    }
+    .b-out .vb-play { background: rgba(255,255,255,0.3); color: white; }
+    .b-in  .vb-play { background: var(--coral); color: white; }
+    .vb-wave { flex: 1; display: flex; align-items: center; gap: 2px; height: 20px; }
+    .vb-bar { width: 2.5px; border-radius: 2px; min-height: 3px; transition: opacity 0.2s; }
+    .b-out .vb-bar { background: rgba(255,255,255,0.6); }
+    .b-in  .vb-bar { background: var(--coral); opacity: 0.4; }
+    .vb-bar.lit { opacity: 1 !important; }
+    .vb-dur { font-size: 11px; flex-shrink: 0; }
+    .b-out .vb-dur { color: rgba(255,255,255,0.8); }
+    .b-in  .vb-dur { color: var(--muted); }
     .chat-send {
       background: linear-gradient(135deg, var(--coral), var(--coral2));
       border: none; border-radius: 50%;
@@ -1697,7 +1739,14 @@
     </button>
   </div>
   <div class="chat-msgs" id="chat-msgs"></div>
-  <div class="chat-bar">
+  <div class="chat-bar" id="chat-bar">
+    <button class="mic-btn" id="mic-btn" onclick="toggleRecording()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2H3v2a9 9 0 008 8.94V22H8v2h8v-2h-3v-1.06A9 9 0 0021 12v-2h-2z"/></svg>
+    </button>
+    <div class="rec-indicator">
+      <div class="rec-dot"></div>
+      <span id="rec-time">0:00</span>
+    </div>
     <input class="chat-input" id="chat-input" placeholder="Say something real..." onkeydown="if(event.key==='Enter')sendMsg()">
     <button class="chat-send" onclick="sendMsg()">
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -2211,7 +2260,11 @@ function renderChatMsgs() {
   msgs.forEach(m => {
     const el = document.createElement('div');
     el.className = 'bubble ' + (m.from === 'me' ? 'b-out' : 'b-in');
-    el.textContent = m.text;
+    if (m.type === 'voice') {
+      el.innerHTML = voiceBubbleHTML(m);
+    } else {
+      el.textContent = m.text;
+    }
     container.appendChild(el);
   });
   container.scrollTop = container.scrollHeight;
@@ -2231,6 +2284,105 @@ function sendMsg() {
     S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
     if (S.currentChat?.id === id) renderChatMsgs();
   }, 1000 + Math.random() * 1000);
+}
+
+// ── VOICE MESSAGES ────────────────────────────────────────
+const voiceCache = {};
+let mediaRecorder = null, audioChunks = [], recTimer = null, recSecs = 0;
+let activeBubbleAudio = null;
+
+function voiceBubbleHTML(m) {
+  let s = String(m.time || 0).split('').reduce((a, c) => a + c.charCodeAt(0), 1);
+  const r = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  const bars = Array.from({length: 26}, () => {
+    const h = 15 + Math.floor(r() * 85);
+    return `<div class="vb-bar" style="height:${h}%"></div>`;
+  }).join('');
+  const mins = Math.floor(m.dur / 60);
+  const secs = String(m.dur % 60).padStart(2, '0');
+  return `<div class="vb-wrap" data-vid="${m.vid}">
+    <button class="vb-play" onclick="playVoiceBubble(this)">&#9654;</button>
+    <div class="vb-wave">${bars}</div>
+    <span class="vb-dur">${mins}:${secs}</span>
+  </div>`;
+}
+
+function playVoiceBubble(btn) {
+  if (activeBubbleAudio && !activeBubbleAudio.paused) {
+    activeBubbleAudio.pause();
+    activeBubbleAudio = null;
+    document.querySelectorAll('.vb-play').forEach(b => b.innerHTML = '&#9654;');
+    document.querySelectorAll('.vb-bar').forEach(b => b.classList.remove('lit'));
+    return;
+  }
+  const wrap = btn.closest('.vb-wrap');
+  const src = voiceCache[wrap.dataset.vid];
+  if (!src) return;
+  const audio = new Audio(src);
+  activeBubbleAudio = audio;
+  btn.innerHTML = '&#9646;&#9646;';
+  const bars = [...wrap.querySelectorAll('.vb-bar')];
+  let litIdx = 0;
+  const litInterval = setInterval(() => {
+    if (litIdx < bars.length) bars[litIdx++].classList.add('lit');
+  }, (audio.duration || 5) * 1000 / bars.length);
+  audio.addEventListener('ended', () => {
+    btn.innerHTML = '&#9654;';
+    bars.forEach(b => b.classList.remove('lit'));
+    clearInterval(litInterval);
+    activeBubbleAudio = null;
+  });
+  audio.play().catch(() => {
+    btn.innerHTML = '&#9654;';
+    clearInterval(litInterval);
+    showToast('Could not play audio');
+  });
+}
+
+async function toggleRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    stopRecording(); return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = []; recSecs = 0;
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      const reader = new FileReader();
+      reader.onload = () => sendVoiceMsg(reader.result, recSecs);
+      reader.readAsDataURL(blob);
+    };
+    mediaRecorder.start(100);
+    document.getElementById('chat-bar').classList.add('recording');
+    document.getElementById('mic-btn').classList.add('recording');
+    document.getElementById('rec-time').textContent = '0:00';
+    recTimer = setInterval(() => {
+      recSecs++;
+      const m = Math.floor(recSecs / 60), s = String(recSecs % 60).padStart(2, '0');
+      document.getElementById('rec-time').textContent = `${m}:${s}`;
+      if (recSecs >= 60) stopRecording();
+    }, 1000);
+  } catch (e) { showToast('Microphone access denied'); }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  clearInterval(recTimer);
+  document.getElementById('chat-bar').classList.remove('recording');
+  document.getElementById('mic-btn').classList.remove('recording');
+}
+
+function sendVoiceMsg(audioData, dur) {
+  if (!S.currentChat) return;
+  const vid = Date.now();
+  voiceCache[vid] = audioData;
+  const id = S.currentChat.id;
+  if (!S.convos[id]) S.convos[id] = [];
+  S.convos[id].push({ from: 'me', type: 'voice', vid, dur, time: nowTime() });
+  renderChatMsgs();
 }
 
 // ── STANDOUTS ─────────────────────────────────────────────
