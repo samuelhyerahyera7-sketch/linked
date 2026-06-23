@@ -2618,8 +2618,8 @@ function setupPhotoSwipe(profileId) {
     curX = 0; curY = 0;
   };
 
-  // touch — on the whole card
-  card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  // touch — only START swipe from the photo; move/end can be anywhere on card
+  photo.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
   card.addEventListener('touchmove', e => {
     if (locked === 'h') e.preventDefault();
     onMove(e.touches[0].clientX, e.touches[0].clientY);
