@@ -286,10 +286,28 @@
     .dob-modal-actions {
       display: flex; justify-content: flex-end; gap: 28px; margin-top: 16px;
     }
-    .dob-modal-actions button {
+    .dob-modal-actions button, .gender-modal-actions button {
       font-size: 16px; font-weight: 600; background: none;
       border: none; cursor: pointer; padding: 8px 0; color: #141414;
     }
+    /* ─── GENDER PICKER MODAL ───────────────────────────── */
+    #gender-modal {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.45); align-items: center; justify-content: center;
+    }
+    #gender-modal.open { display: flex; }
+    .gender-picker {
+      display: flex; height: 198px; position: relative;
+      background: white; overflow: hidden;
+    }
+    .gender-picker .picker-fade-top,
+    .gender-picker .picker-fade-bottom {
+      position: absolute; left: 0; right: 0; height: 77px;
+      pointer-events: none; z-index: 2;
+    }
+    .gender-picker .picker-fade-top    { top: 0;    background: linear-gradient(to bottom, white 20%, transparent); }
+    .gender-picker .picker-fade-bottom { bottom: 0; background: linear-gradient(to top,   white 20%, transparent); }
+    .gender-modal-actions { display: flex; justify-content: flex-end; gap: 28px; margin-top: 16px; }
 
     .btn-next {
       margin-top: auto;
@@ -1193,12 +1211,7 @@
       <label class="field-label">Date of birth</label>
       <div class="dob-field" id="dob-display" onclick="openDobPicker()">Birthdate</div>
       <label class="field-label">I identify as</label>
-      <select class="input-field" id="s-gender">
-        <option value="woman">Woman</option>
-        <option value="man">Man</option>
-        <option value="non-binary">Non-binary</option>
-        <option value="other">Other / Prefer not to say</option>
-      </select>
+      <div class="dob-field filled" id="gender-display" onclick="openGenderPicker()">Woman</div>
       <button class="btn-next" onclick="go(0)">Continue</button>
     </div>
 
@@ -1333,6 +1346,30 @@
     <div class="dob-modal-actions">
       <button onclick="closeDobPicker(false)">Cancel</button>
       <button onclick="closeDobPicker(true)">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GENDER PICKER MODAL ═══════════════════════════════ -->
+<div id="gender-modal">
+  <div class="dob-modal-card">
+    <div class="dob-modal-title">I identify as</div>
+    <div class="gender-picker">
+      <div class="picker-fade-top"></div>
+      <div class="picker-fade-bottom"></div>
+      <div class="picker-selection"></div>
+      <div class="picker-col" id="picker-gender">
+        <div class="picker-spacer"></div>
+        <div class="picker-item">Woman</div>
+        <div class="picker-item">Man</div>
+        <div class="picker-item">Non-binary</div>
+        <div class="picker-item">Other</div>
+        <div class="picker-spacer"></div>
+      </div>
+    </div>
+    <div class="gender-modal-actions">
+      <button onclick="closeGenderPicker(false)">Cancel</button>
+      <button onclick="closeGenderPicker(true)">OK</button>
     </div>
   </div>
 </div>
@@ -1897,7 +1934,7 @@ function finishSetup() {
   S.user = {
     name: document.getElementById('s-name').value.trim(),
     age: getPickerAge(),
-    gender: document.getElementById('s-gender').value,
+    gender: (document.getElementById('gender-display').textContent || 'Woman').toLowerCase().replace(' / prefer not to say',''),
     city: document.getElementById('s-city').value,
     looking: S.selectedLooking || 'anything',
     photo: S._photo || 'https://randomuser.me/api/portraits/lego/1.jpg',
@@ -2781,6 +2818,24 @@ function getPickerAge() {
 }
 
 document.addEventListener('DOMContentLoaded', buildDatePicker);
+
+const GENDERS = ['Woman', 'Man', 'Non-binary', 'Other'];
+
+function openGenderPicker() {
+  document.getElementById('gender-modal').classList.add('open');
+}
+
+function closeGenderPicker(save) {
+  if (save) {
+    const col = document.getElementById('picker-gender');
+    const idx = Math.round(col.scrollTop / ITEM_H);
+    const label = GENDERS[Math.min(idx, GENDERS.length - 1)];
+    const display = document.getElementById('gender-display');
+    display.textContent = label;
+    display.classList.add('filled');
+  }
+  document.getElementById('gender-modal').classList.remove('open');
+}
 
 function openDobPicker() {
   document.getElementById('dob-modal').classList.add('open');
