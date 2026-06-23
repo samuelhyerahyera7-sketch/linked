@@ -11,12 +11,12 @@
 
     :root {
       --bg:       #FFFFFF;
-      --surface:  #F5F5F5;
-      --surface2: #EEEEEE;
-      --surface3: #E6E6E6;
-      --text:     #111111;
-      --muted:    #888888;
-      --border:   #E0E0E0;
+      --surface:  #FFFFFF;
+      --surface2: #F7F7F7;
+      --surface3: #F0F0F0;
+      --text:     #141414;
+      --muted:    #8A8A8A;
+      --border:   #EBEBEB;
       --coral:    #FF6B47;
       --coral2:   #FF8C6A;
       --teal:     #00CDA8;
@@ -1315,7 +1315,7 @@
           <span id="sparks-pill-count">Sparks (1)</span>
         </button>
       </div>
-      <div id="standouts-list"></div>
+      <div class="so-card-scroll" id="standouts-list"></div>
     </div>
 
     <!-- ME -->
@@ -2198,10 +2198,9 @@ function buildStandouts() {
   if (!list) return;
   list.innerHTML = '';
 
-  // Seeded daily shuffle so picks feel curated and change each day
   let seed = new Date().toDateString().split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
-  const picks = [...PROFILES].sort(() => rand() - 0.5).slice(0, 6);
+  const picks = [...PROFILES].sort(() => rand() - 0.5).slice(0, 7);
 
   const PROMPT_LABELS = { sunday:'Ideal Sunday', hottake:'Hot Take', obsessed:'Currently Obsessed With', random:'Most Random Fact' };
 
@@ -2209,28 +2208,21 @@ function buildStandouts() {
     const featuredKey = ['hottake','obsessed','sunday','random'].find(k => p.answers[k]);
     if (!featuredKey) return;
     const card = document.createElement('div');
-    card.className = 'standout-card';
+    card.className = 'so-card';
     card.innerHTML = `
-      <div class="so-photo">
+      <div class="so-card-photo">
         <img src="${p.img}" alt="${p.name}">
-        <div class="so-photo-overlay">
-          <div class="so-name">
-            ${p.name}, ${p.age}
-            ${p.verified ? `<span class="verified-badge"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : ''}
-          </div>
-          <div class="so-city">${p.city} · ${p.dist}</div>
+        <div class="so-card-name">
+          ${p.name}, ${p.age}
+          ${p.verified ? `<span class="verified-badge" style="vertical-align:middle"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : ''}
         </div>
       </div>
-      <div class="so-prompt">
-        <div class="so-prompt-label">${PROMPT_LABELS[featuredKey]}</div>
-        <div class="so-prompt-text">${p.answers[featuredKey]}</div>
-      </div>
-      <div class="so-actions">
-        <button class="btn-so-spark" onclick="doStandoutSpark(${p.id})">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Send Spark
+      <div class="so-card-prompt">
+        <div class="so-prompt-q">${PROMPT_LABELS[featuredKey]}</div>
+        <div class="so-prompt-a">${p.answers[featuredKey]}</div>
+        <button class="so-spark-circle" id="so-spark-${p.id}" onclick="doStandoutSpark(${p.id})">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#FF6B47"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         </button>
-        <button class="btn-so-view" onclick="switchTab('discover');showToast('Browse ${p.name}\'s full profile in Discover')">View</button>
       </div>
     `;
     list.appendChild(card);
@@ -2244,7 +2236,13 @@ function doStandoutSpark(profileId) {
   S.sparksLeft--;
   S.stats.connects++;
   updateStats();
-  showToast(`⚡ Spark sent to ${p.name}! They'll definitely notice.`);
+  const btn = document.getElementById(`so-spark-${profileId}`);
+  if (btn) {
+    btn.classList.add('sent');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+    btn.onclick = null;
+  }
+  showToast(`Spark sent to ${p.name}! They'll definitely notice.`);
   setTimeout(() => triggerMatch(p), 1000);
 }
 
