@@ -2130,8 +2130,12 @@ function advanceDiscover() {
   const cards = scroll.querySelectorAll('.profile-card-full');
   if (cards.length === 0) { renderDiscover(); return; }
   cards[0].remove();
-  if (cards.length > 1) cards[1].style.display = '';
-  else renderDiscover();
+  if (cards.length > 1) {
+    cards[1].style.display = '';
+    scroll.scrollTop = 0;
+  } else {
+    renderDiscover();
+  }
 }
 
 function doConnect(profileId) {
