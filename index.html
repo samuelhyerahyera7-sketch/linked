@@ -257,6 +257,40 @@
       font-size: 17px; font-weight: 500; scroll-snap-align: center; color: var(--text);
     }
 
+    /* ─── DOB PICKER MODAL ──────────────────────────────── */
+    .dob-field {
+      width: 100%; padding: 16px 14px; border-radius: 12px;
+      background: #E5E5EA; color: #8A8A8E;
+      font-size: 16px; cursor: pointer; border: none;
+      box-sizing: border-box; text-align: left;
+    }
+    .dob-field.filled { color: var(--text); background: var(--surface2); }
+    #dob-modal {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.45);
+      align-items: center; justify-content: center;
+    }
+    #dob-modal.open { display: flex; }
+    .dob-modal-card {
+      background: white; border-radius: 16px; width: 310px;
+      padding: 24px 24px 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .dob-modal-title {
+      font-size: 18px; font-weight: 700; color: #141414; margin-bottom: 16px;
+    }
+    .dob-modal-card .date-picker {
+      border: none; border-radius: 0; background: white;
+    }
+    .dob-modal-card .picker-fade-top { background: linear-gradient(to bottom, white 20%, transparent); }
+    .dob-modal-card .picker-fade-bottom { background: linear-gradient(to top, white 20%, transparent); }
+    .dob-modal-actions {
+      display: flex; justify-content: flex-end; gap: 28px; margin-top: 16px;
+    }
+    .dob-modal-actions button {
+      font-size: 16px; font-weight: 600; background: none;
+      border: none; cursor: pointer; padding: 8px 0; color: #141414;
+    }
+
     .btn-next {
       margin-top: auto;
       background: linear-gradient(135deg, var(--coral), var(--coral2));
@@ -1115,19 +1149,7 @@
       <label class="field-label">First name</label>
       <input class="input-field" id="s-name" placeholder="Your first name" type="text">
       <label class="field-label">Date of birth</label>
-      <div class="picker-labels">
-        <div class="picker-col-label">Day</div>
-        <div class="picker-col-label">Month</div>
-        <div class="picker-col-label">Year</div>
-      </div>
-      <div class="date-picker" id="date-picker">
-        <div class="picker-fade-top"></div>
-        <div class="picker-fade-bottom"></div>
-        <div class="picker-selection"></div>
-        <div class="picker-col" id="picker-day"><div class="picker-spacer"></div><div class="picker-spacer"></div></div>
-        <div class="picker-col" id="picker-month"><div class="picker-spacer"></div><div class="picker-spacer"></div></div>
-        <div class="picker-col" id="picker-year"><div class="picker-spacer"></div><div class="picker-spacer"></div></div>
-      </div>
+      <div class="dob-field" id="dob-display" onclick="openDobPicker()">Birthdate</div>
       <label class="field-label">I identify as</label>
       <select class="input-field" id="s-gender">
         <option value="woman">Woman</option>
@@ -1250,6 +1272,25 @@
         <input class="input-field" id="q-random" placeholder="e.g. I can name every F1 driver" type="text">
       </div>
       <button class="btn-next" onclick="finishSetup()">Find my people</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DOB PICKER MODAL ══════════════════════════════════ -->
+<div id="dob-modal">
+  <div class="dob-modal-card">
+    <div class="dob-modal-title">Date of Birth</div>
+    <div class="date-picker" id="date-picker">
+      <div class="picker-fade-top"></div>
+      <div class="picker-fade-bottom"></div>
+      <div class="picker-selection"></div>
+      <div class="picker-col" id="picker-day"><div class="picker-spacer"></div><div class="picker-spacer"></div></div>
+      <div class="picker-col" id="picker-month"><div class="picker-spacer"></div><div class="picker-spacer"></div></div>
+      <div class="picker-col" id="picker-year"><div class="picker-spacer"></div><div class="picker-spacer"></div></div>
+    </div>
+    <div class="dob-modal-actions">
+      <button onclick="closeDobPicker(false)">Cancel</button>
+      <button onclick="closeDobPicker(true)">OK</button>
     </div>
   </div>
 </div>
@@ -2588,6 +2629,25 @@ function getPickerAge() {
 }
 
 document.addEventListener('DOMContentLoaded', buildDatePicker);
+
+function openDobPicker() {
+  document.getElementById('dob-modal').classList.add('open');
+}
+
+function closeDobPicker(save) {
+  if (save) {
+    const dayIdx   = Math.round(document.getElementById('picker-day').scrollTop   / ITEM_H);
+    const monthIdx = Math.round(document.getElementById('picker-month').scrollTop / ITEM_H);
+    const yearIdx  = Math.round(document.getElementById('picker-year').scrollTop  / ITEM_H);
+    const day   = String(dayIdx + 1).padStart(2, '0');
+    const month = MONTHS_SHORT[monthIdx];
+    const year  = CUR_YEAR - 18 - yearIdx;
+    const display = document.getElementById('dob-display');
+    display.textContent = `${day} ${month} ${year}`;
+    display.classList.add('filled');
+  }
+  document.getElementById('dob-modal').classList.remove('open');
+}
 
 // ── TERMS & PRIVACY ───────────────────────────────────────
 function openTerms() {
