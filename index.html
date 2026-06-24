@@ -936,83 +936,64 @@
     #sub-screen {
       position: fixed; inset: 0; z-index: 950;
       display: none; flex-direction: column;
-      background: var(--bg);
-      max-width: 430px; margin: 0 auto;
-      overflow-y: auto;
+      background: var(--bg); overflow-y: auto;
     }
     #sub-screen.open { display: flex; }
-
-    .sub-hero {
-      position: relative; padding: 56px 24px 32px;
-      background: linear-gradient(160deg, #1a0a06 0%, var(--bg) 60%);
-      text-align: center; flex-shrink: 0;
+    .sub-header {
+      padding: 56px 24px 20px; position: relative;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
     .sub-close {
-      position: absolute; top: 16px; left: 16px;
-      background: var(--surface2); border: none; border-radius: 50%;
-      width: 36px; height: 36px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--muted); font-size: 18px;
+      position: absolute; top: 16px; right: 16px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--surface2); border: none; cursor: pointer;
+      font-size: 14px; color: var(--muted); display: flex;
+      align-items: center; justify-content: center;
     }
-    .sub-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: linear-gradient(135deg, rgba(255,107,71,0.2), rgba(255,140,106,0.2));
-      border: 1px solid rgba(255,107,71,0.35);
-      border-radius: 50px; padding: 6px 14px;
-      font-size: 12px; font-weight: 700; color: var(--coral);
-      margin-bottom: 16px;
+    .sub-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--coral); text-transform: uppercase; margin-bottom: 6px; }
+    .sub-title { font-size: 26px; font-weight: 900; color: var(--text); line-height: 1.15; margin-bottom: 6px; letter-spacing: -0.5px; }
+    .sub-desc { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .sub-billing-row {
+      display: flex; gap: 6px; padding: 16px 20px 0; flex-shrink: 0;
     }
-    .sub-title { font-size: 30px; font-weight: 900; line-height: 1.15; margin-bottom: 10px; }
-    .sub-desc  { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 280px; margin: 0 auto; }
-
-    .sub-features {
-      padding: 0 20px 24px; flex-shrink: 0;
+    .sub-bill-btn {
+      flex: 1; padding: 8px 4px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      cursor: pointer; transition: all 0.15s; text-align: center;
     }
-    .sub-feat-row {
-      display: flex; align-items: flex-start; gap: 14px;
-      padding: 14px 0; border-bottom: 1px solid var(--border);
+    .sub-bill-btn.active { background: var(--text); color: white; border-color: var(--text); }
+    .sub-save-chip {
+      display: block; font-size: 10px; font-weight: 700;
+      color: var(--teal); margin-top: 1px;
     }
-    .sub-feat-row:last-child { border-bottom: none; }
-    .sub-feat-icon {
-      width: 40px; height: 40px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 19px; flex-shrink: 0;
-    }
-    .sub-feat-text .sf-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-    .sub-feat-text .sf-sub   { font-size: 12px; color: var(--muted); line-height: 1.4; }
-    .sub-feat-badge {
-      margin-left: auto; padding: 3px 8px; border-radius: 50px;
-      font-size: 10px; font-weight: 700; flex-shrink: 0;
-      background: rgba(255,107,71,0.12); color: var(--coral);
-    }
-    .sub-feat-badge.gold { background: rgba(251,191,36,0.15); color: #FBBF24; }
-
     .sub-plans {
-      padding: 0 20px 24px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+      padding: 16px 20px 8px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
     }
     .sub-plan {
       border: 1.5px solid var(--border); border-radius: 18px;
       padding: 16px; cursor: pointer; transition: all 0.18s;
       position: relative; background: var(--surface);
     }
-    .sub-plan.selected { border-color: var(--coral); background: rgba(255,107,71,0.06); }
-    .sub-plan-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-    .sub-plan-name { font-size: 15px; font-weight: 700; }
-    .sub-plan-price { text-align: right; }
-    .sub-plan-amount { font-size: 18px; font-weight: 800; }
+    .sub-plan.selected { border-color: var(--coral); background: rgba(255,107,71,0.04); }
+    .sub-plan-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .sub-plan-name { font-size: 16px; font-weight: 800; color: var(--text); }
+    .sub-plan-tagline { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .sub-plan-right { display: flex; align-items: center; gap: 8px; }
+    .sub-plan-amount { font-size: 20px; font-weight: 800; color: var(--text); }
     .sub-plan-period { font-size: 11px; color: var(--muted); }
-    .sub-plan-desc { font-size: 12px; color: var(--muted); }
+    .sub-plan-feats { font-size: 12px; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); line-height: 1.5; }
     .sub-plan-save {
       position: absolute; top: -10px; right: 14px;
       background: var(--coral); color: white;
-      font-size: 10px; font-weight: 700; border-radius: 50px;
-      padding: 3px 10px;
+      font-size: 10px; font-weight: 800; padding: 3px 10px;
+      border-radius: 20px; letter-spacing: 0.3px;
     }
     .sub-radio {
-      width: 18px; height: 18px; border-radius: 50%;
+      width: 20px; height: 20px; border-radius: 50%;
       border: 2px solid var(--border); flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      margin-left: 8px; transition: all 0.15s;
+      transition: all 0.15s;
     }
     .sub-plan.selected .sub-radio { border-color: var(--coral); background: var(--coral); }
     .sub-radio::after {
@@ -1020,22 +1001,37 @@
       background: white; display: none;
     }
     .sub-plan.selected .sub-radio::after { display: block; }
-
+    .sub-features {
+      padding: 0 20px 16px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+    }
+    .sub-feat-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; border-radius: 14px; background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .sub-feat-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sub-feat-text { flex: 1; min-width: 0; }
+    .sf-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .sf-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .sub-feat-badge {
+      font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+      background: rgba(255,107,71,0.12); color: var(--coral); flex-shrink: 0;
+    }
+    .sub-feat-badge.premium { background: rgba(99,102,241,0.12); color: #6366F1; }
+    .sub-feat-badge.elite { background: rgba(251,191,36,0.15); color: #B45309; }
     .sub-cta-wrap {
-      padding: 8px 20px 40px; flex-shrink: 0;
+      padding: 8px 20px 32px; flex-shrink: 0; margin-top: auto;
     }
     .sub-cta {
-      width: 100%; padding: 17px;
+      width: 100%; padding: 17px; border-radius: 16px; border: none;
       background: linear-gradient(135deg, var(--coral), var(--coral2));
-      color: white; border: none; border-radius: 16px;
-      font-size: 16px; font-weight: 700; cursor: pointer;
-      margin-bottom: 10px;
-    }
-    .sub-cta.active-plan {
-      background: var(--teal); box-shadow: 0 6px 20px rgba(0,205,168,0.3);
+      color: white; font-size: 16px; font-weight: 800; cursor: pointer;
     }
     .sub-fine {
-      text-align: center; font-size: 11px; color: var(--muted); line-height: 1.6;
+      text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px;
     }
 
     /* premium banner in Me tab */
@@ -1625,109 +1621,79 @@
 
 <!-- ═══ SUBSCRIPTION ══════════════════════════════════════ -->
 <div id="sub-screen">
-  <div class="sub-hero">
+  <div class="sub-header">
     <button class="sub-close" onclick="closeSub()">✕</button>
-    <div class="sub-badge">✦ Linked Premium</div>
-    <div class="sub-title">Unlock every<br>connection.</div>
-    <div class="sub-desc">More sparks, more visibility, and the full picture of who wants to meet you.</div>
+    <div class="sub-eyebrow" id="sub-eyebrow">Upgrade Linked</div>
+    <div class="sub-title" id="sub-title">Unlock every<br>connection.</div>
+    <div class="sub-desc" id="sub-desc">More matches, real video profiles, and the full picture of who wants to meet you.</div>
   </div>
 
-  <div class="sub-features">
-    <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
-      <div class="sub-feat-text">
-        <div class="sf-title">See who liked you</div>
-        <div class="sf-sub">Know before you swipe — no more guessing games</div>
-      </div>
-      <div class="sub-feat-badge">Plus</div>
-    </div>
-    <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
-      <div class="sub-feat-text">
-        <div class="sf-title">Unlimited connects</div>
-        <div class="sf-sub">No daily limits, connect with as many people as you want</div>
-      </div>
-      <div class="sub-feat-badge">Plus</div>
-    </div>
-    <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#F3EEFF"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
-      <div class="sub-feat-text">
-        <div class="sf-title">Weekly Spotlight</div>
-        <div class="sf-sub">Get pushed to the top of Discover once a week</div>
-      </div>
-      <div class="sub-feat-badge">Plus</div>
-    </div>
-    <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#FFFBE6"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-      <div class="sub-feat-text">
-        <div class="sf-title">5 Sparks per day</div>
-        <div class="sf-sub">Send guaranteed connections to the people you really like</div>
-      </div>
-      <div class="sub-feat-badge gold">Gold</div>
-    </div>
-    <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-      <div class="sub-feat-text">
-        <div class="sf-title">Read receipts</div>
-        <div class="sf-sub">See when your messages have been read</div>
-      </div>
-      <div class="sub-feat-badge gold">Gold</div>
-    </div>
+  <div class="sub-billing-row">
+    <button class="sub-bill-btn active" id="sbill-monthly" onclick="setSubBilling('monthly')">Monthly</button>
+    <button class="sub-bill-btn" id="sbill-quarterly" onclick="setSubBilling('quarterly')">Quarterly<span class="sub-save-chip">Save 27%</span></button>
+    <button class="sub-bill-btn" id="sbill-annual" onclick="setSubBilling('annual')">Annual<span class="sub-save-chip">Save 50%</span></button>
   </div>
 
   <div class="sub-plans">
-    <div class="sub-plan" id="plan-gold" onclick="selectPlan('gold')">
+    <div class="sub-plan" id="sp-plus" onclick="selectSubPlan('plus')">
+      <div class="sub-plan-top">
+        <div>
+          <div class="sub-plan-name">Plus</div>
+          <div class="sub-plan-tagline">Unlimited swipes · see who liked you</div>
+        </div>
+        <div class="sub-plan-right">
+          <div>
+            <div class="sub-plan-amount" id="sp-plus-price">R89</div>
+            <div class="sub-plan-period">/month</div>
+          </div>
+          <div class="sub-radio"></div>
+        </div>
+      </div>
+      <div class="sub-plan-feats">Unlimited swipes · Rewind · Height filter · AI bio writer · 1 boost/month · Read receipts</div>
+    </div>
+
+    <div class="sub-plan selected" id="sp-premium" onclick="selectSubPlan('premium')">
       <div class="sub-plan-save">Most popular</div>
       <div class="sub-plan-top">
         <div>
-          <div class="sub-plan-name">Linked Gold</div>
-          <div class="sub-plan-desc">All features included</div>
+          <div class="sub-plan-name">Premium</div>
+          <div class="sub-plan-tagline">Video profiles · all likes · AI coach</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="sub-plan-price">
-            <div class="sub-plan-amount">R149</div>
+        <div class="sub-plan-right">
+          <div>
+            <div class="sub-plan-amount" id="sp-prem-price">R169</div>
             <div class="sub-plan-period">/month</div>
           </div>
           <div class="sub-radio"></div>
         </div>
       </div>
+      <div class="sub-plan-feats">Everything in Plus · Video profile · Video intros · Dealbreaker filters · 5 boosts · AI dating coach · Incognito mode</div>
     </div>
-    <div class="sub-plan" id="plan-plus" onclick="selectPlan('plus')">
+
+    <div class="sub-plan" id="sp-elite" onclick="selectSubPlan('elite')">
       <div class="sub-plan-top">
         <div>
-          <div class="sub-plan-name">Linked Plus</div>
-          <div class="sub-plan-desc">Unlimited connects + see likes</div>
+          <div class="sub-plan-name">Elite</div>
+          <div class="sub-plan-tagline">Live video calls · passport · gold badge</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="sub-plan-price">
-            <div class="sub-plan-amount">R99</div>
+        <div class="sub-plan-right">
+          <div>
+            <div class="sub-plan-amount" id="sp-elite-price">R289</div>
             <div class="sub-plan-period">/month</div>
           </div>
           <div class="sub-radio"></div>
         </div>
       </div>
-    </div>
-    <div class="sub-plan" id="plan-annual" onclick="selectPlan('annual')">
-      <div class="sub-plan-save">Save 40%</div>
-      <div class="sub-plan-top">
-        <div>
-          <div class="sub-plan-name">Gold Annual</div>
-          <div class="sub-plan-desc">Best value — R75/month billed yearly</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="sub-plan-price">
-            <div class="sub-plan-amount">R899</div>
-            <div class="sub-plan-period">/year</div>
-          </div>
-          <div class="sub-radio"></div>
-        </div>
-      </div>
+      <div class="sub-plan-feats">Everything in Premium · Live video calling · Video date scheduling · Unlimited boosts · Passport mode · Gold verified badge</div>
     </div>
   </div>
 
+  <div class="sub-features" id="sub-features">
+  </div>
+
   <div class="sub-cta-wrap">
-    <button class="sub-cta" id="sub-cta-btn" onclick="subscribeToPlan()">Continue</button>
-    <div class="sub-fine">Billed automatically. Cancel anytime. Prices in ZAR.</div>
+    <button class="sub-cta" id="sub-cta-btn" onclick="subscribeToPlan()">Get Premium</button>
+    <div class="sub-fine">Billed automatically · Cancel anytime · Prices in ZAR</div>
   </div>
 </div>
 
@@ -1771,7 +1737,7 @@
       <div class="chat-top-name" id="chat-name"></div>
       <div class="chat-top-status">Online now</div>
     </div>
-    <button class="icon-btn" onclick="showToast('Video call coming soon 📹')">
+    <button class="icon-btn" onclick="hasTier('elite') ? showToast('Video calling — coming soon!') : openSub('videocall')">
       <svg viewBox="0 0 24 24" fill="var(--muted)"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
     </button>
   </div>
@@ -1831,7 +1797,9 @@ let S = {
   convos: {},
   currentChat: null,
   pendingMatch: null,
-  connectsLeft: 10,
+  tier: 'free',
+  connectsLeft: 20,
+  swipeDate: '',
   sparksLeft: 1,
   spotlightTimer: null,
   isPremium: null,
@@ -2139,7 +2107,7 @@ function advanceDiscover() {
 }
 
 function doConnect(profileId) {
-  if (S.connectsLeft <= 0) { openSub('connects'); return; }
+  if (!hasTier('plus') && S.connectsLeft <= 0) { openSub('swipes'); return; }
   const p = PROFILES.find(x => x.id === profileId);
   if (!p) return;
   S.connectsLeft--;
@@ -2678,7 +2646,113 @@ function doSpotlight() {
 }
 
 // ── SUBSCRIPTION ──────────────────────────────────────────
-let selectedPlanId = 'gold';
+const SUB_PRICES = {
+  monthly:   { plus: 'R89',  prem: 'R169', elite: 'R289' },
+  quarterly: { plus: 'R65',  prem: 'R119', elite: 'R199' },
+  annual:    { plus: 'R45',  prem: 'R85',  elite: 'R145'  }
+};
+const SUB_ANNUAL_TOTALS = {
+  quarterly: { plus: 'R585 billed every 3 mo', prem: 'R1,071 billed every 3 mo', elite: 'R1,791 billed every 3 mo' },
+  annual:    { plus: 'R1,068/year', prem: 'R2,040/year', elite: 'R3,480/year' }
+};
+const PLAN_FEATURES = {
+  plus: [
+    { icon: '#FFF3EE', stroke: '#FF6B47', path: 'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z', title: 'See who liked you', sub: '5 likes revealed per day — know who wants to meet you', badge: 'Plus', bc: '' },
+    { icon: '#E6FAF6', stroke: '#00CDA8', path: 'M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2H3v2a9 9 0 0018 0v-2h-2z', title: 'Unlimited swipes', sub: 'Swipe as much as you like, no daily cap', badge: 'Plus', bc: '' },
+    { icon: '#EBF2FF', stroke: '#4F7FEB', path: 'M3 10h10M3 14h7M9 18H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v5', title: 'AI bio writer', sub: 'Let AI write your bio and conversation openers', badge: 'Plus', bc: '' },
+  ],
+  premium: [
+    { icon: '#FFF3EE', stroke: '#FF6B47', path: 'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z', title: 'See ALL who liked you', sub: 'Unlimited — full list of everyone who wants to meet you', badge: 'Premium', bc: 'premium' },
+    { icon: '#F3EEFF', stroke: '#8B5CF6', path: 'M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z', title: 'Video profile', sub: 'Record a 30-second intro video — stand out instantly', badge: 'Premium', bc: 'premium' },
+    { icon: '#E6FAF6', stroke: '#00CDA8', path: 'M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z', title: 'Video introductions', sub: 'Send a 15-sec video to any match before chatting', badge: 'Premium', bc: 'premium' },
+    { icon: '#FFF8E1', stroke: '#F59E0B', path: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', title: 'AI dating coach', sub: 'Daily tips, conversation analysis and compatibility scores', badge: 'Premium', bc: 'premium' },
+  ],
+  elite: [
+    { icon: '#F3EEFF', stroke: '#8B5CF6', path: 'M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z', title: 'Live video calling', sub: 'Call matches directly in the app — no number sharing needed', badge: 'Elite', bc: 'elite' },
+    { icon: '#FFF8E1', stroke: '#F59E0B', path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', title: 'Video date scheduling', sub: 'Book a 15-min video date directly — structured and safe', badge: 'Elite', bc: 'elite' },
+    { icon: '#FFFBE6', stroke: '#F59E0B', path: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', title: 'Unlimited boosts + featured', sub: 'Weekly featured placement + run boosts whenever you want', badge: 'Elite', bc: 'elite' },
+    { icon: '#E6FAF6', stroke: '#00CDA8', path: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z', title: 'Gold verified badge', sub: 'Gold checkmark signals you are serious and trustworthy', badge: 'Elite', bc: 'elite' },
+  ]
+};
+
+let selectedSubPlan = 'premium';
+let selectedSubBilling = 'monthly';
+
+const SUB_CONTEXTS = {
+  swipes:    { eyebrow: 'You\'ve run out of swipes', title: 'Swipe without limits.', desc: 'Upgrade to Plus and never hit a cap again.' },
+  likes:     { eyebrow: 'Someone liked your profile', title: 'See who wants you.', desc: 'Upgrade to Plus to reveal who liked you.' },
+  video:     { eyebrow: 'Premium feature', title: 'Stand out with video.', desc: 'Record a 30-second profile video. Premium members get 5x more replies.' },
+  videocall: { eyebrow: 'Elite feature', title: 'Video call your matches.', desc: 'No number sharing. Call directly in the app — Elite only.' },
+  sparks:    { eyebrow: 'Out of Sparks', title: 'Send more Sparks.', desc: 'Upgrade to get more Sparks and guaranteed visibility.' },
+  boost:     { eyebrow: 'Profile boost', title: 'Get seen by more people.', desc: 'Boosts push your profile to the top of Discover.' },
+  default:   { eyebrow: 'Upgrade Linked', title: 'Unlock every connection.', desc: 'More matches, real video profiles, and the full picture of who wants to meet you.' }
+};
+
+function openSub(trigger) {
+  const ctx = SUB_CONTEXTS[trigger] || SUB_CONTEXTS.default;
+  document.getElementById('sub-eyebrow').textContent = ctx.eyebrow;
+  document.getElementById('sub-title').innerHTML = ctx.title;
+  document.getElementById('sub-desc').textContent = ctx.desc;
+  if (trigger === 'videocall' || trigger === 'elite') selectSubPlan('elite');
+  else if (trigger === 'swipes' || trigger === 'likes') selectSubPlan('plus');
+  else selectSubPlan('premium');
+  setSubBilling('monthly');
+  document.getElementById('sub-screen').classList.add('open');
+  document.getElementById('sub-screen').scrollTop = 0;
+}
+
+function closeSub() {
+  document.getElementById('sub-screen').classList.remove('open');
+}
+
+function setSubBilling(mode) {
+  selectedSubBilling = mode;
+  ['monthly','quarterly','annual'].forEach(m => {
+    document.getElementById('sbill-' + m).classList.toggle('active', m === mode);
+  });
+  const p = SUB_PRICES[mode];
+  document.getElementById('sp-plus-price').textContent  = p.plus;
+  document.getElementById('sp-prem-price').textContent  = p.prem;
+  document.getElementById('sp-elite-price').textContent = p.elite;
+}
+
+function selectSubPlan(plan) {
+  selectedSubPlan = plan;
+  ['plus','premium','elite'].forEach(p => {
+    document.getElementById('sp-' + p).classList.toggle('selected', p === plan);
+  });
+  const labels = { plus: 'Get Plus', premium: 'Get Premium', elite: 'Get Elite' };
+  document.getElementById('sub-cta-btn').textContent = labels[plan];
+  const feats = PLAN_FEATURES[plan] || [];
+  document.getElementById('sub-features').innerHTML = feats.map(f => `
+    <div class="sub-feat-row">
+      <div class="sub-feat-icon" style="background:${f.icon}">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="${f.stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${f.path}"/></svg>
+      </div>
+      <div class="sub-feat-text">
+        <div class="sf-title">${f.title}</div>
+        <div class="sf-sub">${f.sub}</div>
+      </div>
+      <div class="sub-feat-badge ${f.bc}">${f.badge}</div>
+    </div>`).join('');
+}
+
+function subscribeToPlan() {
+  S.tier = selectedSubPlan;
+  S.connectsLeft = 9999;
+  if (selectedSubPlan === 'plus' || selectedSubPlan === 'premium' || selectedSubPlan === 'elite') {
+    S.sparksLeft = selectedSubPlan === 'elite' ? 99 : selectedSubPlan === 'premium' ? 5 : 2;
+  }
+  closeSub();
+  const names = { plus: 'Plus', premium: 'Premium', elite: 'Elite' };
+  showToast('Welcome to Linked ' + names[selectedSubPlan] + '!');
+  updateStats();
+}
+
+function hasTier(min) {
+  const order = ['free','plus','premium','elite'];
+  return order.indexOf(S.tier) >= order.indexOf(min);
+}
 
 // ── VERIFICATION ─────────────────────────────────────────
 function openVerify() {
@@ -2708,54 +2782,6 @@ function processVerification() {
     document.getElementById('verify-section').style.cursor = 'default';
     document.getElementById('verify-section').onclick = null;
   }, 2200);
-}
-
-function openSub(trigger) {
-  selectPlan('gold');
-  document.getElementById('sub-screen').classList.add('open');
-  document.getElementById('sub-screen').scrollTop = 0;
-}
-
-function closeSub() {
-  document.getElementById('sub-screen').classList.remove('open');
-}
-
-function selectPlan(id) {
-  selectedPlanId = id;
-  ['gold','plus','annual'].forEach(p => {
-    document.getElementById('plan-' + p).classList.toggle('selected', p === id);
-  });
-  const labels = { gold: 'Get Linked Gold', plus: 'Get Linked Plus', annual: 'Get Gold Annual' };
-  document.getElementById('sub-cta-btn').textContent = labels[id];
-}
-
-function subscribeToPlan() {
-  S.isPremium = selectedPlanId;
-  S.connectsLeft = 9999;
-  if (selectedPlanId === 'gold' || selectedPlanId === 'annual') S.sparksLeft = 5;
-  closeSub();
-  updatePremiumUI();
-  showToast('Welcome to Linked Premium! ✦');
-  // unblur likes
-  document.querySelectorAll('.like-card img').forEach(img => {
-    img.style.filter = 'none';
-    img.style.transform = 'none';
-  });
-  document.querySelectorAll('.lock-layer').forEach(el => el.style.display = 'none');
-}
-
-function updatePremiumUI() {
-  if (!S.isPremium) return;
-  const banner = document.getElementById('premium-banner');
-  banner.classList.add('active-premium');
-  const planNames = { gold: 'Linked Gold', plus: 'Linked Plus', annual: 'Gold Annual' };
-  document.getElementById('pb-title').textContent = planNames[S.isPremium] + ' ✦';
-  document.getElementById('pb-perks').innerHTML = `
-    <div class="pb-perk">Unlimited connects active</div>
-    <div class="pb-perk">${S.isPremium !== 'plus' ? '5 Sparks per day' : '1 Spark per day'}</div>
-    <div class="pb-perk">Likes visible — no blur</div>
-  `;
-  document.getElementById('pb-btn').textContent = 'Manage subscription';
 }
 
 // ── PHOTO FULLSCREEN ──────────────────────────────────────
