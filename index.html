@@ -1583,9 +1583,13 @@
     .profile-detail-screen {
       position:fixed; inset:0; z-index:9993; max-width:430px; margin:0 auto;
       display:none; flex-direction:column; overflow-y:auto; background:#fff;
+      overscroll-behavior-y:contain;
     }
     .profile-detail-screen.open { display:flex; }
-    .profile-detail-hero { position:relative; height:62dvh; min-height:470px; flex:0 0 auto; }
+    .profile-detail-hero {
+      position:relative; height:62dvh; min-height:470px; flex:0 0 auto;
+      touch-action:pan-y;
+    }
     .profile-detail-hero img { width:100%; height:100%; object-fit:cover; display:block; }
     .profile-detail-hero::after {
       content:''; position:absolute; inset:38% 0 0;
@@ -3445,7 +3449,7 @@ function buildProfileCard(p) {
     <div class="pc-photo" id="pc-photo-${p.id}">
       <div class="pc-photo-progress">${photoProgress}</div>
       <div class="photo-count" id="photo-count-${p.id}">1 / ${photos.length}</div>
-      <div class="double-tap-rose-cue">Double tap to send a Rose</div>
+      <div class="double-tap-rose-cue">Double tap centre to send a Rose</div>
       <div class="photo-tap-cue left" aria-hidden="true">‹</div>
       <div class="photo-tap-cue right" aria-hidden="true">›</div>
       <img id="profile-image-${p.id}" src="${photos[0]}" alt="${p.name}" draggable="false"
@@ -3977,7 +3981,7 @@ function nowTime() {
 let suppressProfilePhotoClickUntil = 0;
 let lastProfilePhotoTap = { profileId:null, time:0 };
 
-function queueProfilePhotoTap(profileId, direction) {
+function queueProfileRoseTap(profileId) {
   const now = Date.now();
   const isDoubleTap = lastProfilePhotoTap.profileId === profileId && now - lastProfilePhotoTap.time < 330;
   if (isDoubleTap) {
@@ -3986,7 +3990,19 @@ function queueProfilePhotoTap(profileId, direction) {
     return;
   }
   lastProfilePhotoTap = { profileId, time:now };
-  changeProfilePhoto(profileId, direction);
+}
+
+function handleProfileTapAt(profileId, clientX, bounds) {
+  const position = (clientX - bounds.left) / Math.max(1, bounds.width);
+  if (position < .28) {
+    lastProfilePhotoTap = { profileId:null, time:0 };
+    changeProfilePhoto(profileId, -1);
+  } else if (position > .72) {
+    lastProfilePhotoTap = { profileId:null, time:0 };
+    changeProfilePhoto(profileId, 1);
+  } else {
+    queueProfileRoseTap(profileId);
+  }
 }
 
 function handleProfilePhotoClick(event, profileId) {
@@ -3996,7 +4012,7 @@ function handleProfilePhotoClick(event, profileId) {
     return;
   }
   const bounds = event.currentTarget.getBoundingClientRect();
-  queueProfilePhotoTap(profileId, event.clientX < bounds.left + bounds.width / 2 ? -1 : 1);
+  handleProfileTapAt(profileId, event.clientX, bounds);
 }
 
 function changeProfilePhoto(profileId, direction = 1) {
@@ -4028,6 +4044,7 @@ function openProfileDetail(profileId, startIndex = null) {
   const visibleImage = document.getElementById('profile-image-' + profileId);
   const currentIndex = startIndex ?? Number(visibleImage?.dataset.photoIndex) ?? 0;
   const photos = [...sourcePhotos.slice(currentIndex), ...sourcePhotos.slice(0, currentIndex)];
+  profileDetailState = { profileId, photos, index:0 };
   document.getElementById('profile-detail-cover').src = photos[0];
   document.getElementById('profile-detail-cover').alt = p.name;
   document.getElementById('profile-detail-name').textContent = `${p.name}, ${p.age}`;
@@ -4087,10 +4104,91 @@ function openProfileDetail(profileId, startIndex = null) {
   const screen = document.getElementById('profile-detail-screen');
   screen.classList.add('open');
   screen.scrollTop = 0;
+  setupProfileDetailGestures();
 }
 
 function closeProfileDetail() {
   document.getElementById('profile-detail-screen').classList.remove('open');
+  profileDetailState = { profileId:null, photos:[], index:0 };
+}
+
+let profileDetailState = { profileId:null, photos:[], index:0 };
+
+function showProfileDetailPhoto(index) {
+  const { photos } = profileDetailState;
+  if (!photos.length) return;
+  profileDetailState.index = Math.max(0, Math.min(photos.length - 1, index));
+  const cover = document.getElementById('profile-detail-cover');
+  cover.style.opacity = '.35';
+  cover.src = photos[profileDetailState.index];
+  cover.onload = () => {
+    cover.style.transition = 'opacity .18s ease';
+    cover.style.opacity = '1';
+  };
+}
+
+function setupProfileDetailGestures() {
+  const screen = document.getElementById('profile-detail-screen');
+  const hero = screen.querySelector('.profile-detail-hero');
+  if (screen.dataset.gesturesReady) return;
+  screen.dataset.gesturesReady = 'true';
+  let startX = 0, startY = 0, startScroll = 0, tracking = false, axis = null;
+  let startedOnHero = false;
+
+  screen.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    startX = e.clientX;
+    startY = e.clientY;
+    startScroll = screen.scrollTop;
+    axis = null;
+    tracking = true;
+    startedOnHero = Boolean(e.target.closest('.profile-detail-hero'));
+    if (screen.setPointerCapture) screen.setPointerCapture(e.pointerId);
+  });
+
+  screen.addEventListener('pointermove', e => {
+    if (!tracking) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if (!axis && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) axis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    if (axis === 'h' && startedOnHero) {
+      e.preventDefault();
+      hero.style.transition = 'none';
+      hero.style.transform = `translate3d(${dx * .35}px,0,0)`;
+    } else if (axis === 'v' && startScroll <= 1 && dy > 0) {
+      e.preventDefault();
+      screen.style.transition = 'none';
+      screen.style.transform = `translate3d(0,${Math.min(150,dy * .55)}px,0)`;
+    }
+  });
+
+  const finish = e => {
+    if (!tracking) return;
+    tracking = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    hero.style.transition = 'transform .2s ease-out';
+    hero.style.transform = '';
+    screen.style.transition = 'transform .2s ease-out';
+    screen.style.transform = '';
+
+    if (axis === 'h' && Math.abs(dx) > 55 && startedOnHero) {
+      if (dx > 0 && profileDetailState.index === 0) {
+        closeProfileDetail();
+      } else {
+        showProfileDetailPhoto(profileDetailState.index + (dx < 0 ? 1 : -1));
+      }
+    } else if (axis === 'v' && startScroll <= 1 && dy > 80) {
+      closeProfileDetail();
+    }
+  };
+
+  screen.addEventListener('pointerup', finish);
+  screen.addEventListener('pointercancel', () => {
+    tracking = false;
+    hero.style.transform = '';
+    screen.style.transform = '';
+  });
 }
 
 const PROFILE_BLOCK_LABELS = {
@@ -4156,7 +4254,6 @@ function setupPhotoSwipe(profileId) {
   };
 
   const onStart = e => {
-    if (e.pointerType === 'touch') return;
     if (e.button !== undefined && e.button !== 0) return;
     if (e.target.closest('button,input,textarea,select,.answer-carousel,.pc-voice')) return;
     startX = lastX = e.clientX;
@@ -4236,6 +4333,14 @@ function setupPhotoSwipe(profileId) {
     }
     if (didDrag) suppressProfilePhotoClickUntil = Date.now() + 450;
 
+    if (!didDrag && startedOnPhoto) {
+      suppressProfilePhotoClickUntil = Date.now() + 450;
+      resetCard();
+      const photo = document.getElementById('pc-photo-' + profileId);
+      handleProfileTapAt(profileId, e.clientX, photo.getBoundingClientRect());
+      return;
+    }
+
     const openDetails = startedOnPhoto && locked === 'v' && (curY < -72 || (curY < -36 && velocityY < -.42));
     const threshold = Math.min(105, card.clientWidth * .24);
     const committedRight = locked === 'h' && (curX > threshold || (curX > 42 && velocityX > .48));
@@ -4283,6 +4388,7 @@ function setupPhotoSwipe(profileId) {
 
   const photo = document.getElementById('pc-photo-' + profileId);
   photo.addEventListener('touchstart', e => {
+    if (window.PointerEvent) return;
     if (e.target.closest('button')) return;
     e.preventDefault();
     const touch = e.touches[0];
@@ -4295,6 +4401,7 @@ function setupPhotoSwipe(profileId) {
   }, { passive:false, capture:true });
 
   photo.addEventListener('touchmove', e => {
+    if (window.PointerEvent) return;
     if (!touchTracking) return;
     const touch = e.touches[0];
     if (!touch) return;
@@ -4320,6 +4427,7 @@ function setupPhotoSwipe(profileId) {
   }, { passive:false });
 
   photo.addEventListener('touchend', e => {
+    if (window.PointerEvent) return;
     if (!touchTracking) return;
     touchTracking = false;
     const touch = e.changedTouches[0];
@@ -4335,7 +4443,7 @@ function setupPhotoSwipe(profileId) {
     if (Math.abs(dx) < 14 && Math.abs(dy) < 14 && duration < 450) {
       resetCard();
       const bounds = photo.getBoundingClientRect();
-      queueProfilePhotoTap(profileId, touch.clientX < bounds.left + bounds.width / 2 ? -1 : 1);
+      handleProfileTapAt(profileId, touch.clientX, bounds);
       return;
     }
     if (verticalUp) {
