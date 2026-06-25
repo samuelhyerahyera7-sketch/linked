@@ -2077,6 +2077,60 @@
       -webkit-mask-image:radial-gradient(ellipse 72% 78% at center,#000 60%,transparent 100%);
       mask-image:radial-gradient(ellipse 72% 78% at center,#000 60%,transparent 100%);
     }
+
+    /* Complete dark appearance */
+    body[data-theme="dark"] { background:#09090B!important; }
+    body[data-theme="dark"] #app,
+    body[data-theme="dark"] .tab-content,
+    body[data-theme="dark"] .tab-panel,
+    body[data-theme="dark"] #standouts-tab,
+    body[data-theme="dark"] #linked-tab,
+    body[data-theme="dark"] #me-tab {
+      background:#09090B!important;
+    }
+    body[data-theme="dark"] .top-bar,
+    body[data-theme="dark"] #app[data-tab="discover"] .top-bar,
+    body[data-theme="dark"] .linked-header,
+    body[data-theme="dark"] .me-header,
+    body[data-theme="dark"] .roses-screen-heading {
+      background:#09090B!important;
+      border-color:#242429!important;
+      color:#F7F7F8!important;
+      box-shadow:none!important;
+    }
+    body[data-theme="dark"] .top-icon,
+    body[data-theme="dark"] #app[data-tab="discover"] .top-icon,
+    body[data-theme="dark"] #app[data-tab="discover"] .explore-filter-btn {
+      background:#1B1B1F!important;
+      border-color:#303036!important;
+      color:#F7F7F8!important;
+    }
+    body[data-theme="dark"] .bottom-nav {
+      background:#111114!important;
+      border-color:#29292E!important;
+      color:#A6A6AD;
+    }
+    body[data-theme="dark"] #app[data-tab="discover"] .pc-actions {
+      background:transparent!important;
+    }
+    body[data-theme="dark"] .act-pass,
+    body[data-theme="dark"] .act-rose {
+      background:#FFFFFF!important;
+      border-color:#FFFFFF!important;
+    }
+    body[data-theme="dark"] .act-connect {
+      background:var(--red)!important;
+      border-color:#FFFFFF!important;
+    }
+    body[data-theme="dark"] .rose-product-art,
+    body[data-theme="dark"] .nav-rose-img,
+    body[data-theme="dark"] .notification-rose-img,
+    body[data-theme="dark"] .wallet-rose-art,
+    body[data-theme="dark"] .act-rose img {
+      mix-blend-mode:normal!important;
+      -webkit-mask-image:none!important;
+      mask-image:none!important;
+    }
   </style>
 </head>
 <body>
@@ -2245,7 +2299,7 @@
     <div style="font-size:14px;color:var(--muted);margin-bottom:20px" id="rose-modal-name">to someone special</div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <button onclick="sendRose('rose',50)" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;border:1.5px solid var(--border);background:white;cursor:pointer;text-align:left;width:100%">
-        <img src="assets/red-rose.png" alt="" style="width:44px;height:44px;object-fit:contain">
+        <img src="assets/red-rose-transparent.png" alt="" style="width:44px;height:44px;object-fit:contain">
         <div style="flex:1;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">Rose</div><div style="font-size:12px;color:var(--muted)">A single red rose</div></div>
         <span style="font-size:15px;font-weight:800;color:var(--red)">R50</span>
       </button>
@@ -2378,7 +2432,7 @@
 
       <div style="display:flex;flex-direction:column;gap:12px;padding:0 20px">
         <div class="rose-store-card">
-          <img class="rose-product-art" src="assets/red-rose.png" alt="Red Rose">
+          <img class="rose-product-art" src="assets/red-rose-transparent.png" alt="Red Rose">
           <div style="flex:1">
             <div style="font-size:16px;font-weight:700;color:var(--text)">Rose</div>
             <div style="font-size:12px;color:var(--muted);margin-top:2px">Show genuine interest</div>
@@ -2629,7 +2683,7 @@
       <span class="nav-lbl">Explore</span>
     </button>
     <button class="nav-btn" id="nav-standouts" onclick="switchTab('standouts')">
-      <span class="nav-symbol"><img class="nav-rose-img" src="assets/red-rose.png" alt=""></span>
+      <span class="nav-symbol"><img class="nav-rose-img" src="assets/red-rose-transparent.png" alt=""></span>
       <span class="nav-lbl">Roses</span>
     </button>
     <button class="nav-btn" id="nav-linked" onclick="switchTab('linked')">
@@ -2858,7 +2912,7 @@
     <div class="balance-tile pending"><small>Pending Balance</small><strong id="wallet-pending">R0.00</strong></div>
   </div>
   <div class="wallet-rose-summary">
-    <img class="wallet-rose-art" src="assets/red-rose.png" alt="" aria-hidden="true">
+    <img class="wallet-rose-art" src="assets/red-rose-transparent.png" alt="" aria-hidden="true">
     <div class="wallet-rose-copy">
       <small>Roses Received</small>
       <strong id="wallet-roses-received">0</strong>
@@ -2908,7 +2962,7 @@
     <button class="act-pass" id="detail-pass" aria-label="Pass">
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <button class="act-rose" id="detail-rose" aria-label="Send Rose"><img src="assets/red-rose.png" alt=""></button>
+    <button class="act-rose" id="detail-rose" aria-label="Send Rose"><img src="assets/red-rose-transparent.png" alt=""></button>
     <button class="act-connect" id="detail-connect" aria-label="Connect">
       <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
     </button>
@@ -2998,7 +3052,7 @@
   <div class="notification-list" id="notification-list">
     <div class="notification-group">
       <h3>Today</h3>
-      <div class="notification-row"><div class="notification-icon"><img class="notification-rose-img" src="assets/red-rose.png" alt=""></div><div class="notification-copy"><strong>Sarah sent you a Rose</strong><div class="notification-time">Roses · 2m</div></div></div>
+      <div class="notification-row"><div class="notification-icon"><img class="notification-rose-img" src="assets/red-rose-transparent.png" alt=""></div><div class="notification-copy"><strong>Sarah sent you a Rose</strong><div class="notification-time">Roses · 2m</div></div></div>
       <div class="notification-row"><div class="notification-icon">🔗</div><div class="notification-copy"><strong>You’re Linked with Daniel</strong><div class="notification-time">Matches · 1h</div></div></div>
       <div class="notification-row"><div class="notification-icon">💬</div><div class="notification-copy"><strong>New message from Jessica</strong><div class="notification-time">Messages · 2h</div></div></div>
     </div>
@@ -3530,7 +3584,7 @@ function buildProfileCard(p) {
         <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <button class="act-rose" onclick="openRoseModal(${p.id})" aria-label="Send Rose">
-        <img src="assets/red-rose.png" alt="">
+        <img src="assets/red-rose-transparent.png" alt="">
       </button>
       <button class="act-connect" onclick="doConnect(${p.id})" aria-label="Connect">
         <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
