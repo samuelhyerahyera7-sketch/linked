@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Linked</title>
   <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
   <style>
@@ -148,7 +148,20 @@
 
     textarea.input-field { resize: none; font-family: inherit; line-height: 1.5; }
 
-    .vibe-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .vibe-grid { display:grid; gap:16px; }
+    .vibe-category { display:grid; gap:9px; }
+    .vibe-category-title {
+      font-size:12px; font-weight:800; color:#55575E;
+      text-transform:uppercase; letter-spacing:.7px;
+    }
+    .vibe-options { display:flex; flex-wrap:wrap; gap:8px; }
+    .vibe-counter {
+      position:sticky; top:0; z-index:2; padding:10px 12px;
+      border:1px solid #FFE0E4; border-radius:13px;
+      background:rgba(255,246,247,.96); color:#55575E;
+      font-size:12px; font-weight:750; backdrop-filter:blur(10px);
+    }
+    .vibe-counter.ready { background:#F0FAF4; border-color:#CDECD9; color:#26764A; }
     .vibe-btn {
       padding: 10px 16px; border-radius: 50px;
       border: 1.5px solid var(--border);
@@ -173,6 +186,31 @@
     }
     .photo-pick-label { text-align: center; color: var(--muted); font-size: 12px; }
     .photo-pick-label .pi { font-size: 28px; margin-bottom: 4px; }
+    .setup-photo-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:9px;
+    }
+    .setup-photo-slot {
+      position:relative; aspect-ratio:3/4; overflow:hidden; border-radius:16px;
+      border:1.5px dashed #D8D8DC; background:#F8F8F9;
+      display:grid; place-items:center; color:#8B8C93; font-size:24px;
+      cursor:pointer;
+    }
+    .setup-photo-slot.required::after {
+      content:'Required'; position:absolute; bottom:7px; left:7px;
+      padding:3px 6px; border-radius:7px; background:rgba(255,255,255,.9);
+      color:#777; font-size:8px; font-weight:800; text-transform:uppercase;
+    }
+    .setup-photo-slot img { width:100%; height:100%; object-fit:cover; display:block; }
+    .setup-photo-remove {
+      position:absolute; top:6px; right:6px; width:26px; height:26px; min-height:26px;
+      border:0; border-radius:50%; background:rgba(255,255,255,.94);
+      color:#222; font-size:16px; cursor:pointer; display:grid; place-items:center;
+    }
+    .setup-photo-status {
+      padding:10px 12px; border-radius:12px; background:#FFF6F7;
+      color:#6C5C5F; font-size:12px; font-weight:700; text-align:center;
+    }
+    .setup-photo-status.ready { background:#F0FAF4; color:#26764A; }
 
     .looking-opts { display: flex; gap: 8px; }
     .dating-sub {
@@ -384,6 +422,8 @@
       min-height: 100%;
       display: flex; flex-direction: column;
       padding: 0 16px 16px;
+      touch-action: pan-y; user-select:none; -webkit-user-select:none;
+      will-change:transform,opacity;
     }
 
     .pc-photo {
@@ -407,6 +447,35 @@
       background: rgba(255,255,255,0.4);
     }
     .photo-prog.active { background: rgba(255,255,255,0.9); }
+    .photo-count {
+      position:absolute; right:16px; top:22px; z-index:4;
+      min-width:42px; padding:6px 9px; border-radius:999px;
+      background:rgba(18,18,22,.38); color:#fff; text-align:center;
+      backdrop-filter:blur(10px); font-size:11px; font-weight:750;
+    }
+    .photo-tap-cue {
+      position:absolute; top:50%; z-index:4; width:34px; height:34px;
+      display:grid; place-items:center; border-radius:50%;
+      background:rgba(18,18,22,.25); color:rgba(255,255,255,.88);
+      backdrop-filter:blur(8px); font-size:22px; pointer-events:none;
+    }
+    .photo-tap-cue.left { left:12px; }
+    .photo-tap-cue.right { right:12px; }
+    .double-tap-rose-cue {
+      position:absolute; z-index:4; left:50%; top:74px; transform:translateX(-50%);
+      padding:6px 10px; border-radius:999px; background:rgba(18,18,22,.28);
+      color:rgba(255,255,255,.92); backdrop-filter:blur(8px);
+      font-size:10px; font-weight:750; pointer-events:none;
+    }
+    .pc-about-pill {
+      position:absolute; z-index:5; left:50%; bottom:98px; transform:translateX(-50%);
+      min-height:42px; padding:10px 17px; display:flex; align-items:center; gap:8px;
+      border:1px solid rgba(255,255,255,.42); border-radius:999px;
+      background:rgba(255,255,255,.92); color:#18181B; backdrop-filter:blur(16px);
+      box-shadow:0 9px 28px rgba(0,0,0,.20); font-size:12px; font-weight:800;
+      cursor:pointer; white-space:nowrap;
+    }
+    .pc-about-pill span { color:var(--red); font-size:15px; }
 
     .pc-name-row {
       display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;
@@ -496,6 +565,7 @@
     }
     .swipe-label.link-label { transform: rotate(15deg); }
     .swipe-label.spark-label { transform: rotate(-8deg); font-size: 22px; letter-spacing: 1px; }
+    .profile-card-full.is-dragging { cursor:grabbing; }
 
     /* spotlight */
     .spotlight-pill {
@@ -620,6 +690,11 @@
     .convo-empty {
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; padding: 48px 32px; text-align: center; gap: 10px;
+    }
+    .empty-primary {
+      min-height:44px; margin-top:8px; padding:11px 22px; border:0;
+      border-radius:999px; background:var(--red); color:#fff;
+      font-size:14px; font-weight:800; cursor:pointer;
     }
     .convo-empty .ce-icon { font-size: 44px; }
     .convo-empty p { font-size: 14px; color: var(--muted); line-height: 1.6; }
@@ -1187,39 +1262,795 @@
     .safety-option-label { font-size:15px; font-weight:600; color:var(--text); }
     .safety-option-sub { font-size:12px; color:var(--muted); margin-top:1px; }
     .safety-cancel { display:block; margin:8px 16px 0; padding:14px; width:calc(100% - 32px); border-radius:14px; border:1.5px solid var(--border); background:transparent; color:var(--muted); font-size:15px; font-weight:600; cursor:pointer; }
+
+    /* ─── LINKED V2 VISUAL SYSTEM ───────────────────────── */
+    :root {
+      --bg:#fff;
+      --surface:#fff;
+      --surface2:#F7F7F8;
+      --surface3:#EFEFF1;
+      --text:#101114;
+      --muted:#73757C;
+      --border:#E8E8EB;
+      --red:#FF1F30;
+      --red2:#E90E22;
+      --coral:#FF1F30;
+      --coral2:#E90E22;
+      --pass:#F28A22;
+      --shadow:0 10px 35px rgba(18,18,24,.08);
+    }
+    body { background:#F4F4F2; }
+    button, input { font:inherit; }
+    button { min-height:44px; }
+    #app {
+      background:#fff;
+      box-shadow:0 0 40px rgba(20,20,24,.12);
+    }
+    .top-bar {
+      min-height:62px;
+      padding:14px 16px 10px;
+      background:rgba(255,255,255,.94);
+      border-bottom:1px solid rgba(232,232,235,.75);
+      backdrop-filter:blur(14px);
+      z-index:10;
+    }
+    #app:not([data-tab="discover"]) .top-bar { display:none; }
+    .wordmark { font-size:24px; letter-spacing:-1px; color:var(--red); }
+    .top-actions { display:flex; align-items:center; gap:8px; }
+    .top-icon {
+      width:38px; height:38px; min-height:38px; padding:0;
+      display:grid; place-items:center; border-radius:50%;
+      border:1px solid var(--border); background:#fff; color:var(--text);
+      cursor:pointer; position:relative;
+    }
+    .top-icon-dot {
+      position:absolute; width:7px; height:7px; border-radius:50%;
+      background:var(--red); top:7px; right:7px; border:1.5px solid #fff;
+    }
+    .spotlight-pill {
+      min-height:38px; padding:7px 12px; border-color:#FFD2D6;
+      background:#FFF6F7; box-shadow:none;
+    }
+    .profile-card-full { padding:0 12px 18px; gap:0; }
+    .pc-photo {
+      order:1; height:clamp(430px,63dvh,590px); margin-bottom:0;
+      border-radius:24px; box-shadow:var(--shadow);
+    }
+    .pc-photo-bottom { padding:86px 18px 18px; }
+    .pc-name { font-size:30px; letter-spacing:-.8px; }
+    .pc-age { font-size:24px; color:#fff; }
+    .pc-city { color:rgba(255,255,255,.94); font-weight:600; }
+    .pc-meta .pill {
+      background:rgba(255,255,255,.94); color:#222; border:none;
+      padding:5px 10px;
+    }
+    .pc-actions {
+      order:2; gap:22px; padding:14px 12px 12px;
+      position:sticky; bottom:0; z-index:5; background:#fff;
+    }
+    .pc-voice { order:3; margin:4px 4px 12px; border-radius:18px; }
+    .pc-interests { order:4; margin-left:4px; margin-right:4px; }
+    .pc-answers { order:5; margin-left:4px; margin-right:4px; }
+    .act-pass,.act-connect {
+      width:58px; height:58px; min-height:58px; background:#fff;
+      box-shadow:0 7px 22px rgba(18,18,24,.12);
+    }
+    .act-rose {
+      width:68px; height:68px; min-height:68px; background:#fff;
+      border:1px solid #FFD8DC; box-shadow:0 8px 24px rgba(255,31,48,.18);
+      overflow:hidden;
+    }
+    .act-rose img { width:46px; height:46px; object-fit:contain; }
+    .act-connect { background:var(--red); color:#fff; border-color:var(--red); }
+    .bottom-nav {
+      min-height:calc(72px + env(safe-area-inset-bottom,0px));
+      padding:7px 4px max(7px,env(safe-area-inset-bottom,0px));
+      box-shadow:0 -8px 28px rgba(20,20,25,.05);
+      z-index:20;
+    }
+    .nav-btn { gap:4px; padding:5px 0; border-radius:12px; }
+    .nav-btn:focus { outline:none; }
+    .nav-btn:focus-visible { outline:2px solid rgba(255,31,48,.28); outline-offset:-4px; }
+    .nav-symbol {
+      width:25px; height:25px; display:grid; place-items:center;
+      font-size:20px; line-height:1; filter:grayscale(1); opacity:.72;
+      transition:transform .18s ease,filter .18s ease,opacity .18s ease;
+    }
+    .nav-symbol img.emoji { width:21px; height:21px; margin:0; }
+    .nav-symbol svg { width:23px; height:23px; fill:none; stroke:currentColor; }
+    .nav-symbol .nav-rose-img {
+      width:29px; height:29px; object-fit:contain;
+      filter:drop-shadow(0 3px 4px rgba(150,0,18,.14));
+      transform:translateY(-1px);
+    }
+    #nav-linked .nav-symbol { color:#8A8B91; filter:none; opacity:1; }
+    #nav-linked.active .nav-symbol { color:#5F6066; }
+    .nav-btn.active .nav-symbol { filter:none; opacity:1; transform:translateY(-1px); }
+    .nav-lbl { font-size:11px; font-weight:700; }
+    .nav-btn.active { color:var(--red); }
+    .linked-header { padding-top:calc(24px + env(safe-area-inset-top,0px)); }
+    .me-header { padding-top:calc(22px + env(safe-area-inset-top,0px)); }
+    .roses-screen-heading { padding-top:calc(24px + env(safe-area-inset-top,0px))!important; }
+    .chat-top,.wallet-top,.settings-top,.overlay-top {
+      padding-top:calc(12px + env(safe-area-inset-top,0px));
+    }
+    .linked-header { padding:calc(24px + env(safe-area-inset-top,0px)) 20px 4px; }
+    .linked-title { font-size:28px; letter-spacing:-.7px; }
+    .new-matches-row { padding-top:10px; }
+    .nm-ring { width:66px; height:66px; background:var(--red); }
+    .convo-row { margin:0 10px; padding:13px 10px; border-radius:16px; }
+    .convo-row + .convo-row { border-top:1px solid var(--border); }
+    #standouts-tab { overflow-y:auto; }
+    #standouts-tab > div:first-child { padding-top:26px!important; }
+    .rose-store-card {
+      display:flex; align-items:center; gap:14px; min-height:92px;
+      padding:14px; border-radius:20px; border:1px solid var(--border);
+      background:#fff; box-shadow:0 5px 18px rgba(18,18,24,.045);
+    }
+    .rose-store-card.gold { border-color:#ECD792; background:#FFFEFA; }
+    .rose-product-art {
+      width:64px; height:64px; flex:0 0 64px; object-fit:contain;
+      border-radius:14px; background:#FFF7F7;
+    }
+    .bouquet-art { position:relative; width:68px; height:64px; flex:0 0 68px; }
+    .bouquet-art img { position:absolute; width:42px; height:42px; object-fit:contain; }
+    .bouquet-art img:nth-child(1){left:1px;top:12px;transform:rotate(-16deg)}
+    .bouquet-art img:nth-child(2){left:14px;top:1px}
+    .bouquet-art img:nth-child(3){right:0;top:12px;transform:rotate(16deg)}
+    .store-buy {
+      min-height:38px; padding:8px 17px; border:0; border-radius:999px;
+      background:var(--red); color:#fff; font-size:13px; font-weight:800;
+    }
+    .chat-top { padding:12px 14px; background:#fff; }
+    .chat-msgs { background:#FCFCFD; padding:18px 14px; gap:10px; }
+    .bubble { max-width:80%; padding:11px 14px; border-radius:18px; }
+    .b-out { background:var(--red); }
+    .icebreaker-chips { border-top:0; padding:8px 14px 6px; }
+    .ic-chip { background:#fff; }
+    .chat-bar { padding:8px 12px max(10px,env(safe-area-inset-bottom)); gap:8px; }
+    .chat-input { background:#F6F6F7; border:0; min-height:44px; }
+    .chat-photo-btn {
+      width:42px; height:42px; min-height:42px; border-radius:50%;
+      background:#fff; border:1px solid var(--border); display:grid; place-items:center;
+      color:var(--text); cursor:pointer; flex:0 0 42px;
+    }
+    .chat-photo { max-width:220px; border-radius:16px; display:block; }
+    .match-eyebrow { display:none; }
+    .match-headline { color:var(--red); font-size:34px; margin-bottom:34px; }
+    .m-av { border:3px solid #fff; box-shadow:0 8px 24px rgba(20,20,25,.13); }
+    .btn-match-msg,.sub-cta { background:var(--red); border-radius:14px; }
+    .btn-match-later { color:var(--text); background:#fff; }
+    .me-header { padding-top:22px; }
+    .me-title { font-size:26px; }
+    .me-header-actions { display:flex; align-items:center; gap:8px; }
+    .linkedplus-entry {
+      min-height:38px; padding:8px 13px; border:0; border-radius:999px;
+      background:linear-gradient(135deg,#111218,#292B35); color:#fff;
+      font-size:13px; font-weight:700; cursor:pointer;
+      box-shadow:0 8px 20px rgba(17,18,24,.16);
+    }
+    .linkedplus-entry span { color:#FF3041; }
+    #sub-screen {
+      background:
+        radial-gradient(circle at 80% 0%,rgba(255,31,48,.16),transparent 27%),
+        linear-gradient(180deg,#111218,#171820);
+      color:#fff;
+    }
+    #sub-screen .sub-header {
+      background:transparent; padding-bottom:14px;
+    }
+    #sub-screen .sub-eyebrow { color:#FF5967; }
+    #sub-screen .sub-title,#sub-screen .sub-desc { color:#fff; }
+    #sub-screen .sub-close { background:rgba(255,255,255,.09); color:#fff; }
+    #sub-screen .sub-plan {
+      background:rgba(255,255,255,.035); border-color:rgba(255,255,255,.16);
+    }
+    #sub-screen .sub-plan.selected {
+      background:rgba(255,31,48,.10); border-color:#FF3041;
+    }
+    #sub-screen .sub-plan-name,#sub-screen .sub-plan-amount { color:#fff; }
+    #sub-screen .sub-plan-tagline,#sub-screen .sub-plan-period { color:#AEB0BA; }
+    #sub-screen .sub-feat-row {
+      background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.09);
+    }
+    #sub-screen .sf-title { color:#fff; }
+    #sub-screen .sf-sub,#sub-screen .sub-fine { color:#AEB0BA; }
+    #sub-screen .sub-cta-wrap {
+      position:sticky; bottom:0; background:linear-gradient(transparent,#171820 24%);
+      padding-top:28px;
+    }
+
+    /* ─── QUIETER ROSES + MORE IMMERSIVE EXPLORE ───────── */
+    .roses-screen-heading {
+      padding:24px 20px 10px!important; text-align:center;
+    }
+    .roses-screen-title {
+      font-size:21px; font-weight:650; letter-spacing:-.35px; color:#111218;
+    }
+    .roses-screen-subtitle {
+      font-size:13px; color:#74767D; margin-top:5px;
+    }
+    #standouts-tab > div:first-child::after,
+    .rose-balance-card::after,
+    .linked-header::after { content:none!important; display:none!important; }
+    .rose-balance-card {
+      background:#FAFAFB!important; border-color:#ECECEF!important;
+      box-shadow:none; min-height:70px;
+    }
+    .rose-store-card {
+      min-height:104px; box-shadow:0 7px 22px rgba(18,18,24,.055);
+      border-color:#ECECEF; background:#fff;
+    }
+    .rose-store-card::before { display:none; }
+    .rose-product-art {
+      width:78px; height:78px; flex-basis:78px; border-radius:0!important;
+      background:transparent!important; mix-blend-mode:multiply;
+      filter:contrast(1.03) saturate(1.04);
+      -webkit-mask-image:radial-gradient(ellipse 67% 72% at center,#000 58%,transparent 100%);
+      mask-image:radial-gradient(ellipse 67% 72% at center,#000 58%,transparent 100%);
+    }
+    .store-benefits { margin-top:14px; }
+    .store-benefit { background:#FAFAFB; border-color:#ECECEF; }
+    .linked-header {
+      background:#fff; border-bottom:1px solid #F0F0F2;
+    }
+    .convo-empty { background:#FCFCFD; border-color:#ECECEF; }
+
+    .profile-card-full { padding:0 8px 20px; }
+    .pc-photo {
+      height:clamp(520px,70dvh,660px);
+      border-radius:26px; box-shadow:0 15px 42px rgba(18,18,24,.13);
+    }
+    .pc-photo > img { filter:saturate(1.02) contrast(1.02); }
+    .pc-actions {
+      margin-top:-38px; padding:0 12px 14px; position:relative; bottom:auto;
+      z-index:7; background:transparent;
+    }
+    .act-pass,.act-rose,.act-connect {
+      border:4px solid #fff; box-shadow:0 9px 24px rgba(18,18,24,.16);
+    }
+    .act-rose { width:72px; height:72px; min-height:72px; }
+    .pc-voice { margin-top:0; }
+    .me-avatar { width:112px; height:112px; box-shadow:var(--shadow); }
+    .completion-card,.me-section,.stats-strip,.premium-banner {
+      border-radius:18px; box-shadow:0 5px 20px rgba(20,20,25,.04);
+    }
+    .profile-edit-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:8px;
+      margin:0 16px 14px;
+    }
+
+    /* ─── FULL-SCREEN EXPLORE ───────────────────────────── */
+    #app[data-tab="discover"] .top-bar {
+      position:relative; top:auto; left:auto; right:auto; z-index:30;
+      min-height:calc(62px + env(safe-area-inset-top,0px));
+      padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;
+      background:#fff; border-bottom:1px solid #EEEEF0;
+      box-shadow:none; pointer-events:auto;
+    }
+    #app[data-tab="discover"] .brand-lockup.compact {
+      width:102px; height:36px; background-color:transparent;
+      border-radius:0; box-shadow:none;
+    }
+    #app[data-tab="discover"] .top-icon,
+    #app[data-tab="discover"] .explore-filter-btn {
+      position:relative;
+      width:40px; height:40px; min-height:40px; border-radius:50%;
+      color:#17171A; background:#F7F7F8;
+      border:1px solid #E8E8EB; box-shadow:none; backdrop-filter:none;
+    }
+    .explore-filter-btn.has-filters::after {
+      content:''; position:absolute; top:2px; right:2px; width:9px; height:9px;
+      border-radius:50%; background:var(--red); border:2px solid #fff;
+    }
+    #app[data-tab="discover"] .spotlight-pill { display:none; }
+    #app[data-tab="discover"] .tab-content {
+      height:calc(100dvh - 134px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+    }
+    #app[data-tab="discover"] .profile-scroll { overflow:hidden; }
+    #app[data-tab="discover"] .profile-card-full {
+      height:100%; min-height:100%; padding:0; overflow:hidden;
+    }
+    #app[data-tab="discover"] .pc-photo {
+      height:100%; min-height:100%; max-height:none;
+      border-radius:0; box-shadow:none;
+    }
+    #app[data-tab="discover"] .pc-photo > img {
+      height:100%; object-fit:cover; object-position:center top;
+    }
+    #app[data-tab="discover"] .pc-photo-bottom {
+      padding:160px 22px 108px;
+      background:linear-gradient(transparent 0%,rgba(0,0,0,.08) 20%,rgba(0,0,0,.88) 100%);
+    }
+    #app[data-tab="discover"] .pc-actions {
+      margin-top:-88px; padding:0 18px 16px;
+      gap:42px;
+    }
+    .filter-form { padding:8px 16px 26px; display:grid; gap:16px; }
+    .filter-group { display:grid; gap:8px; }
+    .filter-label { font-size:13px; font-weight:750; color:var(--text); }
+    .filter-select,.filter-input {
+      width:100%; min-height:52px; padding:0 14px; border:1px solid var(--border);
+      border-radius:14px; background:#F8F8F9; color:var(--text); font-size:15px;
+    }
+    .filter-pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .filter-actions { display:grid; grid-template-columns:1fr 2fr; gap:10px; margin-top:8px; }
+    .filter-reset,.filter-apply {
+      min-height:52px; border-radius:14px; font-weight:800; cursor:pointer;
+    }
+    .filter-reset { border:1px solid var(--border); background:#fff; color:var(--text); }
+    .filter-apply { border:0; background:var(--red); color:#fff; }
+    .profile-detail-screen {
+      position:fixed; inset:0; z-index:9993; max-width:430px; margin:0 auto;
+      display:none; flex-direction:column; overflow-y:auto; background:#fff;
+    }
+    .profile-detail-screen.open { display:flex; }
+    .profile-detail-hero { position:relative; height:62dvh; min-height:470px; flex:0 0 auto; }
+    .profile-detail-hero img { width:100%; height:100%; object-fit:cover; display:block; }
+    .profile-detail-hero::after {
+      content:''; position:absolute; inset:38% 0 0;
+      background:linear-gradient(transparent,rgba(0,0,0,.86)); pointer-events:none;
+    }
+    .profile-detail-close {
+      position:absolute; z-index:4; top:calc(14px + env(safe-area-inset-top,0px)); left:14px;
+      width:42px; height:42px; min-height:42px; border:0; border-radius:50%;
+      background:rgba(255,255,255,.94); color:#17171A; font-size:25px;
+      box-shadow:0 6px 20px rgba(0,0,0,.16); cursor:pointer;
+    }
+    .profile-detail-identity {
+      position:absolute; z-index:3; left:20px; right:20px; bottom:22px; color:#fff;
+    }
+    .profile-detail-name { font-size:32px; font-weight:750; letter-spacing:-1px; }
+    .profile-detail-meta { margin-top:6px; font-size:13px; color:rgba(255,255,255,.86); }
+    .profile-detail-body { padding:20px 16px 112px; display:grid; gap:16px; background:#fff; }
+    .detail-section {
+      padding:17px; border:1px solid #ECECEF; border-radius:20px;
+      background:#fff; box-shadow:0 7px 24px rgba(18,18,24,.045);
+    }
+    .detail-kicker { color:var(--red); font-size:11px; font-weight:850; letter-spacing:.6px; text-transform:uppercase; }
+    .detail-title { margin-top:7px; font-size:19px; font-weight:750; line-height:1.3; }
+    .detail-copy { margin-top:7px; color:#55575E; font-size:14px; line-height:1.6; }
+    .detail-media { width:100%; border-radius:20px; overflow:hidden; background:#F2F2F3; }
+    .detail-media img { width:100%; max-height:560px; object-fit:cover; display:block; }
+    .detail-video {
+      position:relative; min-height:230px; display:grid; place-items:center;
+      background:linear-gradient(145deg,#201C1E,#5E3138); color:#fff;
+    }
+    .detail-video button {
+      width:62px; height:62px; min-height:62px; border:0; border-radius:50%;
+      background:#fff; color:var(--red); font-size:22px; cursor:pointer;
+      box-shadow:0 9px 28px rgba(0,0,0,.24);
+    }
+    .detail-video span { position:absolute; bottom:16px; left:18px; font-size:13px; font-weight:750; }
+    .detail-actions {
+      position:sticky; bottom:0; z-index:5; margin-top:auto; display:flex; justify-content:center;
+      gap:36px; padding:12px 18px max(14px,env(safe-area-inset-bottom,0px));
+      background:linear-gradient(transparent,rgba(255,255,255,.95) 24%,#fff 55%);
+    }
+    .arrange-list { display:grid; gap:9px; padding:4px 16px 26px; }
+    .arrange-row {
+      display:flex; align-items:center; gap:12px; min-height:58px; padding:10px 12px;
+      border:1px solid var(--border); border-radius:15px; background:#fff;
+    }
+    .arrange-handle { color:#A0A1A7; font-size:20px; }
+    .arrange-name { flex:1; font-size:14px; font-weight:750; }
+    .arrange-controls { display:flex; gap:5px; }
+    .arrange-controls button {
+      width:36px; height:36px; min-height:36px; border:1px solid var(--border);
+      border-radius:10px; background:#F8F8F9; color:#555; cursor:pointer;
+    }
+    .stats-strip { display:none; }
+    #me-tab .me-section { box-shadow:none; }
+    #me-tab .me-sec-title { background:#FAFAFB; }
+    .profile-edit-item {
+      min-height:74px; border:1px solid var(--border); border-radius:16px;
+      background:#fff; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; gap:6px; padding:8px 4px; text-align:center;
+      color:var(--text); font-size:10px; font-weight:700; cursor:pointer;
+    }
+    .profile-edit-item span:first-child { font-size:20px; }
+    #sub-screen { max-width:430px; margin:0 auto; }
+    .sub-header {
+      background:linear-gradient(145deg,#C90D20,#FF2738);
+      color:#fff; border:0; text-align:center; padding:58px 24px 28px;
+    }
+    .sub-eyebrow,.sub-title,.sub-desc { color:#fff; }
+    .sub-desc { opacity:.86; }
+    .sub-close { background:rgba(255,255,255,.18); color:#fff; }
+    .sub-plans { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:24px 12px 12px!important; }
+    .sub-plan { padding:16px 8px; min-height:138px; border-radius:16px; }
+    .sub-plan-top { height:100%; flex-direction:column; align-items:center; text-align:center; }
+    .sub-plan-right { flex-direction:column; gap:8px; }
+    .sub-plan-name { font-size:13px; }
+    .sub-plan-tagline { font-size:10px; }
+    .sub-plan-amount { font-size:19px; }
+    .sub-plan-save { right:50%; transform:translateX(50%); white-space:nowrap; }
+    .sub-features { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .sub-feat-row { align-items:flex-start; padding:10px; }
+    .sf-sub,.sub-feat-badge { display:none; }
+    .wallet-balance-card {
+      background:#fff; color:var(--text); border:1px solid var(--border);
+      box-shadow:var(--shadow); padding:20px;
+    }
+    .wb-label { color:var(--muted); opacity:1; }
+    .wb-pending { border-color:var(--border); }
+    .balance-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px; }
+    .balance-tile { padding:16px; border-radius:16px; border:1px solid var(--border); }
+    .balance-tile.available { background:#EEFBF2; }
+    .balance-tile.pending { background:#FFF8E4; }
+    .balance-tile small { color:var(--muted); font-weight:600; }
+    .balance-tile strong { display:block; font-size:22px; margin-top:6px; }
+    .wallet-rose-summary {
+      display:flex; align-items:center; gap:14px; margin:0 16px 12px; padding:14px 16px;
+      border:1px solid #FFE1E5; border-radius:18px;
+      background:linear-gradient(135deg,#fff 0%,#FFF5F6 100%);
+      box-shadow:0 8px 24px rgba(255,59,48,.07);
+    }
+    .wallet-rose-art {
+      width:54px; height:54px; flex:0 0 54px; object-fit:contain;
+      mix-blend-mode:multiply; filter:drop-shadow(0 7px 8px rgba(185,0,20,.14));
+    }
+    .wallet-rose-copy { min-width:0; flex:1; }
+    .wallet-rose-copy small { display:block; color:var(--muted); font-size:12px; font-weight:700; }
+    .wallet-rose-copy strong { display:block; margin-top:2px; font-size:25px; line-height:1; letter-spacing:-.5px; }
+    .wallet-rose-copy span { display:block; margin-top:5px; color:var(--red); font-size:11px; font-weight:700; }
+    .wallet-rules {
+      display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 16px;
+    }
+    .wallet-rule { padding:12px; border:1px solid var(--border); border-radius:14px; background:#fff; }
+    .wallet-rule small { display:block; color:var(--muted); margin-bottom:4px; }
+    .screen-overlay {
+      position:fixed; inset:0; z-index:9991; max-width:430px; margin:0 auto;
+      background:#fff; display:none; flex-direction:column; overflow-y:auto;
+    }
+    .screen-overlay.open { display:flex; }
+    .overlay-top {
+      position:sticky; top:0; z-index:2; display:flex; align-items:center; gap:12px;
+      padding:18px 16px; background:rgba(255,255,255,.95);
+      border-bottom:1px solid var(--border); backdrop-filter:blur(12px);
+    }
+    .overlay-back { width:40px; min-height:40px; border:0; background:#F5F5F6; border-radius:50%; font-size:22px; }
+    .overlay-title { font-size:20px; font-weight:850; flex:1; }
+    .priority-hero { padding:34px 24px 22px; text-align:center; }
+    .priority-icon {
+      width:78px; height:78px; margin:0 auto 18px; border-radius:50%;
+      background:linear-gradient(145deg,#FFF1F3,#FFDCE1); color:var(--red);
+      display:grid; place-items:center; font-size:34px;
+    }
+    .priority-plans { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:8px 16px 18px; }
+    .priority-plan { padding:15px 8px; border:1px solid var(--border); border-radius:16px; text-align:center; background:#fff; }
+    .priority-plan.recommended { border-color:var(--red); box-shadow:0 6px 20px rgba(255,31,48,.12); }
+    .notification-list { padding:8px 16px 30px; }
+    .notification-group { margin-top:18px; }
+    .notification-group h3 { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:8px; }
+    .notification-row { display:flex; gap:12px; align-items:center; padding:13px 4px; border-bottom:1px solid var(--border); }
+    .notification-icon { width:42px; height:42px; border-radius:50%; display:grid; place-items:center; background:#FFF1F3; }
+    .notification-copy { flex:1; font-size:14px; line-height:1.35; }
+    .notification-time { color:var(--muted); font-size:11px; }
+    .settings-section { box-shadow:0 4px 18px rgba(18,18,24,.035); }
+    .settings-row { min-height:58px; }
+    .settings-row-icon { border-radius:10px; }
+    .safety-sheet { box-shadow:0 -18px 55px rgba(18,18,24,.18); }
+
+    /* ─── LINKED V2 — WARMTH & DEPTH PASS ──────────────── */
+    body {
+      background:
+        radial-gradient(circle at 15% 10%,rgba(255,31,48,.07),transparent 25%),
+        radial-gradient(circle at 85% 85%,rgba(244,183,72,.07),transparent 26%),
+        #F6F5F3;
+    }
+    #app { background:linear-gradient(180deg,#fff 0%,#fff 72%,#FFFAFA 100%); }
+    .top-bar { border-bottom:0; box-shadow:0 7px 25px rgba(18,18,24,.045); }
+    .wordmark { font-style:italic; text-shadow:0 4px 14px rgba(255,31,48,.12); }
+    .spotlight-pill {
+      background:linear-gradient(135deg,#FFF5F6,#FFECEF);
+      border-color:#FFD7DC; box-shadow:0 5px 16px rgba(255,31,48,.08);
+    }
+    .pc-photo::after {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
+      border-radius:inherit;
+    }
+    .pc-photo > img { filter:saturate(1.08) contrast(1.04); }
+    .pc-actions { background:linear-gradient(180deg,rgba(255,255,255,.94),#fff); }
+    #app[data-tab="discover"] .pc-actions {
+      background:transparent!important;
+    }
+    .act-pass,.act-rose,.act-connect { transition:transform .18s ease,box-shadow .18s ease; }
+    .act-pass:hover,.act-rose:hover,.act-connect:hover { transform:translateY(-2px); }
+    .pc-voice {
+      background:linear-gradient(135deg,#FFF7F8,#fff);
+      border-color:#FFE4E7; box-shadow:0 8px 25px rgba(255,31,48,.055);
+    }
+    .interest-chip { background:#FFF8F8; border-color:#FFE4E7; color:#57585E; }
+    .answer-card { background:linear-gradient(145deg,#fff,#FFF8F9); border-color:#FFE7EA; }
+    #standouts-tab {
+      background:
+        radial-gradient(circle at 90% 2%,rgba(255,31,48,.10),transparent 24%),
+        #fff;
+    }
+    #standouts-tab > div:first-child::after {
+      content:'Stand out. Get noticed.'; display:block; margin-top:7px;
+      color:var(--red); font-size:12px; font-weight:800;
+    }
+    #roses-balance-display { color:var(--red)!important; }
+    .rose-balance-card {
+      position:relative; overflow:hidden;
+      min-height:76px; display:flex; flex-direction:column; justify-content:center;
+      background:linear-gradient(135deg,#FFF3F5,#fff)!important;
+      border-color:#FFDDE2!important; box-shadow:0 10px 28px rgba(255,31,48,.08);
+    }
+    .rose-balance-card::after {
+      content:'🌹'; position:absolute; right:18px; top:4px; font-size:58px;
+      opacity:.10; transform:rotate(14deg); pointer-events:none;
+    }
+    .rose-balance-card > * { position:relative; z-index:2; }
+    .rose-store-card {
+      position:relative; overflow:hidden; min-height:105px;
+      border-color:#EEECEF; box-shadow:0 10px 28px rgba(24,19,20,.07);
+      transition:transform .18s ease,box-shadow .18s ease;
+    }
+    .rose-store-card:hover { transform:translateY(-2px); box-shadow:0 15px 34px rgba(24,19,20,.10); }
+    .rose-store-card::before {
+      content:''; position:absolute; width:90px; height:90px; border-radius:50%;
+      left:-30px; top:-28px; background:rgba(255,31,48,.045);
+    }
+    .rose-store-card.gold {
+      background:linear-gradient(135deg,#FFFDF4,#fff);
+      border-color:#E9D48B; box-shadow:0 10px 28px rgba(188,143,18,.11);
+    }
+    .rose-product-art {
+      width:72px; height:72px; flex-basis:72px; background:transparent;
+      filter:drop-shadow(0 7px 9px rgba(80,0,8,.12));
+      z-index:1;
+    }
+    .store-buy { box-shadow:0 7px 16px rgba(255,31,48,.18); }
+    .store-benefits {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:7px;
+      margin:16px 20px 0;
+    }
+    .store-benefit {
+      padding:12px 6px; text-align:center; border-radius:15px;
+      background:#FFF6F7; color:#5D5658; font-size:10px; line-height:1.35;
+      border:1px solid #FFE2E6;
+    }
+    .store-benefit strong { display:block; color:var(--red); font-size:16px; margin-bottom:4px; }
+    .linked-header {
+      position:relative; padding-top:28px;
+      background:linear-gradient(140deg,#fff 30%,#FFF3F5);
+      border-bottom:1px solid #FFE8EB;
+    }
+    .linked-header::after {
+      content:'🔗'; position:absolute; right:22px; top:20px; font-size:42px; opacity:.12;
+    }
+    .convo-empty {
+      margin:18px 16px; border:1px solid #FFE2E6; border-radius:24px;
+      background:linear-gradient(145deg,#FFF7F8,#fff);
+    }
+    .convo-empty .ce-icon {
+      width:68px; height:68px; border-radius:50%; display:grid; place-items:center;
+      background:#FFECEF; color:var(--red);
+    }
+    .me-avatar { border:4px solid #fff; outline:1px solid #FFDDE2; }
+    .completion-card {
+      background:linear-gradient(135deg,#FFF7F8,#fff);
+      border-color:#FFDDE2; box-shadow:0 10px 28px rgba(255,31,48,.07);
+    }
+    .profile-edit-item {
+      box-shadow:0 7px 20px rgba(18,18,24,.045);
+      transition:transform .16s ease,border-color .16s ease;
+    }
+    .profile-edit-item:hover { transform:translateY(-2px); border-color:#FFB8C1; }
+    .profile-edit-item span:first-child {
+      width:34px; height:34px; border-radius:50%; display:grid; place-items:center;
+      background:#FFF0F2; color:var(--red);
+    }
+    .premium-banner {
+      background:
+        radial-gradient(circle at 90% 15%,rgba(255,31,48,.14),transparent 25%),
+        linear-gradient(135deg,#FFF3F5,#fff);
+      border-color:#FFD1D7; box-shadow:0 14px 34px rgba(255,31,48,.10);
+    }
+    .wallet-top,.settings-top { border-bottom:0; box-shadow:0 6px 22px rgba(18,18,24,.05); }
+    .balance-grid {
+      margin-top:20px; padding:18px; border-radius:22px;
+      background:linear-gradient(135deg,#E5091C,#FF3041);
+      box-shadow:0 15px 34px rgba(229,9,28,.22);
+    }
+    .balance-tile.available,.balance-tile.pending {
+      background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.2); color:#fff;
+    }
+    .balance-tile small { color:rgba(255,255,255,.76); }
+    .wallet-rule { box-shadow:0 6px 18px rgba(18,18,24,.045); }
+    .priority-hero {
+      margin:16px; border-radius:24px;
+      background:linear-gradient(145deg,#FFF0F2,#fff);
+      border:1px solid #FFDCE1; box-shadow:0 12px 30px rgba(255,31,48,.08);
+    }
+    .notification-row {
+      margin-bottom:8px; padding:13px 12px; border:1px solid #EEECEF;
+      border-radius:16px; background:#fff; box-shadow:0 5px 17px rgba(18,18,24,.04);
+    }
+    .notification-icon { background:linear-gradient(145deg,#FFECEF,#FFF8F8); }
+    .settings-section { border:0; box-shadow:0 9px 28px rgba(18,18,24,.06); }
+    #auth {
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.15) 0%,#fff 62%),
+        #fff;
+    }
+    .auth-visual { opacity:.68; }
+    .auth-content {
+      margin:0 16px; width:calc(100% - 32px); padding:26px 20px 22px;
+      border-radius:28px; background:rgba(255,255,255,.94);
+      box-shadow:0 22px 60px rgba(25,15,17,.15);
+      backdrop-filter:blur(18px);
+    }
+    .auth-wordmark { font-style:italic; color:var(--red); }
+    .auth-tagline { font-size:17px; color:#58595F; margin-bottom:26px; }
+    .auth-tagline strong { font-size:22px; color:#111; letter-spacing:-.4px; }
+    .btn-coral,.btn-next {
+      background:linear-gradient(135deg,#E90920,#FF3041);
+      box-shadow:0 11px 25px rgba(233,9,32,.22);
+    }
+    .btn-ghost { background:#fff; }
+    .setup-inner {
+      background:
+        radial-gradient(circle at 85% 4%,rgba(255,31,48,.09),transparent 24%),
+        #fff;
+    }
+    .progress-fill { background:linear-gradient(90deg,#E90920,#FF5360); }
+    .photo-pick { background:#FFF4F6; border-color:#FFB9C2; }
+    .looking-card,.dating-sub-btn { box-shadow:0 6px 18px rgba(18,18,24,.045); }
+    .match-body {
+      margin:18px; border:1px solid #FFDCE1; border-radius:30px;
+      background:
+        radial-gradient(circle at 50% 5%,rgba(255,31,48,.13),transparent 25%),
+        #fff;
+      box-shadow:0 25px 65px rgba(40,20,24,.14);
+    }
+    .chat-top { box-shadow:0 6px 20px rgba(18,18,24,.045); z-index:2; }
+    .chat-top-status { color:#24A36A; }
+    .bubble.b-in { background:#fff; border:1px solid #ECECEF; box-shadow:0 5px 15px rgba(18,18,24,.04); }
+    .bubble.b-out { box-shadow:0 7px 18px rgba(255,31,48,.16); }
+
+    /* ─── APPLE-INSPIRED BRAND + ONBOARDING ─────────────── */
+    .brand-lockup {
+      display:inline-flex; align-items:center; gap:3px;
+      width:172px; height:58px; line-height:1;
+      background:url('assets/linked-logo.png') center/contain no-repeat;
+    }
+    .brand-lockup .brand-name,.brand-lockup svg { display:none; }
+    .brand-lockup.compact { width:102px; height:36px; }
+    .brand-lockup.setup-brand { width:112px; height:40px; margin-bottom:5px; }
+
+    #auth {
+      justify-content:flex-start; padding:0; overflow-y:auto;
+      background:#fff;
+    }
+    .auth-visual { display:none; }
+    .auth-content {
+      margin:0; width:100%; min-height:100dvh; padding:36px 24px 24px;
+      border-radius:0; background:#fff; box-shadow:none; backdrop-filter:none;
+      display:flex; flex-direction:column; text-align:center;
+    }
+    .auth-brand { text-align:center; margin-bottom:24px; flex-shrink:0; }
+    .auth-heading {
+      width:100%; max-width:350px; align-self:center;
+      font-size:45px; line-height:.98; letter-spacing:-2.5px;
+      font-weight:700; color:#0B0B0C; margin:0 auto;
+      text-align:center;
+    }
+    .auth-heading span { color:#E5091C; display:block; }
+    .auth-copy {
+      font-size:17px; line-height:1.42; color:#414248;
+      margin:16px auto 14px; max-width:320px; text-align:center;
+    }
+    .auth-hero {
+      width:calc(100% + 48px); margin-left:-24px; height:min(34dvh,290px);
+      object-fit:cover; object-position:center center; display:block;
+      margin-top:auto;
+    }
+    .auth-dots { display:flex; justify-content:center; gap:8px; padding:14px 0 18px; }
+    .auth-dot { width:7px; height:7px; border-radius:50%; background:#D7D7DB; }
+    .auth-dot.active { width:18px; border-radius:5px; background:#E5091C; }
+    .auth-btns { gap:9px; }
+    .auth-btns .btn-coral {
+      min-height:56px; border-radius:16px; font-size:17px;
+      box-shadow:0 12px 24px rgba(229,9,28,.20);
+    }
+    .auth-btns .btn-ghost {
+      min-height:45px; padding:10px; border:0; background:transparent;
+      color:#777882;
+    }
+    .auth-fine { text-align:center; margin-top:7px; font-size:10px; }
+
+    #setup { background:#F7F7F8; }
+    .setup-inner {
+      max-width:430px; margin:0 auto; width:100%;
+      padding:34px 22px 36px; background:#fff;
+    }
+    .progress-bar { height:5px; border-radius:5px; margin-bottom:30px; }
+    .progress-fill { border-radius:5px; }
+    .setup-step { gap:17px; }
+    .step-num { color:#8B8C93; font-size:11px; }
+    .step-title { font-size:31px; letter-spacing:-1.2px; font-weight:700; }
+    .step-sub { font-size:15px; }
+    .input-field,.dob-field {
+      min-height:54px; border-radius:14px; background:#F7F7F8;
+      border:1px solid #E6E6E9;
+    }
+    .btn-next { min-height:56px; border-radius:16px; margin-top:auto; }
+
+    .wordmark.gradient-text { background:none; -webkit-text-fill-color:initial; color:transparent; font-size:0; }
+    .wordmark.gradient-text::after {
+      content:''; display:block; width:102px; height:36px;
+      background:url('assets/linked-logo.png') center/contain no-repeat;
+    }
+    body {
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI Variable","Segoe UI",Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+      font-weight:400;
+    }
+    .linked-title,.me-title,.sub-title,.overlay-title,.wallet-title,.settings-title,
+    .match-headline,.verify-h,.step-title,.auth-heading { font-weight:700; }
+    .pc-name,.me-identity-name,.sub-plan-name,.sf-title,.convo-name { font-weight:700; }
+    .linked-sub,.step-sub,.auth-copy,.pc-city,.me-identity-sub { font-weight:400; }
+    @media (min-width:700px) {
+      #app,#chat-view,#wallet-screen,#settings-screen,.screen-overlay,#sub-screen { border-radius:28px; height:min(900px,96dvh); top:2dvh; bottom:auto; overflow:hidden; }
+      #auth { align-items:center; background:#F5F5F7; }
+      .auth-content { max-width:430px; min-height:min(900px,96dvh); margin-top:2dvh; border-radius:30px; overflow:hidden; box-shadow:0 28px 75px rgba(18,18,24,.12); }
+    }
+    /* Device cutout protection: keep controls clear of notches and camera islands. */
+    .me-header {
+      padding-top:calc(22px + env(safe-area-inset-top,0px));
+    }
+    .roses-screen-heading {
+      padding-top:calc(24px + env(safe-area-inset-top,0px))!important;
+    }
+    .linked-header {
+      padding-top:calc(24px + env(safe-area-inset-top,0px));
+    }
+    .chat-top {
+      padding-top:calc(12px + env(safe-area-inset-top,0px));
+    }
+    .wallet-top,.settings-top {
+      padding-top:calc(16px + env(safe-area-inset-top,0px));
+    }
+    .overlay-top {
+      padding-top:calc(18px + env(safe-area-inset-top,0px));
+    }
+    .nav-symbol .nav-rose-img {
+      mix-blend-mode:multiply;
+      -webkit-mask-image:radial-gradient(ellipse 72% 78% at center,#000 60%,transparent 100%);
+      mask-image:radial-gradient(ellipse 72% 78% at center,#000 60%,transparent 100%);
+    }
   </style>
 </head>
 <body>
 
 <!-- ═══ AUTH ════════════════════════════════════════════ -->
 <div id="auth">
-  <div class="auth-visual">
-    <div class="auth-col">
-      <div class="auth-face tall"><img src="https://randomuser.me/api/portraits/women/44.jpg" alt=""></div>
-      <div class="auth-face mid"><img src="https://randomuser.me/api/portraits/men/22.jpg" alt=""></div>
-      <div class="auth-face sm"><img src="https://randomuser.me/api/portraits/women/62.jpg" alt=""></div>
-    </div>
-    <div class="auth-col">
-      <div class="auth-face sm"><img src="https://randomuser.me/api/portraits/men/48.jpg" alt=""></div>
-      <div class="auth-face tall"><img src="https://randomuser.me/api/portraits/women/25.jpg" alt=""></div>
-      <div class="auth-face mid"><img src="https://randomuser.me/api/portraits/men/36.jpg" alt=""></div>
-    </div>
-    <div class="auth-col">
-      <div class="auth-face mid"><img src="https://randomuser.me/api/portraits/women/77.jpg" alt=""></div>
-      <div class="auth-face sm"><img src="https://randomuser.me/api/portraits/men/54.jpg" alt=""></div>
-      <div class="auth-face tall"><img src="https://randomuser.me/api/portraits/women/91.jpg" alt=""></div>
-    </div>
-  </div>
-
   <div class="auth-content">
-    <div class="auth-wordmark gradient-text">linked.</div>
-    <div class="auth-tagline">
-      <strong>Real people. Real vibes.</strong><br>
-      Connections that actually mean something.
+    <div class="auth-brand">
+      <div class="brand-lockup" aria-label="Linked">
+        <span class="brand-name">linked</span>
+        <svg viewBox="0 0 30 30" fill="none" aria-hidden="true">
+          <path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+          <path d="M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <h1 class="auth-heading">Find genuine <span>connections.</span></h1>
+    <p class="auth-copy">Meet real people who are looking for something real.</p>
+    <img class="auth-hero" src="assets/onboarding-couple-v2.png" alt="Two people smiling over coffee, each holding one cup">
+    <div class="auth-dots" aria-label="Onboarding page 1 of 4">
+      <span class="auth-dot active"></span><span class="auth-dot"></span><span class="auth-dot"></span><span class="auth-dot"></span>
     </div>
     <div class="auth-btns">
-      <button class="btn-coral" onclick="showSetup()">Create my profile</button>
-      <button class="btn-ghost" onclick="quickLogin()">Already have an account</button>
+      <button class="btn-coral" onclick="showSetup()">Next</button>
+      <button class="btn-ghost" onclick="quickLogin()">Skip</button>
     </div>
     <p class="auth-fine">By joining you agree to our <span onclick="openTerms()" style="text-decoration:underline;cursor:pointer;color:var(--coral)">Terms &amp; Privacy Policy</span>.</p>
   </div>
@@ -1232,7 +2063,7 @@
 
     <!-- Step 0: Name + Gender -->
     <div class="setup-step active" id="step-0">
-      <div class="setup-logo">linked.</div>
+      <div class="brand-lockup setup-brand"><span class="brand-name">linked</span><svg viewBox="0 0 30 30" fill="none"><path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></div>
       <div class="step-num">Step 1 of 5</div>
       <div class="step-title">What do we call you?</div>
       <p class="step-sub">You're about to meet someone amazing. Let's start with the basics.</p>
@@ -1247,7 +2078,7 @@
 
     <!-- Step 1: Location + Looking for -->
     <div class="setup-step" id="step-1">
-      <div class="setup-logo">linked.</div>
+      <div class="brand-lockup setup-brand"><span class="brand-name">linked</span><svg viewBox="0 0 30 30" fill="none"><path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></div>
       <div class="step-num">Step 2 of 5</div>
       <div class="step-title">Where are you based?</div>
       <label class="field-label">City</label>
@@ -1309,34 +2140,30 @@
 
     <!-- Step 2: Photo -->
     <div class="setup-step" id="step-2">
-      <div class="setup-logo">linked.</div>
+      <div class="brand-lockup setup-brand"><span class="brand-name">linked</span><svg viewBox="0 0 30 30" fill="none"><path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></div>
       <div class="step-num">Step 3 of 5</div>
-      <div class="step-title">Add your main photo</div>
-      <p class="step-sub">Your first impression. Make it count.</p>
-      <div class="photo-pick" id="photo-pick" onclick="document.getElementById('photo-file').click()">
-        <img id="photo-preview" src="" alt="">
-        <div class="photo-pick-label" id="photo-ph">
-          <div class="pi"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#FF6B47" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-          <div>Tap to upload</div>
-        </div>
-      </div>
-      <input type="file" id="photo-file" accept="image/*" style="display:none" onchange="handlePhoto(this)">
+      <div class="step-title">Add your photos</div>
+      <p class="step-sub">Add at least 3 clear photos. Your first photo will be your main profile picture.</p>
+      <div class="setup-photo-grid" id="setup-photo-grid"></div>
+      <div class="setup-photo-status" id="setup-photo-status">0 of 3 required photos added</div>
+      <input type="file" id="photo-file" accept="image/*" multiple style="display:none" onchange="handlePhotos(this)">
       <button class="btn-next" onclick="go(2)">Continue</button>
     </div>
 
     <!-- Step 3: Interests -->
     <div class="setup-step" id="step-3">
-      <div class="setup-logo">linked.</div>
+      <div class="brand-lockup setup-brand"><span class="brand-name">linked</span><svg viewBox="0 0 30 30" fill="none"><path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></div>
       <div class="step-num">Step 4 of 5</div>
       <div class="step-title">Your vibe check</div>
-      <p class="step-sub">Pick up to 5 things that are so you.</p>
+      <p class="step-sub">Choose at least 5. Pick across categories so matches get a fuller picture of you.</p>
+      <div class="vibe-counter" id="vibe-counter">0 selected · choose at least 5</div>
       <div class="vibe-grid" id="vibe-grid"></div>
       <button class="btn-next" onclick="go(3)">Continue</button>
     </div>
 
     <!-- Step 4: Personality Qs -->
     <div class="setup-step" id="step-4">
-      <div class="setup-logo">linked.</div>
+      <div class="brand-lockup setup-brand"><span class="brand-name">linked</span><svg viewBox="0 0 30 30" fill="none"><path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></div>
       <div class="step-num">Step 5 of 5</div>
       <div class="step-title">Let them know you</div>
       <p class="step-sub">Personality &gt; photos. Answer a few quick ones.</p>
@@ -1369,17 +2196,17 @@
     <div style="font-size:14px;color:var(--muted);margin-bottom:20px" id="rose-modal-name">to someone special</div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <button onclick="sendRose('rose',50)" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;border:1.5px solid var(--border);background:white;cursor:pointer;text-align:left;width:100%">
-        <span style="font-size:28px">🌹</span>
+        <img src="assets/red-rose.png" alt="" style="width:44px;height:44px;object-fit:contain">
         <div style="flex:1;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">Rose</div><div style="font-size:12px;color:var(--muted)">A single red rose</div></div>
         <span style="font-size:15px;font-weight:800;color:var(--red)">R50</span>
       </button>
       <button onclick="sendRose('bouquet',100)" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;border:1.5px solid var(--border);background:white;cursor:pointer;text-align:left;width:100%">
-        <span style="font-size:28px">💐</span>
+        <img src="assets/bouquet.png" alt="" style="width:52px;height:52px;object-fit:contain">
         <div style="flex:1;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">Bouquet</div><div style="font-size:12px;color:var(--muted)">A full bouquet of roses</div></div>
         <span style="font-size:15px;font-weight:800;color:var(--red)">R100</span>
       </button>
       <button onclick="sendRose('golden',200)" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;border:1.5px solid #C9A84C;background:white;cursor:pointer;text-align:left;width:100%">
-        <span style="font-size:28px">👑</span>
+        <img src="assets/golden-rose.png" alt="" style="width:44px;height:44px;object-fit:contain">
         <div style="flex:1;text-align:left"><div style="font-size:15px;font-weight:700;color:#8B6914">Golden Rose</div><div style="font-size:12px;color:var(--muted)">The ultimate expression</div></div>
         <span style="font-size:15px;font-weight:800;color:#8B6914">R200</span>
       </button>
@@ -1432,15 +2259,22 @@
 </div>
 
 <!-- ═══ APP ══════════════════════════════════════════════ -->
-<div id="app">
+<div id="app" data-tab="discover">
   <div class="top-bar">
-    <div class="wordmark gradient-text">linked.</div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div class="spotlight-pill" id="spotlight-pill" onclick="doSpotlight()">
+    <div class="brand-lockup compact" aria-label="Linked">
+      <span class="brand-name">linked</span>
+      <svg viewBox="0 0 30 30" fill="none"><path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>
+    </div>
+    <div class="top-actions">
+      <button class="top-icon" onclick="openNotifications()" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="top-icon-dot"></span>
+      </button>
+      <div class="spotlight-pill" id="spotlight-pill" onclick="openPriority()">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
         <span id="spotlight-label">Priority</span>
       </div>
-      <button class="icon-btn" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;width:36px;height:36px;padding:0" onclick="showToast('Filters coming soon!')">
+      <button class="icon-btn explore-filter-btn" onclick="openFilters()" aria-label="Filters">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
       </button>
     </div>
@@ -1476,58 +2310,56 @@
         <div class="convo-empty">
           <div class="ce-icon"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--muted)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
           <p>When you link with someone, your conversation threads show up here.</p>
+          <button class="empty-primary" onclick="switchTab('discover')">Explore profiles</button>
         </div>
       </div>
     </div>
 
     <!-- STANDOUTS / ROSES -->
     <div class="tab-panel" id="standouts-tab">
-      <div style="padding:20px 20px 8px">
-        <div style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-0.5px">Roses</div>
-        <div style="font-size:14px;color:var(--muted);margin-top:4px">Show someone you are serious</div>
+      <div class="roses-screen-heading">
+        <div class="roses-screen-title">Rose Store</div>
+        <div class="roses-screen-subtitle">Stand out with a meaningful gesture.</div>
       </div>
 
-      <div style="margin:12px 20px;padding:16px 20px;border-radius:16px;background:var(--surface2);border:1px solid var(--border)">
+      <div class="rose-balance-card" style="margin:12px 20px;padding:16px 20px;border-radius:16px;background:var(--surface2);border:1px solid var(--border)">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Your Balance</div>
         <div style="font-size:22px;font-weight:800;color:var(--text);margin-top:4px" id="roses-balance-display">0 Roses</div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;padding:0 20px">
-        <div style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;border:1.5px solid var(--border);background:var(--surface)">
-          <div style="width:48px;height:48px;border-radius:12px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🌹</div>
+        <div class="rose-store-card">
+          <img class="rose-product-art" src="assets/red-rose.png" alt="Red Rose">
           <div style="flex:1">
             <div style="font-size:16px;font-weight:700;color:var(--text)">Rose</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px">Send a single red rose</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">Show genuine interest</div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-            <div style="font-size:18px;font-weight:800;color:var(--text)">R50</div>
-            <button onclick="buyRoses('rose',1,50)" style="padding:8px 18px;border-radius:50px;border:none;background:var(--red);color:white;font-size:13px;font-weight:700;cursor:pointer">Buy</button>
-          </div>
+          <button class="store-buy" onclick="buyRoses('rose',1,50)">R50</button>
         </div>
 
-        <div style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;border:1.5px solid var(--border);background:var(--surface)">
-          <div style="width:48px;height:48px;border-radius:12px;background:#FFF0F0;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">💐</div>
+        <div class="rose-store-card">
+          <img class="rose-product-art" src="assets/bouquet.png" alt="Bouquet of red roses">
           <div style="flex:1">
             <div style="font-size:16px;font-weight:700;color:var(--text)">Bouquet</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px">A full bouquet of roses</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">A full bouquet of red roses</div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-            <div style="font-size:18px;font-weight:800;color:var(--text)">R100</div>
-            <button onclick="buyRoses('bouquet',3,100)" style="padding:8px 18px;border-radius:50px;border:none;background:var(--red);color:white;font-size:13px;font-weight:700;cursor:pointer">Buy</button>
-          </div>
+          <button class="store-buy" onclick="buyRoses('bouquet',3,100)">R100</button>
         </div>
 
-        <div style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;border:1.5px solid #C9A84C;background:var(--surface)">
-          <div style="width:48px;height:48px;border-radius:12px;background:#FFF8E1;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👑</div>
+        <div class="rose-store-card gold">
+          <img class="rose-product-art" src="assets/golden-rose.png" alt="Golden Rose" style="background:#FFF9E8">
           <div style="flex:1">
             <div style="font-size:16px;font-weight:700;color:#8B6914">Golden Rose</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px">The ultimate expression</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">Premium interest</div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-            <div style="font-size:18px;font-weight:800;color:#8B6914">R200</div>
-            <button onclick="buyRoses('golden',5,200)" style="padding:8px 18px;border-radius:50px;border:none;background:#C9A84C;color:white;font-size:13px;font-weight:700;cursor:pointer">Buy</button>
-          </div>
+          <button class="store-buy" onclick="buyRoses('golden',5,200)" style="background:#C69A18">R200</button>
         </div>
+      </div>
+
+      <div class="store-benefits">
+        <div class="store-benefit"><strong>⚡</strong>Delivered instantly</div>
+        <div class="store-benefit"><strong>🔔</strong>They’ll be notified</div>
+        <div class="store-benefit"><strong>♡</strong>Make an impression</div>
       </div>
 
       <div style="margin:20px 20px 0;padding:16px;border-radius:16px;background:var(--surface2);border:1px solid var(--border)">
@@ -1546,13 +2378,16 @@
     <div class="tab-panel" id="me-tab">
       <div class="me-header">
         <div class="me-title">My Profile</div>
-        <button class="icon-btn" onclick="openSettings()">
-          <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-        </button>
+        <div class="me-header-actions">
+          <button class="linkedplus-entry" onclick="openSub()" aria-label="Open Linked Plus">Linked<span>+</span></button>
+          <button class="icon-btn" onclick="openSettings()" aria-label="Settings">
+            <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+          </button>
+        </div>
       </div>
       <div class="me-avatar-wrap">
         <div class="me-avatar">
-          <img id="me-photo" src="https://randomuser.me/api/portraits/lego/1.jpg" alt="">
+          <img id="me-photo" src="https://randomuser.me/api/portraits/women/44.jpg" alt="">
           <div class="me-avatar-edit" onclick="document.getElementById('me-photo-input').click()"><svg viewBox="0 0 24 24" width="13" height="13" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></div>
           <input type="file" id="me-photo-input" accept="image/*" style="display:none" onchange="updateMePhoto(this)">
         </div>
@@ -1569,11 +2404,23 @@
 
       <div class="completion-card" onclick="showCompletionTips()">
         <div class="cc-top">
-          <div class="cc-label">Profile strength</div>
+          <div class="cc-label">Profile Completion</div>
           <div class="cc-pct" id="cc-pct">0%</div>
         </div>
         <div class="cc-bar"><div class="cc-fill" id="cc-fill" style="width:0%"></div></div>
         <div class="cc-hint" id="cc-hint">Complete your profile to get more matches</div>
+      </div>
+
+      <div class="profile-edit-grid" aria-label="Edit profile sections">
+        <button class="profile-edit-item" onclick="showToast('Photo editor opened')"><span>▧</span><span>Photos</span></button>
+        <button class="profile-edit-item" onclick="showToast('About editor opened')"><span>✎</span><span>About</span></button>
+        <button class="profile-edit-item" onclick="showToast('Looking For editor opened')"><span>♡</span><span>Looking For</span></button>
+        <button class="profile-edit-item" onclick="showToast('Lifestyle editor opened')"><span>◌</span><span>Lifestyle</span></button>
+        <button class="profile-edit-item" onclick="showToast('Voice Intro recorder opened')"><span>◉</span><span>Voice Intro</span></button>
+        <button class="profile-edit-item" onclick="showToast('Interests editor opened')"><span>☆</span><span>Interests</span></button>
+        <button class="profile-edit-item" onclick="showToast('Relationship Goals editor opened')"><span>⌁</span><span>Goals</span></button>
+        <button class="profile-edit-item" onclick="openArrangeProfile()"><span>☷</span><span>Arrange</span></button>
+        <button class="profile-edit-item" onclick="openVerify()"><span>✓</span><span>Verification</span></button>
       </div>
 
       <div class="premium-banner" id="premium-banner" onclick="openSub()">
@@ -1583,7 +2430,7 @@
         </div>
         <div class="pb-perks" id="pb-perks">
           <div class="pb-perk">See who liked you</div>
-          <div class="pb-perk">One free Rose every week</div>
+          <div class="pb-perk">One free standard Rose every month</div>
           <div class="pb-perk">Unlimited connects · Priority boost</div>
         </div>
         <button class="pb-btn" id="pb-btn">Get Linked+ →</button>
@@ -1715,20 +2562,25 @@
 
   <nav class="bottom-nav">
     <button class="nav-btn active" id="nav-discover" onclick="switchTab('discover')">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      <span class="nav-symbol">❤️</span>
       <span class="nav-lbl">Explore</span>
     </button>
     <button class="nav-btn" id="nav-standouts" onclick="switchTab('standouts')">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C9.5 2 7 4 7 6.5c0 1.8 1 3.3 2.5 4.1C8.6 11.5 8 12.7 8 14c0 2.8 2 5 4 5s4-2.2 4-5c0-1.3-.6-2.5-1.5-3.4C16 9.8 17 8.3 17 6.5 17 4 14.5 2 12 2z" opacity=".6"/><path d="M12 16v6M9 19h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+      <span class="nav-symbol"><img class="nav-rose-img" src="assets/red-rose.png" alt=""></span>
       <span class="nav-lbl">Roses</span>
     </button>
     <button class="nav-btn" id="nav-linked" onclick="switchTab('linked')">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      <span class="nav-symbol" aria-hidden="true">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l2.2-2.2a5 5 0 0 0-7.07-7.07l-1.26 1.26"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-2.2 2.2a5 5 0 0 0 7.07 7.07l1.26-1.26"/>
+        </svg>
+      </span>
       <span class="nav-lbl">Linked</span>
       <div class="nav-badge" id="badge-linked"></div>
     </button>
     <button class="nav-btn" id="nav-me" onclick="switchTab('me')">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-symbol">👤</span>
       <span class="nav-lbl">Me</span>
     </button>
   </nav>
@@ -1773,15 +2625,15 @@
     <button class="sub-close" onclick="closeSub()">✕</button>
     <div class="sub-eyebrow" id="sub-eyebrow">Upgrade your experience</div>
     <div class="sub-title" id="sub-title">Linked+</div>
-    <div class="sub-desc" id="sub-desc">See who liked you, unlimited connects, and one free Rose every week.</div>
+    <div class="sub-desc" id="sub-desc">One membership with every Linked+ benefit. Save more when you stay longer.</div>
   </div>
 
   <div class="sub-plans" style="padding-top:24px">
-    <div class="sub-plan" id="sp-plus" onclick="selectSubPlan('plus')">
+    <div class="sub-plan" id="sp-monthly" onclick="selectSubPlan('monthly')">
       <div class="sub-plan-top">
         <div>
           <div class="sub-plan-name">1 Month</div>
-          <div class="sub-plan-tagline">Billed monthly</div>
+          <div class="sub-plan-tagline">R250/month</div>
         </div>
         <div class="sub-plan-right">
           <div><div class="sub-plan-amount">R250</div><div class="sub-plan-period">/month</div></div>
@@ -1790,29 +2642,29 @@
       </div>
     </div>
 
-    <div class="sub-plan selected" id="sp-premium" onclick="selectSubPlan('premium')">
+    <div class="sub-plan selected" id="sp-quarterly" onclick="selectSubPlan('quarterly')">
       <div class="sub-plan-save">Save 20%</div>
       <div class="sub-plan-top">
         <div>
           <div class="sub-plan-name">3 Months</div>
-          <div class="sub-plan-tagline">R200/month · billed R600</div>
+          <div class="sub-plan-tagline">R200/month</div>
         </div>
         <div class="sub-plan-right">
-          <div><div class="sub-plan-amount">R600</div><div class="sub-plan-period">/quarter</div></div>
+          <div><div class="sub-plan-amount">R600</div><div class="sub-plan-period">total</div></div>
           <div class="sub-radio"></div>
         </div>
       </div>
     </div>
 
-    <div class="sub-plan" id="sp-elite" onclick="selectSubPlan('elite')">
-      <div class="sub-plan-save">Best value</div>
+    <div class="sub-plan" id="sp-annual" onclick="selectSubPlan('annual')">
+      <div class="sub-plan-save">Save 33%</div>
       <div class="sub-plan-top">
         <div>
           <div class="sub-plan-name">12 Months</div>
-          <div class="sub-plan-tagline">R167/month · billed R2,000</div>
+          <div class="sub-plan-tagline">About R167/month</div>
         </div>
         <div class="sub-plan-right">
-          <div><div class="sub-plan-amount">R2,000</div><div class="sub-plan-period">/year</div></div>
+          <div><div class="sub-plan-amount">R2000</div><div class="sub-plan-period">total</div></div>
           <div class="sub-radio"></div>
         </div>
       </div>
@@ -1826,7 +2678,7 @@
     </div>
     <div class="sub-feat-row">
       <div class="sub-feat-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="18" height="18" fill="#E53935"><path d="M12 2C9.5 2 7 4 7 6.5c0 1.8 1 3.3 2.5 4.1C8.6 11.5 8 12.7 8 14c0 2.8 2 5 4 5s4-2.2 4-5c0-1.3-.6-2.5-1.5-3.4C16 9.8 17 8.3 17 6.5 17 4 14.5 2 12 2z"/></svg></div>
-      <div class="sub-feat-text"><div class="sf-title">One free Rose every week</div><div class="sf-sub">Send a guaranteed Rose to someone special</div></div>
+      <div class="sub-feat-text"><div class="sf-title">One free standard Rose every month</div><div class="sf-sub">Your monthly Rose is the standard R50 Rose</div></div>
     </div>
     <div class="sub-feat-row">
       <div class="sub-feat-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
@@ -1839,10 +2691,6 @@
     <div class="sub-feat-row">
       <div class="sub-feat-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
       <div class="sub-feat-text"><div class="sf-title">Advanced filters</div><div class="sf-sub">Lifestyle, height, dealbreakers and more</div></div>
-    </div>
-    <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
-      <div class="sub-feat-text"><div class="sf-title">Passport</div><div class="sf-sub">Match with people anywhere in the world</div></div>
     </div>
     <div class="sub-feat-row">
       <div class="sub-feat-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
@@ -1916,6 +2764,10 @@
     <button class="ic-chip" onclick="sendIcebreaker(this)">Most random fact about you?</button>
   </div>
   <div class="chat-bar" id="chat-bar">
+    <button class="chat-photo-btn" onclick="document.getElementById('chat-photo-input').click()" aria-label="Share a photo">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 15l-5-5L5 20"/></svg>
+    </button>
+    <input id="chat-photo-input" type="file" accept="image/*" style="display:none" onchange="sendChatPhoto(this)">
     <button class="mic-btn" id="mic-btn" onclick="toggleRecording()">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2H3v2a9 9 0 008 8.94V22H8v2h8v-2h-3v-1.06A9 9 0 0021 12v-2h-2z"/></svg>
     </button>
@@ -1938,20 +2790,159 @@
     </button>
     <div class="wallet-title">Wallet</div>
   </div>
-  <div class="wallet-balance-card">
-    <div class="wb-label">Available Balance</div>
-    <div class="wb-amount" id="wallet-available">R0.00</div>
-    <div class="wb-pending">
-      <div class="wb-pending-label">Pending (roses received × 70%)</div>
-      <div class="wb-pending-amount" id="wallet-pending">R0.00</div>
+  <div class="balance-grid">
+    <div class="balance-tile available"><small>Available Balance</small><strong id="wallet-available">R0.00</strong></div>
+    <div class="balance-tile pending"><small>Pending Balance</small><strong id="wallet-pending">R0.00</strong></div>
+  </div>
+  <div class="wallet-rose-summary">
+    <img class="wallet-rose-art" src="assets/red-rose.png" alt="" aria-hidden="true">
+    <div class="wallet-rose-copy">
+      <small>Roses Received</small>
+      <strong id="wallet-roses-received">0</strong>
+      <span>Received roses appear in your history</span>
     </div>
   </div>
   <button class="wallet-withdraw-btn" id="wallet-withdraw-btn" onclick="requestWithdrawal()" disabled>Withdraw (min R200)</button>
-  <div class="wallet-info-note">Roses received earn you 70% of face value. Withdrawals require a minimum of R200 and a R15 processing fee. ID verification required for first payout.</div>
+  <div class="wallet-rules">
+    <div class="wallet-rule"><small>Minimum withdrawal</small><strong>R200</strong></div>
+    <div class="wallet-rule"><small>Platform fee</small><strong>30%</strong></div>
+    <div class="wallet-rule"><small>Withdrawal fee</small><strong>R15</strong></div>
+    <div class="wallet-rule"><small>Payout verification</small><strong>ID required</strong></div>
+  </div>
+  <div class="wallet-info-note">ID verification is required only when requesting a payout. It is not required for normal registration.</div>
   <div class="wallet-tx-section">
     <div class="wallet-tx-title">Transaction History</div>
     <div class="wallet-tx-list" id="wallet-tx-list">
       <div class="wallet-empty">No transactions yet.<br>Roses you receive will appear here.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ARRANGE PROFILE ═══════════════════════════════════ -->
+<div id="arrange-profile-screen" class="screen-overlay">
+  <div class="overlay-top">
+    <button class="overlay-back" onclick="closeArrangeProfile()" aria-label="Back">‹</button>
+    <div class="overlay-title">Arrange About Me</div>
+  </div>
+  <div style="padding:6px 16px 14px;color:var(--muted);font-size:13px;line-height:1.5">
+    Choose the order people experience your profile after they swipe up.
+  </div>
+  <div class="arrange-list" id="arrange-profile-list"></div>
+</div>
+
+<!-- ═══ RICH PROFILE DETAIL ═══════════════════════════════ -->
+<div id="profile-detail-screen" class="profile-detail-screen">
+  <div class="profile-detail-hero">
+    <img id="profile-detail-cover" src="" alt="">
+    <button class="profile-detail-close" onclick="closeProfileDetail()" aria-label="Close">‹</button>
+    <div class="profile-detail-identity">
+      <div class="profile-detail-name" id="profile-detail-name"></div>
+      <div class="profile-detail-meta" id="profile-detail-meta"></div>
+    </div>
+  </div>
+  <div class="profile-detail-body" id="profile-detail-body"></div>
+  <div class="detail-actions">
+    <button class="act-pass" id="detail-pass" aria-label="Pass">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <button class="act-rose" id="detail-rose" aria-label="Send Rose"><img src="assets/red-rose.png" alt=""></button>
+    <button class="act-connect" id="detail-connect" aria-label="Connect">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ EXPLORE FILTERS ═══════════════════════════════════ -->
+<div id="filters-screen" class="screen-overlay">
+  <div class="overlay-top">
+    <button class="overlay-back" onclick="closeFilters()" aria-label="Back">‹</button>
+    <div class="overlay-title">Explore Filters</div>
+  </div>
+  <div class="filter-form">
+    <div class="filter-group">
+      <label class="filter-label" for="filter-location">Location</label>
+      <select class="filter-select" id="filter-location">
+        <option value="">Anywhere nearby</option>
+        <option>Cape Town</option>
+        <option>Johannesburg</option>
+        <option>Pretoria</option>
+        <option>Durban</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label" for="filter-looking">Looking for</label>
+      <select class="filter-select" id="filter-looking">
+        <option value="">Everyone</option>
+        <option value="dating">Dating</option>
+        <option value="friends">Friendship</option>
+        <option value="anything">Open to anything</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Age range</div>
+      <div class="filter-pair">
+        <input class="filter-input" id="filter-age-min" type="number" min="18" max="80" value="18" aria-label="Minimum age">
+        <input class="filter-input" id="filter-age-max" type="number" min="18" max="80" value="35" aria-label="Maximum age">
+      </div>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label" for="filter-distance">Maximum distance</label>
+      <select class="filter-select" id="filter-distance">
+        <option value="10">10 km</option>
+        <option value="25">25 km</option>
+        <option value="50" selected>50 km</option>
+        <option value="100">100 km</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="filter-reset" onclick="resetFilters()">Reset</button>
+      <button class="filter-apply" onclick="applyFilters()">Show profiles</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PRIORITY SCREEN ═══════════════════════════════════ -->
+<div id="priority-screen" class="screen-overlay">
+  <div class="overlay-top">
+    <button class="overlay-back" onclick="closePriority()" aria-label="Back">‹</button>
+    <div class="overlay-title">Priority</div>
+  </div>
+  <div class="priority-hero">
+    <div class="priority-icon">↟</div>
+    <h2 style="font-size:28px;letter-spacing:-.8px;margin-bottom:8px">Be seen by more people in Explore.</h2>
+    <p style="font-size:14px;color:var(--muted);line-height:1.55">Move higher in Explore for a limited time and increase your chances of making a real connection.</p>
+  </div>
+  <div style="padding:0 24px 12px;display:grid;gap:10px;font-size:14px">
+    <div>✓ Increase your visibility</div>
+    <div>✓ Appear higher in Explore</div>
+    <div>✓ Get more profile views</div>
+  </div>
+  <div class="priority-plans">
+    <button class="priority-plan" onclick="selectPriority(this)"><small>24 Hours</small><strong style="display:block;font-size:20px;margin-top:7px">R40</strong></button>
+    <button class="priority-plan recommended" onclick="selectPriority(this)"><small>7 Days</small><strong style="display:block;font-size:20px;margin-top:7px">R120</strong><span style="font-size:9px;color:var(--red);font-weight:800">MOST POPULAR</span></button>
+    <button class="priority-plan" onclick="selectPriority(this)"><small>30 Days</small><strong style="display:block;font-size:20px;margin-top:7px">R300</strong></button>
+  </div>
+  <div style="padding:0 16px 28px;margin-top:auto"><button class="sub-cta" onclick="activatePriority()">Activate Priority</button></div>
+</div>
+
+<!-- ═══ NOTIFICATIONS SCREEN ══════════════════════════════ -->
+<div id="notifications-screen" class="screen-overlay">
+  <div class="overlay-top">
+    <button class="overlay-back" onclick="closeNotifications()" aria-label="Back">‹</button>
+    <div class="overlay-title">Notifications</div>
+    <button onclick="clearNotifications()" style="border:0;background:none;color:var(--red);font-size:13px;font-weight:700">Clear</button>
+  </div>
+  <div class="notification-list" id="notification-list">
+    <div class="notification-group">
+      <h3>Today</h3>
+      <div class="notification-row"><div class="notification-icon">🌹</div><div class="notification-copy"><strong>Sarah sent you a Rose</strong><div class="notification-time">Roses · 2m</div></div></div>
+      <div class="notification-row"><div class="notification-icon">🔗</div><div class="notification-copy"><strong>You’re Linked with Daniel</strong><div class="notification-time">Matches · 1h</div></div></div>
+      <div class="notification-row"><div class="notification-icon">💬</div><div class="notification-copy"><strong>New message from Jessica</strong><div class="notification-time">Messages · 2h</div></div></div>
+    </div>
+    <div class="notification-group">
+      <h3>Earlier</h3>
+      <div class="notification-row"><div class="notification-icon">↟</div><div class="notification-copy"><strong>Your Priority period ended</strong><div class="notification-time">Priority · 1d</div></div></div>
+      <div class="notification-row"><div class="notification-icon">✓</div><div class="notification-copy"><strong>Your withdrawal was approved</strong><div class="notification-time">Wallet · 1d</div></div></div>
     </div>
   </div>
 </div>
@@ -2110,7 +3101,42 @@ const PROFILES = [
   { id:12, name:'Priya', age:26, city:'Cape Town', looking:'friends', compat:86, dist:'5 km', bio:'', verified:true, interests:['Tech','Coffee','Yoga'], img:'https://randomuser.me/api/portraits/women/91.jpg', answers:{ sunday:'Farmers market, plant shop, existential crisis, repeat', hottake:'Manifesting without action is just daydreaming', obsessed:'Seed cycling and Notion boards nobody else understands', random:'I have 34 plants and they all have names and backstories' } },
 ];
 
-const VIBES = ['Coffee','Running','Art','Food','Travel','Photography','Gaming','Dogs','Outdoors','Reading','Movies','Yoga','Wine','Gym','Music','Beach','Culture','Live Music','Adventure','Nightlife'];
+const HQ_IMAGE = id => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1400&h=1900&q=92`;
+const PROFILE_PHOTO_SETS = {
+  1: ['photo-1494790108377-be9c29b29330','photo-1524504388940-b1c1722653e1','photo-1517841905240-472988babdf9','photo-1488426862026-3ee34a7d66df'],
+  2: ['photo-1534528741775-53994a69daeb','photo-1544005313-94ddf0286df2','photo-1529139574466-a303027c1d8b','photo-1531123897727-8f129e1688ce'],
+  3: ['photo-1517841905240-472988babdf9','photo-1488426862026-3ee34a7d66df','photo-1494790108377-be9c29b29330','photo-1524504388940-b1c1722653e1'],
+  4: ['photo-1529139574466-a303027c1d8b','photo-1531123897727-8f129e1688ce','photo-1534528741775-53994a69daeb','photo-1544005313-94ddf0286df2'],
+  5: ['photo-1524504388940-b1c1722653e1','photo-1494790108377-be9c29b29330','photo-1488426862026-3ee34a7d66df','photo-1517841905240-472988babdf9'],
+  6: ['photo-1544005313-94ddf0286df2','photo-1534528741775-53994a69daeb','photo-1531123897727-8f129e1688ce','photo-1529139574466-a303027c1d8b'],
+  7: ['photo-1500648767791-00dcc994a43e','photo-1506794778202-cad84cf45f1d','photo-1507003211169-0a1dd7228f2d','photo-1560250097-0b93528c311a'],
+  8: ['photo-1506794778202-cad84cf45f1d','photo-1500648767791-00dcc994a43e','photo-1560250097-0b93528c311a','photo-1507003211169-0a1dd7228f2d'],
+  9: ['photo-1507003211169-0a1dd7228f2d','photo-1560250097-0b93528c311a','photo-1500648767791-00dcc994a43e','photo-1506794778202-cad84cf45f1d'],
+  10:['photo-1488426862026-3ee34a7d66df','photo-1517841905240-472988babdf9','photo-1524504388940-b1c1722653e1','photo-1494790108377-be9c29b29330'],
+  11:['photo-1560250097-0b93528c311a','photo-1507003211169-0a1dd7228f2d','photo-1506794778202-cad84cf45f1d','photo-1500648767791-00dcc994a43e'],
+  12:['photo-1531123897727-8f129e1688ce','photo-1529139574466-a303027c1d8b','photo-1544005313-94ddf0286df2','photo-1534528741775-53994a69daeb']
+};
+PROFILES.forEach(p => {
+  p.photos = PROFILE_PHOTO_SETS[p.id].map(HQ_IMAGE);
+  p.img = p.photos[0];
+  p.bio = `Warm, curious and always up for a thoughtful conversation. I value consistency, humour and people who are genuinely present.`;
+  p.videoIntro = true;
+  const layouts = [
+    ['about','voice','photo1','prompt1','video','prompt2','photo2','interests','prompt3','photo3','prompt4'],
+    ['about','photo1','prompt1','voice','photo2','prompt2','video','interests','photo3','prompt3','prompt4'],
+    ['about','video','prompt1','photo1','voice','prompt2','interests','photo2','prompt3','photo3','prompt4']
+  ];
+  p.profileLayout = layouts[(p.id - 1) % layouts.length];
+});
+
+const VIBE_CATEGORIES = {
+  'Everyday Life': ['Coffee','Cooking','Foodie','Reading','Gaming','Movies','Plants','Pets'],
+  'Active & Outdoors': ['Running','Gym','Yoga','Hiking','Cycling','Beach','Outdoors','Adventure'],
+  'Creative & Culture': ['Art','Photography','Music','Live Music','Dancing','Fashion','Theatre','Museums'],
+  'Social Energy': ['Nightlife','Brunch','Festivals','Hosting','Road Trips','Travel','Quiet Nights','Spontaneous Plans'],
+  'Values & Goals': ['Family','Career Driven','Wellness','Faith','Personal Growth','Community','Marriage Minded','Open-minded']
+};
+const VIBES = Object.values(VIBE_CATEGORIES).flat();
 
 const REPLIES = [
   'Okay so I actually smiled reading that 😊',
@@ -2140,11 +3166,14 @@ let S = {
   spotlightTimer: null,
   walletBalance: 0,
   walletPending: 0,
+  rosesReceived: 0,
   walletTx: [],
   isPremium: null,
   isVerified: false,
   stats: { connects: 0, matches: 0, passes: 0 },
   selectedLooking: null,
+  exploreFilters: { location:'', looking:'', ageMin:18, ageMax:35, distance:50 },
+  myProfileLayout: ['about','voice','photo1','prompt1','video','prompt2','photo2','interests','prompt3','photo3','prompt4'],
 };
 
 // ── SETUP ─────────────────────────────────────────────────
@@ -2154,14 +3183,16 @@ const TOTAL_STEPS = 5;
 function showSetup() {
   document.getElementById('auth').style.display = 'none';
   document.getElementById('setup').style.display = 'flex';
+  S._photos = S._photos || [];
+  renderSetupPhotos();
   buildVibeGrid();
 }
 
 function quickLogin() {
   S.user = {
-    name: 'You', age: 24, city: 'Cape Town',
+    name: 'Jessica', age: 25, city: 'Cape Town',
     looking: 'anything', gender: 'woman',
-    photo: 'https://randomuser.me/api/portraits/lego/1.jpg',
+    photo: 'https://randomuser.me/api/portraits/women/44.jpg',
     interests: ['Coffee','Music','Travel'],
     answers: {},
   };
@@ -2194,29 +3225,73 @@ function setDatingSub(val) {
 function buildVibeGrid() {
   const g = document.getElementById('vibe-grid');
   g.innerHTML = '';
-  VIBES.forEach(v => {
-    const el = document.createElement('button');
-    el.className = 'vibe-btn';
-    el.textContent = v;
-    el.onclick = () => {
-      const sel = document.querySelectorAll('.vibe-btn.sel');
-      if (el.classList.contains('sel')) el.classList.remove('sel');
-      else if (sel.length < 5) el.classList.add('sel');
-    };
-    g.appendChild(el);
+  Object.entries(VIBE_CATEGORIES).forEach(([category, vibes]) => {
+    const section = document.createElement('div');
+    section.className = 'vibe-category';
+    section.innerHTML = `<div class="vibe-category-title">${category}</div><div class="vibe-options"></div>`;
+    const options = section.querySelector('.vibe-options');
+    vibes.forEach(v => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'vibe-btn';
+      el.textContent = v;
+      el.onclick = () => {
+        const sel = document.querySelectorAll('.vibe-btn.sel');
+        if (el.classList.contains('sel')) el.classList.remove('sel');
+        else if (sel.length < 10) el.classList.add('sel');
+        else showToast('Choose up to 10 vibes');
+        updateVibeCounter();
+      };
+      options.appendChild(el);
+    });
+    g.appendChild(section);
   });
+  updateVibeCounter();
 }
 
-function handlePhoto(input) {
-  const f = input.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = e => {
-    const img = document.getElementById('photo-preview');
-    img.src = e.target.result; img.style.display = 'block';
-    document.getElementById('photo-ph').style.display = 'none';
-    S._photo = e.target.result;
-  };
-  r.readAsDataURL(f);
+function updateVibeCounter() {
+  const count = document.querySelectorAll('.vibe-btn.sel').length;
+  const counter = document.getElementById('vibe-counter');
+  if (!counter) return;
+  counter.textContent = count >= 5 ? `${count} selected · you’re ready` : `${count} selected · choose ${5 - count} more`;
+  counter.classList.toggle('ready', count >= 5);
+}
+
+function renderSetupPhotos() {
+  const photos = S._photos || [];
+  const grid = document.getElementById('setup-photo-grid');
+  if (!grid) return;
+  grid.innerHTML = Array.from({length:6}, (_, index) => {
+    const photo = photos[index];
+    return photo
+      ? `<div class="setup-photo-slot"><img src="${photo}" alt="Profile photo ${index + 1}"><button class="setup-photo-remove" type="button" onclick="event.stopPropagation();removeSetupPhoto(${index})" aria-label="Remove photo">×</button></div>`
+      : `<button class="setup-photo-slot${index < 3 ? ' required' : ''}" type="button" onclick="document.getElementById('photo-file').click()" aria-label="Add photo">+</button>`;
+  }).join('');
+  const status = document.getElementById('setup-photo-status');
+  status.textContent = photos.length >= 3 ? `${photos.length} photos added · ready to continue` : `${photos.length} of 3 required photos added`;
+  status.classList.toggle('ready', photos.length >= 3);
+}
+
+async function handlePhotos(input) {
+  const files = [...input.files].filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+  const room = Math.max(0, 6 - (S._photos?.length || 0));
+  const selected = files.slice(0, room);
+  const results = await Promise.all(selected.map(file => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  })));
+  S._photos = [...(S._photos || []), ...results].slice(0, 6);
+  S._photo = S._photos[0];
+  input.value = '';
+  renderSetupPhotos();
+}
+
+function removeSetupPhoto(index) {
+  S._photos.splice(index, 1);
+  S._photo = S._photos[0] || null;
+  renderSetupPhotos();
 }
 
 function go(from) {
@@ -2229,6 +3304,12 @@ function go(from) {
   if (from === 1 && !S.selectedLooking) {
     showToast('Let us know what you\'re looking for'); return;
   }
+  if (from === 2 && (S._photos || []).length < 3) {
+    showToast('Add at least 3 photos to continue'); return;
+  }
+  if (from === 3 && document.querySelectorAll('.vibe-btn.sel').length < 5) {
+    showToast('Choose at least 5 vibes to continue'); return;
+  }
   setupStepIdx = from + 1;
   document.querySelectorAll('.setup-step').forEach(el => el.classList.remove('active'));
   document.getElementById('step-' + setupStepIdx).classList.add('active');
@@ -2238,13 +3319,22 @@ function go(from) {
 
 function finishSetup() {
   const interests = [...document.querySelectorAll('.vibe-btn.sel')].map(el => el.textContent);
+  if ((S._photos || []).length < 3) {
+    showToast('Add at least 3 photos before creating your profile');
+    return;
+  }
+  if (interests.length < 5) {
+    showToast('Choose at least 5 vibes before creating your profile');
+    return;
+  }
   S.user = {
     name: document.getElementById('s-name').value.trim(),
     age: getPickerAge(),
     gender: (document.getElementById('gender-display').textContent || 'Woman').toLowerCase().replace(' / prefer not to say',''),
     city: document.getElementById('s-city').value,
     looking: S.selectedLooking || 'anything',
-    photo: S._photo || 'https://randomuser.me/api/portraits/lego/1.jpg',
+    photo: S._photos?.[0] || S._photo,
+    photos: [...(S._photos || [])],
     interests,
     answers: {
       sunday:   document.getElementById('q-sunday').value,
@@ -2338,21 +3428,26 @@ function buildProfileCard(p) {
     </div>`).join('');
 
   const dots = answerDefs.map((_, i) => `<div class="carousel-dot${i === 0 ? ' active' : ''}"></div>`).join('');
+  const photos = p.photos?.length ? p.photos : [p.img];
+  const photoProgress = photos.map((_, i) => `<div class="photo-prog${i === 0 ? ' active' : ''}"></div>`).join('');
 
   const div = document.createElement('div');
   div.className = 'profile-card-full fade-in';
   div.dataset.id = p.id;
   div.innerHTML = `
     <div class="pc-photo" id="pc-photo-${p.id}">
-      <div class="pc-photo-progress">
-        <div class="photo-prog active"></div>
-        <div class="photo-prog"></div>
-        <div class="photo-prog"></div>
-      </div>
-      <img src="${p.img}" alt="${p.name}" onclick="openPhoto('${p.img}','${p.name}',${p.age},'${p.city}')">
+      <div class="pc-photo-progress">${photoProgress}</div>
+      <div class="photo-count" id="photo-count-${p.id}">1 / ${photos.length}</div>
+      <div class="double-tap-rose-cue">Double tap to send a Rose</div>
+      <div class="photo-tap-cue left" aria-hidden="true">‹</div>
+      <div class="photo-tap-cue right" aria-hidden="true">›</div>
+      <img id="profile-image-${p.id}" src="${photos[0]}" alt="${p.name}" draggable="false"
+        decoding="async" fetchpriority="${p.id === S.queue[0]?.id ? 'high' : 'auto'}"
+        data-photo-index="0" onclick="handleProfilePhotoClick(event,${p.id})">
       <div class="swipe-hint swipe-hint-pass"  id="hint-pass-${p.id}"><div class="swipe-label">PASS</div></div>
       <div class="swipe-hint swipe-hint-link"  id="hint-link-${p.id}"><div class="swipe-label link-label">LINK</div></div>
       <div class="swipe-hint swipe-hint-spark" id="hint-spark-${p.id}"><div class="swipe-label spark-label">⚡ SPARK</div></div>
+      <button class="pc-about-pill" onclick="event.stopPropagation();openProfileDetail(${p.id})"><span>↑</span> About Me</button>
       <div class="pc-photo-bottom">
         <div class="pc-name-row">
           <span class="pc-name">${p.name}</span>
@@ -2367,46 +3462,19 @@ function buildProfileCard(p) {
       </div>
     </div>
 
-    <div class="pc-voice" onclick="playVoice(this)">
-      <div class="voice-play">▶</div>
-      <div class="voice-info">
-        <div class="voice-label">Hear ${p.name}'s voice</div>
-        <div class="voice-wave-row">
-          <div class="voice-wave">${waveBars}</div>
-          <div class="voice-dur">0:14</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="pc-interests" style="margin-bottom:14px">${chips}</div>
-
-    <div class="pc-answers">
-      <div class="answer-carousel" id="ans-carousel-${p.id}">${answerCards}</div>
-      <div class="carousel-dots" id="ans-dots-${p.id}">${dots}</div>
-    </div>
-
     <div class="pc-actions">
       <button class="act-pass" onclick="doPass(${p.id})" aria-label="Pass">
         <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <button class="act-rose" onclick="openRoseModal(${p.id})" aria-label="Send Rose">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M12 2C9.5 2 7 4 7 6.5c0 1.8 1 3.3 2.5 4.1C8.6 11.5 8 12.7 8 14c0 2.8 2 5 4 5s4-2.2 4-5c0-1.3-.6-2.5-1.5-3.4C16 9.8 17 8.3 17 6.5 17 4 14.5 2 12 2z"/><rect x="11" y="19" width="2" height="4" rx="1"/></svg>
+        <img src="assets/red-rose.png" alt="">
       </button>
       <button class="act-connect" onclick="doConnect(${p.id})" aria-label="Connect">
         <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
       </button>
     </div>
   `;
-
-  // wire up carousel dot updates
-  const carousel = div.querySelector(`#ans-carousel-${p.id}`);
-  const dotsEl = div.querySelector(`#ans-dots-${p.id}`);
-  if (carousel && dotsEl) {
-    carousel.addEventListener('scroll', () => {
-      const idx = Math.round(carousel.scrollLeft / carousel.clientWidth * 2);
-      dotsEl.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
-    }, { passive: true });
-  }
+  div.dataset.photos = JSON.stringify(photos);
 
   return div;
 }
@@ -2456,7 +3524,8 @@ function doConnect(profileId) {
   if (!p) return;
   S.connectsLeft--;
   S.stats.connects++;
-  document.getElementById('connects-count').textContent = S.connectsLeft;
+  const connectsCount = document.getElementById('connects-count');
+  if (connectsCount) connectsCount.textContent = S.connectsLeft;
   updateStats();
   showToast(`Connected with ${p.name}! 🔗`);
   S.queue = S.queue.filter(x => x.id !== profileId);
@@ -2476,8 +3545,58 @@ function doPass(profileId) {
 function resetQueue() {
   S.queue = shuffle([...PROFILES]);
   S.connectsLeft = 10;
-  document.getElementById('connects-count').textContent = '10';
+  const connectsCount = document.getElementById('connects-count');
+  if (connectsCount) connectsCount.textContent = '10';
   renderDiscover();
+}
+
+function openFilters() {
+  const f = S.exploreFilters || {};
+  document.getElementById('filter-location').value = f.location || '';
+  document.getElementById('filter-looking').value = f.looking || '';
+  document.getElementById('filter-age-min').value = f.ageMin || 18;
+  document.getElementById('filter-age-max').value = f.ageMax || 35;
+  document.getElementById('filter-distance').value = f.distance || 50;
+  document.getElementById('filters-screen').classList.add('open');
+}
+
+function closeFilters() {
+  document.getElementById('filters-screen').classList.remove('open');
+}
+
+function resetFilters() {
+  document.getElementById('filter-location').value = '';
+  document.getElementById('filter-looking').value = '';
+  document.getElementById('filter-age-min').value = 18;
+  document.getElementById('filter-age-max').value = 35;
+  document.getElementById('filter-distance').value = 50;
+}
+
+function applyFilters() {
+  let ageMin = Math.max(18, Number(document.getElementById('filter-age-min').value) || 18);
+  let ageMax = Math.min(80, Number(document.getElementById('filter-age-max').value) || 80);
+  if (ageMin > ageMax) [ageMin, ageMax] = [ageMax, ageMin];
+  const filters = {
+    location: document.getElementById('filter-location').value,
+    looking: document.getElementById('filter-looking').value,
+    ageMin,
+    ageMax,
+    distance: Number(document.getElementById('filter-distance').value) || 50
+  };
+  S.exploreFilters = filters;
+  S.queue = shuffle(PROFILES.filter(p => {
+    const distance = Number.parseFloat(p.dist) || 0;
+    return (!filters.location || p.city === filters.location)
+      && (!filters.looking || p.looking === filters.looking)
+      && p.age >= filters.ageMin
+      && p.age <= filters.ageMax
+      && distance <= filters.distance;
+  }));
+  const hasFilters = Boolean(filters.location || filters.looking || filters.ageMin !== 18 || filters.ageMax !== 35 || filters.distance !== 50);
+  document.querySelector('.explore-filter-btn')?.classList.toggle('has-filters', hasFilters);
+  closeFilters();
+  renderDiscover();
+  showToast(`${S.queue.length} profile${S.queue.length === 1 ? '' : 's'} found`);
 }
 
 // ── MATCH EXPIRY ──────────────────────────────────────────
@@ -2550,7 +3669,7 @@ function updateLinkedUI() {
 
   if (S.matches.length === 0) {
     nmScroll.innerHTML = '<div class="no-matches-hint">No links yet. Keep connecting!</div>';
-    convoList.innerHTML = '<div class="convo-empty"><div class="ce-icon">💬</div><p>When you link with someone, your conversation threads show up here.</p></div>';
+    convoList.innerHTML = '<div class="convo-empty"><div class="ce-icon">💬</div><p>When you link with someone, your conversation threads show up here.</p><button class="empty-primary" onclick="switchTab(\'discover\')">Explore profiles</button></div>';
     badge.classList.remove('show');
     return;
   }
@@ -2616,6 +3735,8 @@ function renderChatMsgs() {
     el.className = 'bubble ' + (m.from === 'me' ? 'b-out' : 'b-in');
     if (m.type === 'voice') {
       el.innerHTML = voiceBubbleHTML(m);
+    } else if (m.type === 'photo') {
+      el.innerHTML = `<img class="chat-photo" src="${m.src}" alt="Shared photo">`;
     } else {
       el.textContent = m.text;
     }
@@ -2640,6 +3761,20 @@ function sendMsg() {
     S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
     if (S.currentChat?.id === id) renderChatMsgs();
   }, 1000 + Math.random() * 1000);
+}
+
+function sendChatPhoto(input) {
+  const file = input.files && input.files[0];
+  if (!file || !S.currentChat) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const id = S.currentChat.id;
+    if (!S.convos[id]) S.convos[id] = [];
+    S.convos[id].push({ from:'me', type:'photo', src:reader.result, text:'Photo', time:nowTime() });
+    renderChatMsgs();
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
 }
 
 // ── VOICE MESSAGES ────────────────────────────────────────
@@ -2788,6 +3923,7 @@ function logout() {
 
 // ── NAV ───────────────────────────────────────────────────
 function switchTab(tab) {
+  document.getElementById('app').dataset.tab = tab;
   document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
   document.getElementById(tab + '-tab').classList.add('active');
@@ -2831,96 +3967,314 @@ function nowTime() {
 }
 
 // ── PHOTO SWIPE ───────────────────────────────────────────
+let suppressProfilePhotoClickUntil = 0;
+let profilePhotoTapTimer = null;
+let lastProfilePhotoTap = { profileId:null, time:0 };
+
+function handleProfilePhotoClick(event, profileId) {
+  if (Date.now() < suppressProfilePhotoClickUntil) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
+  const now = Date.now();
+  const isDoubleTap = lastProfilePhotoTap.profileId === profileId && now - lastProfilePhotoTap.time < 320;
+  if (isDoubleTap) {
+    clearTimeout(profilePhotoTapTimer);
+    profilePhotoTapTimer = null;
+    lastProfilePhotoTap = { profileId:null, time:0 };
+    openRoseModal(profileId);
+    return;
+  }
+  lastProfilePhotoTap = { profileId, time:now };
+  const bounds = event.currentTarget.getBoundingClientRect();
+  const direction = event.clientX < bounds.left + bounds.width / 2 ? -1 : 1;
+  clearTimeout(profilePhotoTapTimer);
+  profilePhotoTapTimer = setTimeout(() => {
+    changeProfilePhoto(profileId, direction);
+    profilePhotoTapTimer = null;
+  }, 325);
+}
+
+function changeProfilePhoto(profileId, direction = 1) {
+  const p = PROFILES.find(x => x.id === profileId);
+  const image = document.getElementById('profile-image-' + profileId);
+  if (!p || !image || !p.photos?.length) return;
+  const current = Number(image.dataset.photoIndex) || 0;
+  const next = (current + direction + p.photos.length) % p.photos.length;
+  image.style.opacity = '.35';
+  image.style.transform = `scale(1.015)`;
+  image.src = p.photos[next];
+  image.dataset.photoIndex = next;
+  image.onload = () => {
+    image.style.transition = 'opacity .22s ease,transform .28s ease';
+    image.style.opacity = '1';
+    image.style.transform = '';
+  };
+  document.querySelectorAll(`#pc-photo-${profileId} .photo-prog`).forEach((bar, i) => {
+    bar.classList.toggle('active', i === next);
+  });
+  const count = document.getElementById('photo-count-' + profileId);
+  if (count) count.textContent = `${next + 1} / ${p.photos.length}`;
+}
+
+function openProfileDetail(profileId, startIndex = null) {
+  const p = PROFILES.find(x => x.id === profileId);
+  if (!p) return;
+  const sourcePhotos = p.photos?.length ? p.photos : [p.img];
+  const visibleImage = document.getElementById('profile-image-' + profileId);
+  const currentIndex = startIndex ?? Number(visibleImage?.dataset.photoIndex) ?? 0;
+  const photos = [...sourcePhotos.slice(currentIndex), ...sourcePhotos.slice(0, currentIndex)];
+  document.getElementById('profile-detail-cover').src = photos[0];
+  document.getElementById('profile-detail-cover').alt = p.name;
+  document.getElementById('profile-detail-name').textContent = `${p.name}, ${p.age}`;
+  document.getElementById('profile-detail-meta').textContent = `${p.city} · ${p.dist} · ${p.verified ? 'Verified' : 'Profile'}`;
+  const prompts = [
+    ['Ideal Sunday', p.answers.sunday],
+    ['Hot take', p.answers.hottake],
+    ['Currently obsessed with', p.answers.obsessed],
+    ['Most random fact', p.answers.random]
+  ];
+  const blocks = {
+    about: `<div class="detail-section">
+      <div class="detail-kicker">About me</div>
+      <div class="detail-title">${p.bio}</div>
+      <div class="detail-copy">Looking for ${p.looking === 'dating' ? 'a meaningful relationship' : p.looking === 'friends' ? 'new friendships' : 'a genuine connection'}.</div>
+    </div>`,
+    voice: `<div class="pc-voice" onclick="playVoice(this)" style="margin:0">
+      <div class="voice-play">▶</div>
+      <div class="voice-info">
+        <div class="voice-label">${p.name}'s voice intro</div>
+        <div class="voice-wave-row"><div class="voice-wave">${Array.from({length:28},(_,i)=>`<div class="wave-bar" style="height:${28 + ((i*17)%65)}%"></div>`).join('')}</div><div class="voice-dur">0:20</div></div>
+      </div>
+    </div>`,
+    photo1: `<div class="detail-media"><img src="${photos[1] || photos[0]}" alt="${p.name}" loading="lazy" decoding="async"></div>`,
+    prompt1: `<div class="detail-section">
+      <div class="detail-kicker">${prompts[0][0]}</div>
+      <div class="detail-title">${prompts[0][1]}</div>
+    </div>`,
+    video: `<div class="detail-video">
+      <button onclick="showToast('${p.name}’s video intro is playing')">▶</button>
+      <span>Video intro · 0:18</span>
+    </div>`,
+    prompt2: `<div class="detail-section">
+      <div class="detail-kicker">${prompts[1][0]}</div>
+      <div class="detail-title">${prompts[1][1]}</div>
+    </div>`,
+    photo2: `<div class="detail-media"><img src="${photos[2] || photos[0]}" alt="${p.name}" loading="lazy" decoding="async"></div>`,
+    interests: `<div class="detail-section">
+      <div class="detail-kicker">Interests</div>
+      <div class="pc-interests" style="margin:10px 0 0">${p.interests.map(i => `<span class="interest-chip">${i}</span>`).join('')}</div>
+    </div>`,
+    prompt3: `<div class="detail-section">
+      <div class="detail-kicker">${prompts[2][0]}</div>
+      <div class="detail-title">${prompts[2][1]}</div>
+    </div>`,
+    photo3: `<div class="detail-media"><img src="${photos[3] || photos[0]}" alt="${p.name}" loading="lazy" decoding="async"></div>`,
+    prompt4: `<div class="detail-section">
+      <div class="detail-kicker">${prompts[3][0]}</div>
+      <div class="detail-title">${prompts[3][1]}</div>
+    </div>`
+  };
+  const layout = p.profileLayout || S.myProfileLayout || Object.keys(blocks);
+  document.getElementById('profile-detail-body').innerHTML = layout.map(key => blocks[key] || '').join('');
+  document.getElementById('detail-pass').onclick = () => { closeProfileDetail(); doPass(profileId); };
+  document.getElementById('detail-rose').onclick = () => openRoseModal(profileId);
+  document.getElementById('detail-connect').onclick = () => { closeProfileDetail(); doConnect(profileId); };
+  const screen = document.getElementById('profile-detail-screen');
+  screen.classList.add('open');
+  screen.scrollTop = 0;
+}
+
+function closeProfileDetail() {
+  document.getElementById('profile-detail-screen').classList.remove('open');
+}
+
+const PROFILE_BLOCK_LABELS = {
+  about:'About Me', voice:'Voice Intro', photo1:'Photo 2', prompt1:'Prompt 1',
+  video:'Video Intro', prompt2:'Prompt 2', photo2:'Photo 3', interests:'Interests',
+  prompt3:'Prompt 3', photo3:'Photo 4', prompt4:'Prompt 4'
+};
+
+function openArrangeProfile() {
+  renderArrangeProfile();
+  document.getElementById('arrange-profile-screen').classList.add('open');
+}
+
+function closeArrangeProfile() {
+  document.getElementById('arrange-profile-screen').classList.remove('open');
+}
+
+function renderArrangeProfile() {
+  const list = document.getElementById('arrange-profile-list');
+  list.innerHTML = S.myProfileLayout.map((key, index) => `
+    <div class="arrange-row">
+      <span class="arrange-handle">☷</span>
+      <span class="arrange-name">${PROFILE_BLOCK_LABELS[key]}</span>
+      <div class="arrange-controls">
+        <button onclick="moveProfileBlock(${index},-1)" aria-label="Move ${PROFILE_BLOCK_LABELS[key]} up">↑</button>
+        <button onclick="moveProfileBlock(${index},1)" aria-label="Move ${PROFILE_BLOCK_LABELS[key]} down">↓</button>
+      </div>
+    </div>`).join('');
+}
+
+function moveProfileBlock(index, direction) {
+  const target = index + direction;
+  if (target < 0 || target >= S.myProfileLayout.length) return;
+  [S.myProfileLayout[index], S.myProfileLayout[target]] = [S.myProfileLayout[target], S.myProfileLayout[index]];
+  renderArrangeProfile();
+  showToast('Profile order updated');
+}
+
 function setupPhotoSwipe(profileId) {
-  // attach to the whole card so you can swipe from anywhere
   const scroll = document.getElementById('profile-scroll');
   const card   = scroll && scroll.querySelector(`.profile-card-full[data-id="${profileId}"]`);
-  const photo  = document.getElementById('pc-photo-' + profileId);
-  if (!card || !photo) return;
+  if (!card) return;
 
   const hintPass  = document.getElementById('hint-pass-'  + profileId);
   const hintLink  = document.getElementById('hint-link-'  + profileId);
   const hintSpark = document.getElementById('hint-spark-' + profileId);
 
-  let startX, startY, curX = 0, curY = 0, locked = null, dragging = false;
+  let startX = 0, startY = 0, curX = 0, curY = 0, locked = null;
+  let dragging = false, didDrag = false, lastX = 0, lastY = 0, lastTime = 0, velocityX = 0, velocityY = 0;
+  let startedOnPhoto = false;
 
   const clearHints = () => {
     hintPass.style.opacity = hintLink.style.opacity = hintSpark.style.opacity = 0;
   };
 
-  const onStart = (x, y) => {
-    startX = x; startY = y;
-    dragging = true; locked = null; curX = 0; curY = 0;
-    photo.style.transition = 'none';
+  const resetCard = () => {
+    card.style.transition = 'transform .34s cubic-bezier(.2,.8,.2,1), opacity .25s ease';
+    card.style.transform = '';
+    card.style.opacity = '1';
+    card.classList.remove('is-dragging');
+    clearHints();
   };
 
-  const onMove = (x, y) => {
+  const onStart = e => {
+    if (e.button !== undefined && e.button !== 0) return;
+    if (e.target.closest('button,input,textarea,select,.answer-carousel,.pc-voice')) return;
+    startX = lastX = e.clientX;
+    startY = lastY = e.clientY;
+    lastTime = performance.now();
+    curX = curY = velocityX = velocityY = 0;
+    dragging = true;
+    didDrag = false;
+    locked = null;
+    startedOnPhoto = Boolean(e.target.closest('.pc-photo'));
+    card.style.transition = 'none';
+    card.classList.add('is-dragging');
+    if (card.setPointerCapture) card.setPointerCapture(e.pointerId);
+  };
+
+  const onMove = e => {
     if (!dragging) return;
-    const dx = x - startX, dy = y - startY;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
     if (!locked) {
-      if (Math.abs(dx) > 8 || Math.abs(dy) > 8)
+      if (Math.abs(dx) > 7 || Math.abs(dy) > 7) {
         locked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
-      else return;
+        if (locked === 'v' && (!startedOnPhoto || dy > 0)) {
+          dragging = false;
+          card.classList.remove('is-dragging');
+          return;
+        }
+      } else return;
     }
-    if (locked === 'v') return;
+    const now = performance.now();
+    const elapsed = Math.max(1, now - lastTime);
+    velocityX = (e.clientX - lastX) / elapsed;
+    velocityY = (e.clientY - lastY) / elapsed;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastTime = now;
 
-    curX = dx; curY = dy;
-    const rot = dx * 0.07;
-    photo.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+    if (locked === 'v') {
+      if (!startedOnPhoto || dy >= 0) return;
+      e.preventDefault();
+      didDrag = true;
+      curY = dy;
+      const lift = Math.max(-125, dy * .55);
+      card.style.transform = `translate3d(0,${lift}px,0) scale(${1 - Math.min(.035,Math.abs(dy)/4000)})`;
+      card.style.opacity = String(Math.max(.72, 1 - Math.abs(dy) / 500));
+      clearHints();
+      return;
+    }
+    if (locked !== 'h') return;
 
-    if (dx > 20) {
-      hintLink.style.opacity = Math.min(1, (dx - 20) / 70);
+    e.preventDefault();
+    didDrag = true;
+    curX = dx;
+    const resistance = 1 - Math.min(.22, Math.abs(dx) / Math.max(card.clientWidth, 1) * .18);
+    const displayX = dx * resistance;
+    const rot = Math.max(-12, Math.min(12, dx * .035));
+    card.style.transform = `translate3d(${displayX}px,0,0) rotate(${rot}deg)`;
+
+    const hintStart = 20;
+    if (dx > hintStart) {
+      hintLink.style.opacity = Math.min(1, (dx - hintStart) / 70);
       hintPass.style.opacity = hintSpark.style.opacity = 0;
-    } else if (dx < -20) {
-      hintPass.style.opacity = Math.min(1, (-dx - 20) / 70);
+    } else if (dx < -hintStart) {
+      hintPass.style.opacity = Math.min(1, (-dx - hintStart) / 70);
       hintLink.style.opacity = hintSpark.style.opacity = 0;
     } else {
       clearHints();
     }
   };
 
-  const onEnd = () => {
+  const onEnd = e => {
     if (!dragging) return;
     dragging = false;
-
-    if (locked === 'h' && curX > 90) {
-      // fly right then connect
-      photo.style.transition = 'transform 0.35s ease-in, opacity 0.35s ease-in';
-      photo.style.transform = 'translateX(160%) rotate(22deg)';
-      photo.style.opacity = '0';
-      clearHints();
-      setTimeout(() => doConnect(profileId), 320);
-    } else if (locked === 'h' && curX < -90) {
-      // fly left then pass
-      photo.style.transition = 'transform 0.35s ease-in, opacity 0.35s ease-in';
-      photo.style.transform = 'translateX(-160%) rotate(-22deg)';
-      photo.style.opacity = '0';
-      clearHints();
-      setTimeout(() => doPass(profileId), 320);
-    } else {
-      photo.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-      photo.style.transform = '';
-      photo.style.opacity = '1';
-      clearHints();
+    card.classList.remove('is-dragging');
+    if (card.releasePointerCapture && card.hasPointerCapture?.(e.pointerId)) {
+      card.releasePointerCapture(e.pointerId);
     }
-    curX = 0; curY = 0;
+    if (didDrag) suppressProfilePhotoClickUntil = Date.now() + 450;
+
+    const openDetails = startedOnPhoto && locked === 'v' && (curY < -72 || (curY < -36 && velocityY < -.42));
+    const threshold = Math.min(105, card.clientWidth * .24);
+    const committedRight = locked === 'h' && (curX > threshold || (curX > 42 && velocityX > .48));
+    const committedLeft = locked === 'h' && (curX < -threshold || (curX < -42 && velocityX < -.48));
+
+    if (openDetails) {
+      card.style.transition = 'transform .24s ease-out, opacity .2s ease-out';
+      card.style.transform = 'translate3d(0,-18%,0) scale(.97)';
+      card.style.opacity = '0';
+      setTimeout(() => {
+        resetCard();
+        openProfileDetail(profileId);
+      }, 190);
+    } else if (committedRight) {
+      if (!hasTier('plus') && S.connectsLeft <= 0) {
+        resetCard();
+        doConnect(profileId);
+        return;
+      }
+      card.style.transition = 'transform .32s ease-in, opacity .27s ease-in';
+      card.style.transform = 'translate3d(125%,0,0) rotate(16deg)';
+      card.style.opacity = '0';
+      clearHints();
+      setTimeout(() => doConnect(profileId), 290);
+    } else if (committedLeft) {
+      card.style.transition = 'transform .32s ease-in, opacity .27s ease-in';
+      card.style.transform = 'translate3d(-125%,0,0) rotate(-16deg)';
+      card.style.opacity = '0';
+      clearHints();
+      setTimeout(() => doPass(profileId), 290);
+    } else {
+      resetCard();
+    }
+    curX = curY = 0;
   };
 
-  // touch — only START swipe from the photo; move/end can be anywhere on card
-  photo.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
-  card.addEventListener('touchmove', e => {
-    if (locked === 'h') e.preventDefault();
-    onMove(e.touches[0].clientX, e.touches[0].clientY);
-  }, { passive: false });
-  card.addEventListener('touchend', onEnd);
-
-  // mouse — allow drag from anywhere on card
-  card.addEventListener('mousedown', e => {
-    if (['BUTTON','INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
-    onStart(e.clientX, e.clientY);
+  card.addEventListener('pointerdown', onStart);
+  card.addEventListener('pointermove', onMove);
+  card.addEventListener('pointerup', onEnd);
+  card.addEventListener('pointercancel', () => {
+    dragging = false;
+    curX = curY = 0;
+    resetCard();
   });
-  window.addEventListener('mousemove', e => { if (dragging) onMove(e.clientX, e.clientY); });
-  window.addEventListener('mouseup',   () => { if (dragging) onEnd(); });
 }
 
 // ── SPARK ─────────────────────────────────────────────────
@@ -2931,7 +4285,8 @@ function doSpark(profileId) {
   S.sparksLeft--;
   S.connectsLeft = Math.max(0, S.connectsLeft - 1);
   S.stats.connects++;
-  document.getElementById('connects-count').textContent = S.connectsLeft;
+  const connectsCount = document.getElementById('connects-count');
+  if (connectsCount) connectsCount.textContent = S.connectsLeft;
   updateStats();
   showToast(`⚡ Spark sent to ${p.name}! They'll be notified.`);
   S.queue = S.queue.filter(x => x.id !== profileId);
@@ -2963,46 +4318,17 @@ function doSpotlight() {
 }
 
 // ── SUBSCRIPTION ──────────────────────────────────────────
-const SUB_PRICES = {
-  monthly:   { plus: 'R89',  prem: 'R169', elite: 'R289' },
-  quarterly: { plus: 'R65',  prem: 'R119', elite: 'R199' },
-  annual:    { plus: 'R45',  prem: 'R85',  elite: 'R145'  }
-};
-const SUB_ANNUAL_TOTALS = {
-  quarterly: { plus: 'R585 billed every 3 mo', prem: 'R1,071 billed every 3 mo', elite: 'R1,791 billed every 3 mo' },
-  annual:    { plus: 'R1,068/year', prem: 'R2,040/year', elite: 'R3,480/year' }
-};
-const PLAN_FEATURES = {
-  plus: [
-    { icon: '#FFF3EE', stroke: '#FF6B47', path: 'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z', title: 'See who liked you', sub: '5 likes revealed per day — know who wants to meet you', badge: 'Plus', bc: '' },
-    { icon: '#E6FAF6', stroke: '#00CDA8', path: 'M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2H3v2a9 9 0 0018 0v-2h-2z', title: 'Unlimited swipes', sub: 'Swipe as much as you like, no daily cap', badge: 'Plus', bc: '' },
-    { icon: '#EBF2FF', stroke: '#4F7FEB', path: 'M3 10h10M3 14h7M9 18H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v5', title: 'AI bio writer', sub: 'Let AI write your bio and conversation openers', badge: 'Plus', bc: '' },
-  ],
-  premium: [
-    { icon: '#FFF3EE', stroke: '#FF6B47', path: 'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z', title: 'See ALL who liked you', sub: 'Unlimited — full list of everyone who wants to meet you', badge: 'Premium', bc: 'premium' },
-    { icon: '#F3EEFF', stroke: '#8B5CF6', path: 'M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z', title: 'Video profile', sub: 'Record a 30-second intro video — stand out instantly', badge: 'Premium', bc: 'premium' },
-    { icon: '#E6FAF6', stroke: '#00CDA8', path: 'M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z', title: 'Video introductions', sub: 'Send a 15-sec video to any match before chatting', badge: 'Premium', bc: 'premium' },
-    { icon: '#FFF8E1', stroke: '#F59E0B', path: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', title: 'AI dating coach', sub: 'Daily tips, conversation analysis and compatibility scores', badge: 'Premium', bc: 'premium' },
-  ],
-  elite: [
-    { icon: '#F3EEFF', stroke: '#8B5CF6', path: 'M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z', title: 'Live video calling', sub: 'Call matches directly in the app — no number sharing needed', badge: 'Elite', bc: 'elite' },
-    { icon: '#FFF8E1', stroke: '#F59E0B', path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', title: 'Video date scheduling', sub: 'Book a 15-min video date directly — structured and safe', badge: 'Elite', bc: 'elite' },
-    { icon: '#FFFBE6', stroke: '#F59E0B', path: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z', title: 'Unlimited boosts + featured', sub: 'Weekly featured placement + run boosts whenever you want', badge: 'Elite', bc: 'elite' },
-    { icon: '#E6FAF6', stroke: '#00CDA8', path: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z', title: 'Gold verified badge', sub: 'Gold checkmark signals you are serious and trustworthy', badge: 'Elite', bc: 'elite' },
-  ]
-};
-
-let selectedSubPlan = 'premium';
-let selectedSubBilling = 'monthly';
+let selectedSubPlan = 'quarterly';
 
 const SUB_CONTEXTS = {
   swipes:    { eyebrow: 'You\'ve run out of swipes', title: 'Swipe without limits.', desc: 'Upgrade to Plus and never hit a cap again.' },
   likes:     { eyebrow: 'Someone liked your profile', title: 'See who wants you.', desc: 'Upgrade to Plus to reveal who liked you.' },
-  video:     { eyebrow: 'Premium feature', title: 'Stand out with video.', desc: 'Record a 30-second profile video. Premium members get 5x more replies.' },
-  videocall: { eyebrow: 'Elite feature', title: 'Video call your matches.', desc: 'No number sharing. Call directly in the app — Elite only.' },
+  video:     { eyebrow: 'Linked+ feature', title: 'Stand out with video.', desc: 'Record a 30-second profile video with your Linked+ membership.' },
+  videocall: { eyebrow: 'Linked+ feature', title: 'Video call your matches.', desc: 'No number sharing. Call directly in the app with Linked+.' },
   sparks:    { eyebrow: 'Out of Sparks', title: 'Send more Sparks.', desc: 'Upgrade to get more Sparks and guaranteed visibility.' },
   boost:     { eyebrow: 'Profile boost', title: 'Get seen by more people.', desc: 'Boosts push your profile to the top of Discover.' },
-  default:   { eyebrow: 'Upgrade Linked', title: 'Unlock every connection.', desc: 'More matches, real video profiles, and the full picture of who wants to meet you.' }
+  priority:  { eyebrow: 'Priority visibility', title: 'Be seen in Explore.', desc: 'Move higher in Explore and get more profile views.' },
+  default:   { eyebrow: 'One complete membership', title: 'Linked+', desc: 'Every benefit is included. Simply choose how long you would like to subscribe.' }
 };
 
 function openSub(trigger) {
@@ -3010,10 +4336,7 @@ function openSub(trigger) {
   document.getElementById('sub-eyebrow').textContent = ctx.eyebrow;
   document.getElementById('sub-title').innerHTML = ctx.title;
   document.getElementById('sub-desc').textContent = ctx.desc;
-  if (trigger === 'videocall' || trigger === 'elite') selectSubPlan('elite');
-  else if (trigger === 'swipes' || trigger === 'likes') selectSubPlan('plus');
-  else selectSubPlan('premium');
-  setSubBilling('monthly');
+  selectSubPlan('quarterly');
   document.getElementById('sub-screen').classList.add('open');
   document.getElementById('sub-screen').scrollTop = 0;
 }
@@ -3022,52 +4345,27 @@ function closeSub() {
   document.getElementById('sub-screen').classList.remove('open');
 }
 
-function setSubBilling(mode) {
-  selectedSubBilling = mode;
-  ['monthly','quarterly','annual'].forEach(m => {
-    document.getElementById('sbill-' + m).classList.toggle('active', m === mode);
-  });
-  const p = SUB_PRICES[mode];
-  document.getElementById('sp-plus-price').textContent  = p.plus;
-  document.getElementById('sp-prem-price').textContent  = p.prem;
-  document.getElementById('sp-elite-price').textContent = p.elite;
-}
-
 function selectSubPlan(plan) {
   selectedSubPlan = plan;
-  ['plus','premium','elite'].forEach(p => {
+  ['monthly','quarterly','annual'].forEach(p => {
     document.getElementById('sp-' + p).classList.toggle('selected', p === plan);
   });
-  const labels = { plus: 'Get Linked+ Monthly', premium: 'Get Linked+ · 3 Months', elite: 'Get Linked+ · 12 Months' };
+  const labels = { monthly: 'Get Linked+ · 1 Month', quarterly: 'Get Linked+ · 3 Months', annual: 'Get Linked+ · 12 Months' };
   document.getElementById('sub-cta-btn').textContent = labels[plan];
-  const feats = PLAN_FEATURES[plan] || [];
-  document.getElementById('sub-features').innerHTML = feats.map(f => `
-    <div class="sub-feat-row">
-      <div class="sub-feat-icon" style="background:${f.icon}">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="${f.stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${f.path}"/></svg>
-      </div>
-      <div class="sub-feat-text">
-        <div class="sf-title">${f.title}</div>
-        <div class="sf-sub">${f.sub}</div>
-      </div>
-      <div class="sub-feat-badge ${f.bc}">${f.badge}</div>
-    </div>`).join('');
 }
 
 function subscribeToPlan() {
-  S.tier = selectedSubPlan;
+  S.tier = 'linkedplus';
+  S.subscriptionDuration = selectedSubPlan;
   S.connectsLeft = 9999;
-  if (selectedSubPlan === 'plus' || selectedSubPlan === 'premium' || selectedSubPlan === 'elite') {
-    S.sparksLeft = selectedSubPlan === 'elite' ? 99 : selectedSubPlan === 'premium' ? 5 : 2;
-  }
+  S.sparksLeft = 99;
   closeSub();
   showToast('Welcome to Linked+!');
   updateStats();
 }
 
 function hasTier(min) {
-  const order = ['free','plus','premium','elite'];
-  return order.indexOf(S.tier) >= order.indexOf(min);
+  return S.tier !== 'free';
 }
 
 // ── VERIFICATION ─────────────────────────────────────────
@@ -3301,17 +4599,26 @@ function closeWallet() {
 function updateWalletUI() {
   const avail = (S.walletBalance || 0).toFixed(2);
   const pending = (S.walletPending || 0).toFixed(2);
+  const txs = S.walletTx || [];
+  const transactionRoseCount = txs.reduce((total, tx) => {
+    const explicitQty = Number(tx.roseQty ?? tx.qty);
+    if (Number.isFinite(explicitQty) && explicitQty > 0) return total + explicitQty;
+    const isReceivedRose = tx.type === 'credit' && /rose|bouquet/i.test(tx.name || '');
+    return total + (isReceivedRose ? 1 : 0);
+  }, 0);
+  const roseCount = Math.max(Number(S.rosesReceived) || 0, transactionRoseCount);
   const availEl = document.getElementById('wallet-available');
   const pendingEl = document.getElementById('wallet-pending');
+  const rosesEl = document.getElementById('wallet-roses-received');
   const withdrawBtn = document.getElementById('wallet-withdraw-btn');
   const pillEl = document.getElementById('wallet-balance-pill');
   if (availEl) availEl.textContent = 'R' + avail;
   if (pendingEl) pendingEl.textContent = 'R' + pending;
+  if (rosesEl) rosesEl.textContent = roseCount.toLocaleString();
   if (pillEl) pillEl.textContent = 'R' + avail + ' ›';
   if (withdrawBtn) withdrawBtn.disabled = (S.walletBalance || 0) < 200;
   const listEl = document.getElementById('wallet-tx-list');
   if (!listEl) return;
-  const txs = S.walletTx || [];
   if (!txs.length) {
     listEl.innerHTML = '<div class="wallet-empty">No transactions yet.<br>Roses you receive will appear here.</div>';
     return;
@@ -3384,6 +4691,7 @@ function doReport() {
   showToast('Report submitted. Our team will review within 24 hours.');
 }
 function doBlock() {
+  if (!window.confirm('Block this person? You will no longer see or contact each other.')) return;
   closeSafetyCenter();
   if (_safetyTargetId) {
     S.queue = S.queue.filter(p => p.id !== _safetyTargetId);
@@ -3402,6 +4710,32 @@ function doHide() {
     advanceDiscover();
   }
   showToast('Profile hidden from your Explore.');
+}
+
+// ── PRIORITY + NOTIFICATIONS ─────────────────────────────
+function openPriority() {
+  document.getElementById('priority-screen').classList.add('open');
+}
+function closePriority() {
+  document.getElementById('priority-screen').classList.remove('open');
+}
+function selectPriority(el) {
+  document.querySelectorAll('.priority-plan').forEach(p => p.classList.remove('recommended'));
+  el.classList.add('recommended');
+}
+function activatePriority() {
+  closePriority();
+  doSpotlight();
+}
+function openNotifications() {
+  document.getElementById('notifications-screen').classList.add('open');
+}
+function closeNotifications() {
+  document.getElementById('notifications-screen').classList.remove('open');
+}
+function clearNotifications() {
+  document.getElementById('notification-list').innerHTML = '<div class="wallet-empty">You’re all caught up.</div>';
+  document.querySelector('.top-icon-dot')?.remove();
 }
 
 </script>
