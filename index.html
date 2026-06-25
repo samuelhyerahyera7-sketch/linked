@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1118,6 +1118,75 @@
       background: var(--coral);
       animation: waveAnim 0.6s ease-in-out infinite;
     }
+
+    /* ─── PROFILE COMPLETION ─────────────────────────────── */
+    .completion-card { margin:0 16px 12px; padding:14px 16px; background:var(--surface2); border:1.5px solid var(--border); border-radius:16px; cursor:pointer; }
+    .cc-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .cc-label { font-size:13px; font-weight:600; color:var(--text); }
+    .cc-pct { font-size:15px; font-weight:800; color:var(--red); }
+    .cc-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; margin-bottom:6px; }
+    .cc-fill { height:100%; background:var(--red); border-radius:3px; transition:width 0.4s ease; }
+    .cc-hint { font-size:12px; color:var(--muted); }
+
+    /* ─── ICEBREAKER CHIPS ───────────────────────────────── */
+    .icebreaker-chips { display:flex; gap:8px; padding:8px 14px; overflow-x:auto; scrollbar-width:none; flex-shrink:0; border-top:1px solid var(--border); background:var(--bg); }
+    .icebreaker-chips::-webkit-scrollbar { display:none; }
+    .ic-chip { flex-shrink:0; padding:8px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; }
+    .ic-chip:active { background:var(--surface2); }
+
+    /* ─── WALLET SCREEN ──────────────────────────────────── */
+    #wallet-screen { position:fixed; inset:0; z-index:9990; background:var(--bg); display:none; flex-direction:column; max-width:430px; margin:0 auto; overflow-y:auto; }
+    .wallet-top { display:flex; align-items:center; gap:12px; padding:54px 16px 16px; border-bottom:1px solid var(--border); }
+    .wallet-back { background:none; border:none; cursor:pointer; padding:4px; }
+    .wallet-title { font-size:18px; font-weight:800; color:var(--text); flex:1; }
+    .wallet-balance-card { margin:20px 16px 0; padding:24px; background:var(--red); border-radius:20px; color:white; }
+    .wb-label { font-size:13px; opacity:0.8; margin-bottom:6px; }
+    .wb-amount { font-size:36px; font-weight:900; letter-spacing:-1px; }
+    .wb-pending { margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.2); display:flex; justify-content:space-between; align-items:center; }
+    .wb-pending-label { font-size:12px; opacity:0.75; }
+    .wb-pending-amount { font-size:16px; font-weight:700; }
+    .wallet-withdraw-btn { margin:16px 16px 0; padding:16px; width:calc(100% - 32px); border-radius:14px; background:var(--text); color:white; border:none; font-size:15px; font-weight:700; cursor:pointer; }
+    .wallet-withdraw-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .wallet-tx-section { padding:20px 16px 8px; }
+    .wallet-tx-title { font-size:15px; font-weight:700; color:var(--text); margin-bottom:12px; }
+    .wallet-tx-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+    .wallet-tx-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .wallet-tx-info { flex:1; }
+    .wallet-tx-name { font-size:14px; font-weight:600; color:var(--text); }
+    .wallet-tx-date { font-size:12px; color:var(--muted); }
+    .wallet-tx-amount { font-size:14px; font-weight:700; }
+    .wallet-tx-amount.credit { color:#22C55E; }
+    .wallet-tx-amount.debit { color:var(--muted); }
+    .wallet-empty { text-align:center; padding:48px 20px; color:var(--muted); font-size:14px; }
+    .wallet-info-note { margin:12px 16px 0; padding:14px; background:var(--surface2); border-radius:12px; font-size:12px; color:var(--muted); line-height:1.5; }
+
+    /* ─── SETTINGS SCREEN ────────────────────────────────── */
+    #settings-screen { position:fixed; inset:0; z-index:9990; background:var(--surface2); display:none; flex-direction:column; max-width:430px; margin:0 auto; overflow-y:auto; }
+    .settings-top { display:flex; align-items:center; gap:12px; padding:54px 16px 16px; background:var(--bg); border-bottom:1px solid var(--border); position:sticky; top:0; }
+    .settings-back { background:none; border:none; cursor:pointer; padding:4px; }
+    .settings-title { font-size:18px; font-weight:800; color:var(--text); }
+    .settings-group { margin:16px 16px 0; }
+    .settings-group-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:8px; padding-left:4px; }
+    .settings-section { background:var(--bg); border-radius:16px; overflow:hidden; border:1px solid var(--border); }
+    .settings-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); cursor:pointer; background:var(--bg); }
+    .settings-row:last-child { border-bottom:none; }
+    .settings-row:active { background:var(--surface2); }
+    .settings-row-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .settings-row-label { flex:1; font-size:15px; color:var(--text); font-weight:500; }
+    .settings-row-val { font-size:13px; color:var(--muted); margin-right:4px; }
+    .settings-version { text-align:center; padding:24px 20px 40px; color:var(--muted); font-size:12px; }
+
+    /* ─── SAFETY MODAL ───────────────────────────────────── */
+    #safety-modal { position:fixed; inset:0; z-index:9995; background:rgba(0,0,0,0.5); display:none; align-items:flex-end; justify-content:center; }
+    .safety-sheet { background:var(--bg); border-radius:24px 24px 0 0; width:100%; max-width:430px; padding:8px 0 44px; }
+    .safety-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:10px auto 20px; }
+    .safety-title { font-size:16px; font-weight:800; color:var(--text); padding:0 20px 14px; border-bottom:1px solid var(--border); margin-bottom:4px; }
+    .safety-option { display:flex; align-items:center; gap:14px; padding:14px 20px; cursor:pointer; }
+    .safety-option:active { background:var(--surface2); }
+    .safety-option-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .safety-option-label { font-size:15px; font-weight:600; color:var(--text); }
+    .safety-option-sub { font-size:12px; color:var(--muted); margin-top:1px; }
+    .safety-cancel { display:block; margin:8px 16px 0; padding:14px; width:calc(100% - 32px); border-radius:14px; border:1.5px solid var(--border); background:transparent; color:var(--muted); font-size:15px; font-weight:600; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -1368,8 +1437,8 @@
     <div class="wordmark gradient-text">linked.</div>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="spotlight-pill" id="spotlight-pill" onclick="doSpotlight()">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <span id="spotlight-label">Spotlight</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+        <span id="spotlight-label">Priority</span>
       </div>
       <button class="icon-btn" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;width:36px;height:36px;padding:0" onclick="showToast('Filters coming soon!')">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
@@ -1477,7 +1546,7 @@
     <div class="tab-panel" id="me-tab">
       <div class="me-header">
         <div class="me-title">My Profile</div>
-        <button class="icon-btn" onclick="showToast('Settings coming soon!')">
+        <button class="icon-btn" onclick="openSettings()">
           <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
         </button>
       </div>
@@ -1498,17 +1567,26 @@
         </div>
       </div>
 
+      <div class="completion-card" onclick="showCompletionTips()">
+        <div class="cc-top">
+          <div class="cc-label">Profile strength</div>
+          <div class="cc-pct" id="cc-pct">0%</div>
+        </div>
+        <div class="cc-bar"><div class="cc-fill" id="cc-fill" style="width:0%"></div></div>
+        <div class="cc-hint" id="cc-hint">Complete your profile to get more matches</div>
+      </div>
+
       <div class="premium-banner" id="premium-banner" onclick="openSub()">
         <div class="pb-top">
-          <div class="pb-title gradient-text" id="pb-title">Upgrade to Premium</div>
+          <div class="pb-title gradient-text" id="pb-title">Try Linked+</div>
           <div class="pb-crown">✦</div>
         </div>
         <div class="pb-perks" id="pb-perks">
-          <div class="pb-perk">See everyone who liked you</div>
-          <div class="pb-perk">Unlimited connects per day</div>
-          <div class="pb-perk">5 Sparks daily + weekly Spotlight</div>
+          <div class="pb-perk">See who liked you</div>
+          <div class="pb-perk">One free Rose every week</div>
+          <div class="pb-perk">Unlimited connects · Priority boost</div>
         </div>
-        <button class="pb-btn" id="pb-btn">Get Premium →</button>
+        <button class="pb-btn" id="pb-btn">Get Linked+ →</button>
       </div>
 
       <div class="stats-strip">
@@ -1593,6 +1671,38 @@
             <div class="me-row-label">Show online status</div>
           </div>
           <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <div class="me-section">
+        <div class="me-sec-title">Wallet</div>
+        <div class="me-row" onclick="openWallet()" style="cursor:pointer">
+          <div class="me-row-l">
+            <div class="me-icon" style="background:#FFFBEA"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+            <div>
+              <div class="me-row-label">Rose Earnings</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Roses received convert to cash</div>
+            </div>
+          </div>
+          <div class="me-row-val" id="wallet-balance-pill">R0.00 ›</div>
+        </div>
+      </div>
+
+      <div class="me-section">
+        <div class="me-sec-title">Safety</div>
+        <div class="me-row" onclick="openSafetyCenter(null)" style="cursor:pointer">
+          <div class="me-row-l">
+            <div class="me-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="me-row-label">Safety Center</div>
+          </div>
+          <div class="me-row-val">›</div>
+        </div>
+        <div class="me-row" onclick="openSettings()" style="cursor:pointer">
+          <div class="me-row-l">
+            <div class="me-icon" style="background:#F3EEFF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></div>
+            <div class="me-row-label">Settings</div>
+          </div>
+          <div class="me-row-val">›</div>
         </div>
       </div>
 
@@ -1794,8 +1904,17 @@
     <button class="icon-btn" onclick="hasTier('elite') ? showToast('Video calling — coming soon!') : openSub('videocall')">
       <svg viewBox="0 0 24 24" fill="var(--muted)"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
     </button>
+    <button class="icon-btn" onclick="openSafetyCenter(S.currentChat?.id)" style="margin-left:2px">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--muted)"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+    </button>
   </div>
   <div class="chat-msgs" id="chat-msgs"></div>
+  <div class="icebreaker-chips" id="icebreaker-chips">
+    <button class="ic-chip" onclick="sendIcebreaker(this)">What's your ideal Sunday?</button>
+    <button class="ic-chip" onclick="sendIcebreaker(this)">Hot take — go.</button>
+    <button class="ic-chip" onclick="sendIcebreaker(this)">What are you obsessed with rn?</button>
+    <button class="ic-chip" onclick="sendIcebreaker(this)">Most random fact about you?</button>
+  </div>
   <div class="chat-bar" id="chat-bar">
     <button class="mic-btn" id="mic-btn" onclick="toggleRecording()">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2H3v2a9 9 0 008 8.94V22H8v2h8v-2h-3v-1.06A9 9 0 0021 12v-2h-2z"/></svg>
@@ -1808,6 +1927,169 @@
     <button class="chat-send" onclick="sendMsg()">
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>
+  </div>
+</div>
+
+<!-- ═══ WALLET SCREEN ════════════════════════════════════ -->
+<div id="wallet-screen">
+  <div class="wallet-top">
+    <button class="wallet-back" onclick="closeWallet()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--text)"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </button>
+    <div class="wallet-title">Wallet</div>
+  </div>
+  <div class="wallet-balance-card">
+    <div class="wb-label">Available Balance</div>
+    <div class="wb-amount" id="wallet-available">R0.00</div>
+    <div class="wb-pending">
+      <div class="wb-pending-label">Pending (roses received × 70%)</div>
+      <div class="wb-pending-amount" id="wallet-pending">R0.00</div>
+    </div>
+  </div>
+  <button class="wallet-withdraw-btn" id="wallet-withdraw-btn" onclick="requestWithdrawal()" disabled>Withdraw (min R200)</button>
+  <div class="wallet-info-note">Roses received earn you 70% of face value. Withdrawals require a minimum of R200 and a R15 processing fee. ID verification required for first payout.</div>
+  <div class="wallet-tx-section">
+    <div class="wallet-tx-title">Transaction History</div>
+    <div class="wallet-tx-list" id="wallet-tx-list">
+      <div class="wallet-empty">No transactions yet.<br>Roses you receive will appear here.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS SCREEN ═══════════════════════════════════ -->
+<div id="settings-screen">
+  <div class="settings-top">
+    <button class="settings-back" onclick="closeSettings()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--text)"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </button>
+    <div class="settings-title">Settings</div>
+  </div>
+
+  <div class="settings-group">
+    <div class="settings-group-label">Account</div>
+    <div class="settings-section">
+      <div class="settings-row" onclick="showToast('Edit profile — tap your photo on the Me tab')">
+        <div class="settings-row-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="settings-row-label">Edit Profile</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+      <div class="settings-row" onclick="showToast('Phone number management coming soon')">
+        <div class="settings-row-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .84h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.09a16 16 0 006.29 6.29l1.41-1.41a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 15.08z"/></svg></div>
+        <div class="settings-row-label">Phone Number</div>
+        <div class="settings-row-val" id="settings-phone">+27 •••• ••••</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+      <div class="settings-row" onclick="openSub()">
+        <div class="settings-row-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <div class="settings-row-label">Linked+ Subscription</div>
+        <div class="settings-row-val" id="settings-tier">Free</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <div class="settings-group-label">Privacy</div>
+    <div class="settings-section">
+      <div class="settings-row" onclick="showToast('Profile visibility settings coming soon')">
+        <div class="settings-row-icon" style="background:#EBF2FF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#4F7FEB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="settings-row-label">Who sees my profile</div>
+        <div class="settings-row-val">Everyone</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+      <div class="settings-row" onclick="showToast('Incognito mode available with Linked+'); openSub()">
+        <div class="settings-row-icon" style="background:#F3EEFF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></div>
+        <div class="settings-row-label">Incognito Mode</div>
+        <div class="settings-row-val">Linked+ only</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+      <div class="settings-row" onclick="showToast('Read receipts setting coming soon')">
+        <div class="settings-row-icon" style="background:#FFFBEA"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="settings-row-label">Read Receipts</div>
+        <div class="settings-row-val">On</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <div class="settings-group-label">Notifications</div>
+    <div class="settings-section">
+      <div class="settings-row" onclick="showToast('Notification preferences coming soon')">
+        <div class="settings-row-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+        <div class="settings-row-label">Push Notifications</div>
+        <div class="settings-row-val">All on</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+      <div class="settings-row" onclick="showToast('Email preferences coming soon')">
+        <div class="settings-row-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div class="settings-row-label">Email Updates</div>
+        <div class="settings-row-val">Off</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <div class="settings-group-label">Support</div>
+    <div class="settings-section">
+      <div class="settings-row" onclick="openSafetyCenter(null)">
+        <div class="settings-row-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="settings-row-label">Safety Center</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+      <div class="settings-row" onclick="openTerms()">
+        <div class="settings-row-icon" style="background:#F0F4FF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6B8EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="settings-row-label">Terms &amp; Privacy</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+      <div class="settings-row" onclick="showToast('Contact support: hello@linked.co.za')">
+        <div class="settings-row-icon" style="background:#EEEEFF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#818CF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <div class="settings-row-label">Contact Support</div>
+        <div class="settings-row-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-group" style="margin-bottom:16px">
+    <div class="settings-section">
+      <div class="settings-row" onclick="logout()" style="color:var(--pass)">
+        <div class="settings-row-icon" style="background:#FFF0E8"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--pass)"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></div>
+        <div class="settings-row-label" style="color:var(--pass)">Log Out</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-version">Linked v1.0 · Made with love in South Africa 🇿🇦</div>
+</div>
+
+<!-- ═══ SAFETY MODAL ══════════════════════════════════════ -->
+<div id="safety-modal" onclick="if(event.target===this)closeSafetyCenter()">
+  <div class="safety-sheet">
+    <div class="safety-handle"></div>
+    <div class="safety-title" id="safety-modal-title">Safety Options</div>
+    <div class="safety-option" onclick="doReport()">
+      <div class="safety-option-icon" style="background:#FFF0F0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div>
+        <div class="safety-option-label">Report</div>
+        <div class="safety-option-sub">Fake profile, harassment, or inappropriate content</div>
+      </div>
+    </div>
+    <div class="safety-option" onclick="doBlock()">
+      <div class="safety-option-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
+      <div>
+        <div class="safety-option-label">Block</div>
+        <div class="safety-option-sub">They won't be able to find or contact you</div>
+      </div>
+    </div>
+    <div class="safety-option" onclick="doHide()">
+      <div class="safety-option-icon" style="background:#F3EEFF"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></div>
+      <div>
+        <div class="safety-option-label">Hide Profile</div>
+        <div class="safety-option-sub">You won't see each other in Explore anymore</div>
+      </div>
+    </div>
+    <button class="safety-cancel" onclick="closeSafetyCenter()">Cancel</button>
   </div>
 </div>
 
@@ -1856,6 +2138,9 @@ let S = {
   swipeDate: '',
   sparksLeft: 1,
   spotlightTimer: null,
+  walletBalance: 0,
+  walletPending: 0,
+  walletTx: [],
   isPremium: null,
   isVerified: false,
   stats: { connects: 0, matches: 0, passes: 0 },
@@ -1988,7 +2273,8 @@ function startApp() {
   renderDiscover();
   buildStandouts();
   checkExpiredMatches();
-  // re-check expiry every hour
+  updateCompletion();
+  updateWalletUI();
   setInterval(checkExpiredMatches, 60 * 60 * 1000);
 }
 
@@ -2310,6 +2596,7 @@ function openChat(p) {
   document.getElementById('chat-ava-img').src = p.img;
   document.getElementById('chat-name').textContent = p.name;
   renderChatMsgs();
+  updateIcebreakerVisibility();
   document.getElementById('chat-view').classList.add('open');
   setTimeout(() => document.getElementById('chat-input').focus(), 300);
 }
@@ -2342,6 +2629,8 @@ function sendMsg() {
   const text = inp.value.trim();
   if (!text || !S.currentChat) return;
   inp.value = '';
+  const chips = document.getElementById('icebreaker-chips');
+  if (chips) chips.style.display = 'none';
   const id = S.currentChat.id;
   if (!S.convos[id]) S.convos[id] = [];
   S.convos[id].push({ from: 'me', text, time: nowTime() });
@@ -2505,6 +2794,7 @@ function switchTab(tab) {
   const navId = tab === 'linked' ? 'linked' : tab === 'standouts' ? 'standouts' : tab;
   document.getElementById('nav-' + navId).classList.add('active');
   if (tab === 'linked') { checkExpiredMatches(); updateLinkedUI(); }
+  if (tab === 'me') { updateCompletion(); updateWalletUI(); }
 }
 
 // ── TOAST ─────────────────────────────────────────────────
@@ -2649,14 +2939,15 @@ function doSpark(profileId) {
   setTimeout(() => triggerMatch(p), 600);
 }
 
-// ── SPOTLIGHT ─────────────────────────────────────────────
+// ── PRIORITY ──────────────────────────────────────────────
 function doSpotlight() {
-  if (S.spotlightTimer) { showToast('Spotlight is already active! ✨'); return; }
+  if (S.spotlightTimer) { showToast('Priority is already active!'); return; }
+  if (!hasTier('plus')) { openSub('priority'); return; }
   const pill   = document.getElementById('spotlight-pill');
   const label  = document.getElementById('spotlight-label');
   let secs = 30 * 60;
   pill.classList.add('active');
-  showToast('🔦 You\'re in the Spotlight for 30 minutes!');
+  showToast('Priority is on — you\'re boosted for 30 minutes!');
   S.spotlightTimer = setInterval(() => {
     secs--;
     const m = Math.floor(secs / 60), s = secs % 60;
@@ -2665,8 +2956,8 @@ function doSpotlight() {
       clearInterval(S.spotlightTimer);
       S.spotlightTimer = null;
       pill.classList.remove('active');
-      label.textContent = 'Spotlight';
-      showToast('Spotlight ended — hope you got some good connections!');
+      label.textContent = 'Priority';
+      showToast('Priority ended — hope you got some great connections!');
     }
   }, 1000);
 }
@@ -2957,6 +3248,161 @@ function parseTwemoji(el) {
   }
 }
 document.addEventListener('DOMContentLoaded', () => parseTwemoji(document.body));
+
+// ── PROFILE COMPLETION ────────────────────────────────────
+function calcCompletion() {
+  if (!S.user) return 0;
+  const checks = [
+    !!S.user.name,
+    !!S.user.dob,
+    !!S.user.gender,
+    !!S.user.city,
+    !!S.user.photo,
+    (S.user.interests || []).length > 0,
+    !!(S.user.answers?.sunday),
+    !!(S.user.answers?.hottake),
+  ];
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+}
+function updateCompletion() {
+  const pct = calcCompletion();
+  const el = document.getElementById('cc-pct');
+  const fill = document.getElementById('cc-fill');
+  const hint = document.getElementById('cc-hint');
+  if (!el) return;
+  el.textContent = pct + '%';
+  if (fill) fill.style.width = pct + '%';
+  if (hint) {
+    if (pct === 100) hint.textContent = 'Your profile is complete!';
+    else if (pct >= 75) hint.textContent = 'Almost there — add a personality answer';
+    else if (pct >= 50) hint.textContent = 'Add interests and answers to stand out';
+    else hint.textContent = 'Complete your profile to get more matches';
+  }
+}
+function showCompletionTips() {
+  const pct = calcCompletion();
+  const tips = [];
+  if (!S.user?.dob) tips.push('Add your date of birth');
+  if (!S.user?.photo) tips.push('Upload a profile photo');
+  if (!(S.user?.interests?.length)) tips.push('Select your interests');
+  if (!S.user?.answers?.sunday) tips.push('Answer the personality questions');
+  showToast(tips.length ? tips[0] : 'Profile is 100% complete!');
+}
+
+// ── WALLET ────────────────────────────────────────────────
+function openWallet() {
+  const screen = document.getElementById('wallet-screen');
+  screen.style.display = 'flex';
+  updateWalletUI();
+}
+function closeWallet() {
+  document.getElementById('wallet-screen').style.display = 'none';
+}
+function updateWalletUI() {
+  const avail = (S.walletBalance || 0).toFixed(2);
+  const pending = (S.walletPending || 0).toFixed(2);
+  const availEl = document.getElementById('wallet-available');
+  const pendingEl = document.getElementById('wallet-pending');
+  const withdrawBtn = document.getElementById('wallet-withdraw-btn');
+  const pillEl = document.getElementById('wallet-balance-pill');
+  if (availEl) availEl.textContent = 'R' + avail;
+  if (pendingEl) pendingEl.textContent = 'R' + pending;
+  if (pillEl) pillEl.textContent = 'R' + avail + ' ›';
+  if (withdrawBtn) withdrawBtn.disabled = (S.walletBalance || 0) < 200;
+  const listEl = document.getElementById('wallet-tx-list');
+  if (!listEl) return;
+  const txs = S.walletTx || [];
+  if (!txs.length) {
+    listEl.innerHTML = '<div class="wallet-empty">No transactions yet.<br>Roses you receive will appear here.</div>';
+    return;
+  }
+  listEl.innerHTML = txs.map(tx => `
+    <div class="wallet-tx-row">
+      <div class="wallet-tx-icon" style="background:${tx.type==='credit'?'#F0FDF4':'#FFF5F5'}">${tx.emoji}</div>
+      <div class="wallet-tx-info">
+        <div class="wallet-tx-name">${tx.name}</div>
+        <div class="wallet-tx-date">${tx.date}</div>
+      </div>
+      <div class="wallet-tx-amount ${tx.type}">${tx.type==='credit'?'+':'-'}R${tx.amount.toFixed(2)}</div>
+    </div>`).join('');
+}
+function requestWithdrawal() {
+  if ((S.walletBalance || 0) < 200) { showToast('Minimum withdrawal is R200'); return; }
+  showToast('ID verification required. Coming soon!');
+}
+
+// ── ICEBREAKER ────────────────────────────────────────────
+function sendIcebreaker(btn) {
+  if (!S.currentChat) return;
+  const text = btn.textContent;
+  document.getElementById('icebreaker-chips').style.display = 'none';
+  const id = S.currentChat.id;
+  if (!S.convos[id]) S.convos[id] = [];
+  S.convos[id].push({ from: 'me', text, time: nowTime() });
+  renderChatMsgs();
+  setTimeout(() => {
+    const reply = REPLIES[Math.floor(Math.random() * REPLIES.length)];
+    S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
+    if (S.currentChat?.id === id) renderChatMsgs();
+  }, 1000 + Math.random() * 1000);
+}
+function updateIcebreakerVisibility() {
+  const chips = document.getElementById('icebreaker-chips');
+  if (!chips || !S.currentChat) return;
+  const msgs = S.convos[S.currentChat.id] || [];
+  chips.style.display = msgs.length === 0 ? 'flex' : 'none';
+}
+
+// ── SETTINGS ─────────────────────────────────────────────
+function openSettings() {
+  const tierEl = document.getElementById('settings-tier');
+  if (tierEl) tierEl.textContent = S.tier === 'free' ? 'Free' : 'Linked+';
+  document.getElementById('settings-screen').style.display = 'flex';
+}
+function closeSettings() {
+  document.getElementById('settings-screen').style.display = 'none';
+}
+
+// ── SAFETY ────────────────────────────────────────────────
+let _safetyTargetId = null;
+function openSafetyCenter(profileId) {
+  _safetyTargetId = profileId;
+  const titleEl = document.getElementById('safety-modal-title');
+  if (titleEl) {
+    const p = PROFILES.find(x => x.id === profileId);
+    titleEl.textContent = p ? `Options for ${p.name}` : 'Safety Options';
+  }
+  const modal = document.getElementById('safety-modal');
+  modal.style.display = 'flex';
+}
+function closeSafetyCenter() {
+  document.getElementById('safety-modal').style.display = 'none';
+  _safetyTargetId = null;
+}
+function doReport() {
+  closeSafetyCenter();
+  showToast('Report submitted. Our team will review within 24 hours.');
+}
+function doBlock() {
+  closeSafetyCenter();
+  if (_safetyTargetId) {
+    S.queue = S.queue.filter(p => p.id !== _safetyTargetId);
+    S.matches = S.matches.filter(p => p.id !== _safetyTargetId);
+    if (S.currentChat?.id === _safetyTargetId) { closeChat(); }
+    updateLinkedUI();
+    advanceDiscover();
+  }
+  showToast('User blocked. You won\'t see each other anymore.');
+}
+function doHide() {
+  closeSafetyCenter();
+  if (_safetyTargetId) {
+    S.queue = S.queue.filter(p => p.id !== _safetyTargetId);
+    if (S.currentChat?.id === _safetyTargetId) { closeChat(); }
+    advanceDiscover();
+  }
+  showToast('Profile hidden from your Explore.');
+}
 
 </script>
 
