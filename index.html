@@ -1553,7 +1553,7 @@
     }
     #app[data-tab="discover"] .pc-photo {
       height:100%; min-height:100%; max-height:none;
-      border-radius:0; box-shadow:none;
+      border-radius:0; box-shadow:none; touch-action:none;
     }
     #app[data-tab="discover"] .pc-photo > img {
       height:100%; object-fit:cover; object-position:center top;
@@ -1813,6 +1813,13 @@
       padding:12px 6px; text-align:center; border-radius:15px;
       background:#FFF6F7; color:#5D5658; font-size:10px; line-height:1.35;
       border:1px solid #FFE2E6;
+    }
+    .store-benefit .delivery-bolt { color:#20A765; }
+    .notification-rose-img {
+      width:30px; height:30px; object-fit:contain; mix-blend-mode:multiply;
+      filter:drop-shadow(0 3px 5px rgba(150,0,18,.14));
+      -webkit-mask-image:radial-gradient(ellipse 72% 78% at center,#000 60%,transparent 100%);
+      mask-image:radial-gradient(ellipse 72% 78% at center,#000 60%,transparent 100%);
     }
     .store-benefit strong { display:block; color:var(--red); font-size:16px; margin-bottom:4px; }
     .linked-header {
@@ -2357,7 +2364,7 @@
       </div>
 
       <div class="store-benefits">
-        <div class="store-benefit"><strong>⚡</strong>Delivered instantly</div>
+        <div class="store-benefit"><strong class="delivery-bolt">⚡</strong>Delivered instantly</div>
         <div class="store-benefit"><strong>🔔</strong>They’ll be notified</div>
         <div class="store-benefit"><strong>♡</strong>Make an impression</div>
       </div>
@@ -2935,7 +2942,7 @@
   <div class="notification-list" id="notification-list">
     <div class="notification-group">
       <h3>Today</h3>
-      <div class="notification-row"><div class="notification-icon">🌹</div><div class="notification-copy"><strong>Sarah sent you a Rose</strong><div class="notification-time">Roses · 2m</div></div></div>
+      <div class="notification-row"><div class="notification-icon"><img class="notification-rose-img" src="assets/red-rose.png" alt=""></div><div class="notification-copy"><strong>Sarah sent you a Rose</strong><div class="notification-time">Roses · 2m</div></div></div>
       <div class="notification-row"><div class="notification-icon">🔗</div><div class="notification-copy"><strong>You’re Linked with Daniel</strong><div class="notification-time">Matches · 1h</div></div></div>
       <div class="notification-row"><div class="notification-icon">💬</div><div class="notification-copy"><strong>New message from Jessica</strong><div class="notification-time">Messages · 2h</div></div></div>
     </div>
@@ -3971,14 +3978,9 @@ let suppressProfilePhotoClickUntil = 0;
 let profilePhotoTapTimer = null;
 let lastProfilePhotoTap = { profileId:null, time:0 };
 
-function handleProfilePhotoClick(event, profileId) {
-  if (Date.now() < suppressProfilePhotoClickUntil) {
-    event.preventDefault();
-    event.stopPropagation();
-    return;
-  }
+function queueProfilePhotoTap(profileId, direction) {
   const now = Date.now();
-  const isDoubleTap = lastProfilePhotoTap.profileId === profileId && now - lastProfilePhotoTap.time < 320;
+  const isDoubleTap = lastProfilePhotoTap.profileId === profileId && now - lastProfilePhotoTap.time < 360;
   if (isDoubleTap) {
     clearTimeout(profilePhotoTapTimer);
     profilePhotoTapTimer = null;
@@ -3987,13 +3989,21 @@ function handleProfilePhotoClick(event, profileId) {
     return;
   }
   lastProfilePhotoTap = { profileId, time:now };
-  const bounds = event.currentTarget.getBoundingClientRect();
-  const direction = event.clientX < bounds.left + bounds.width / 2 ? -1 : 1;
   clearTimeout(profilePhotoTapTimer);
   profilePhotoTapTimer = setTimeout(() => {
     changeProfilePhoto(profileId, direction);
     profilePhotoTapTimer = null;
-  }, 325);
+  }, 370);
+}
+
+function handleProfilePhotoClick(event, profileId) {
+  if (Date.now() < suppressProfilePhotoClickUntil) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
+  const bounds = event.currentTarget.getBoundingClientRect();
+  queueProfilePhotoTap(profileId, event.clientX < bounds.left + bounds.width / 2 ? -1 : 1);
 }
 
 function changeProfilePhoto(profileId, direction = 1) {
@@ -4138,6 +4148,7 @@ function setupPhotoSwipe(profileId) {
   let startX = 0, startY = 0, curX = 0, curY = 0, locked = null;
   let dragging = false, didDrag = false, lastX = 0, lastY = 0, lastTime = 0, velocityX = 0, velocityY = 0;
   let startedOnPhoto = false;
+  let touchStartX = 0, touchStartY = 0, touchStartTime = 0, touchTracking = false;
 
   const clearHints = () => {
     hintPass.style.opacity = hintLink.style.opacity = hintSpark.style.opacity = 0;
@@ -4152,6 +4163,7 @@ function setupPhotoSwipe(profileId) {
   };
 
   const onStart = e => {
+    if (e.pointerType === 'touch') return;
     if (e.button !== undefined && e.button !== 0) return;
     if (e.target.closest('button,input,textarea,select,.answer-carousel,.pc-voice')) return;
     startX = lastX = e.clientX;
@@ -4275,6 +4287,93 @@ function setupPhotoSwipe(profileId) {
     curX = curY = 0;
     resetCard();
   });
+
+  const photo = document.getElementById('pc-photo-' + profileId);
+  photo.addEventListener('touchstart', e => {
+    if (e.target.closest('button')) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchStartTime = Date.now();
+    touchTracking = true;
+    card.style.transition = 'none';
+  }, { passive:true });
+
+  photo.addEventListener('touchmove', e => {
+    if (!touchTracking) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    if (Math.abs(dx) > 8 || dy < -8) e.preventDefault();
+    if (Math.abs(dx) > Math.abs(dy)) {
+      const rot = Math.max(-10, Math.min(10, dx * .03));
+      card.style.transform = `translate3d(${dx * .78}px,0,0) rotate(${rot}deg)`;
+      if (dx > 20) {
+        hintLink.style.opacity = Math.min(1, (dx - 20) / 70);
+        hintPass.style.opacity = 0;
+      } else if (dx < -20) {
+        hintPass.style.opacity = Math.min(1, (-dx - 20) / 70);
+        hintLink.style.opacity = 0;
+      }
+    } else if (dy < 0) {
+      card.style.transform = `translate3d(0,${Math.max(-120,dy * .55)}px,0) scale(.985)`;
+      card.style.opacity = String(Math.max(.74, 1 - Math.abs(dy) / 480));
+      clearHints();
+    }
+  }, { passive:false });
+
+  photo.addEventListener('touchend', e => {
+    if (!touchTracking) return;
+    touchTracking = false;
+    const touch = e.changedTouches[0];
+    if (!touch) { resetCard(); return; }
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    const duration = Date.now() - touchStartTime;
+    const horizontal = Math.abs(dx) > Math.abs(dy);
+    e.preventDefault();
+    suppressProfilePhotoClickUntil = Date.now() + 500;
+
+    if (Math.abs(dx) < 14 && Math.abs(dy) < 14 && duration < 450) {
+      resetCard();
+      const bounds = photo.getBoundingClientRect();
+      queueProfilePhotoTap(profileId, touch.clientX < bounds.left + bounds.width / 2 ? -1 : 1);
+      return;
+    }
+    if (!horizontal && dy < -52) {
+      card.style.transition = 'transform .22s ease-out,opacity .18s ease-out';
+      card.style.transform = 'translate3d(0,-18%,0) scale(.97)';
+      card.style.opacity = '0';
+      setTimeout(() => { resetCard(); openProfileDetail(profileId); }, 180);
+      return;
+    }
+    if (horizontal && dx > 72) {
+      if (!hasTier('plus') && S.connectsLeft <= 0) {
+        resetCard();
+        doConnect(profileId);
+        return;
+      }
+      card.style.transition = 'transform .28s ease-in,opacity .24s ease-in';
+      card.style.transform = 'translate3d(125%,0,0) rotate(16deg)';
+      card.style.opacity = '0';
+      setTimeout(() => doConnect(profileId), 250);
+      return;
+    }
+    if (horizontal && dx < -72) {
+      card.style.transition = 'transform .28s ease-in,opacity .24s ease-in';
+      card.style.transform = 'translate3d(-125%,0,0) rotate(-16deg)';
+      card.style.opacity = '0';
+      setTimeout(() => doPass(profileId), 250);
+      return;
+    }
+    resetCard();
+  }, { passive:false });
+  photo.addEventListener('touchcancel', () => {
+    touchTracking = false;
+    resetCard();
+  }, { passive:true });
 }
 
 // ── SPARK ─────────────────────────────────────────────────
