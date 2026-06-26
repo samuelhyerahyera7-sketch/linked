@@ -3045,6 +3045,8 @@
 <div id="profile-detail-screen" class="profile-detail-screen">
   <div class="profile-detail-hero">
     <img id="profile-detail-cover" src="" alt="">
+    <div class="swipe-hint swipe-hint-pass detail-swipe-hint" id="detail-hint-pass"><div class="swipe-label">PASS</div></div>
+    <div class="swipe-hint swipe-hint-link detail-swipe-hint" id="detail-hint-link"><div class="swipe-label link-label">LINK</div></div>
     <button class="profile-detail-close" onclick="closeProfileDetail()" aria-label="Close">‹</button>
     <div class="profile-detail-identity">
       <div class="profile-detail-name" id="profile-detail-name"></div>
@@ -4361,6 +4363,8 @@ function showProfileDetailPhoto(index) {
 function setupProfileDetailGestures() {
   const screen = document.getElementById('profile-detail-screen');
   const hero = screen.querySelector('.profile-detail-hero');
+  const hintPass = document.getElementById('detail-hint-pass');
+  const hintLink = document.getElementById('detail-hint-link');
   if (screen.dataset.gesturesReady) return;
   screen.dataset.gesturesReady = 'true';
   let startX = 0, startY = 0, startScroll = 0, tracking = false, axis = null;
@@ -4369,8 +4373,25 @@ function setupProfileDetailGestures() {
   let touchStartX = 0, touchStartY = 0, touchStartScroll = 0, touchTracking = false, touchOnMedia = false;
   let touchInCenter = false;
   let lastDetailTap = 0;
+  let detailActionBusy = false;
 
   const mediaSelector = '.profile-detail-hero,.detail-media,.detail-video';
+  const clearDetailHints = () => {
+    if (hintPass) hintPass.style.opacity = 0;
+    if (hintLink) hintLink.style.opacity = 0;
+  };
+  const showDetailHint = dx => {
+    const amount = Math.min(1, Math.max(0, (Math.abs(dx) - 36) / 92));
+    if (dx > 0) {
+      if (hintLink) hintLink.style.opacity = amount;
+      if (hintPass) hintPass.style.opacity = 0;
+    } else if (dx < 0) {
+      if (hintPass) hintPass.style.opacity = amount;
+      if (hintLink) hintLink.style.opacity = 0;
+    } else {
+      clearDetailHints();
+    }
+  };
   const getMediaBounds = target => {
     const media = target.closest(mediaSelector) || hero;
     return media.getBoundingClientRect();
@@ -4381,6 +4402,7 @@ function setupProfileDetailGestures() {
     return x > bounds.width * .28 && x < bounds.width * .72;
   };
   const nudgeDetailPhoto = direction => {
+    clearDetailHints();
     const next = profileDetailState.index + direction;
     if (next < 0) {
       closeProfileDetail();
@@ -4390,18 +4412,25 @@ function setupProfileDetailGestures() {
   };
   const performDetailAction = direction => {
     const id = profileDetailState.profileId;
-    if (!id) return;
-    if (direction < 0) {
+    if (!id || detailActionBusy) return;
+    detailActionBusy = true;
+    clearDetailHints();
+    hero.style.transition = 'transform .32s ease-in, opacity .26s ease-in';
+    hero.style.transform = `translate3d(${direction > 0 ? '112%' : '-112%'},0,0) rotate(${direction > 0 ? 12 : -12}deg)`;
+    hero.style.opacity = '0';
+    setTimeout(() => {
+      hero.style.transition = '';
+      hero.style.transform = '';
+      hero.style.opacity = '';
       closeProfileDetail();
-      doPass(id);
-    } else {
-      closeProfileDetail();
-      doConnect(id);
-    }
+      if (direction < 0) doPass(id);
+      else doConnect(id);
+      detailActionBusy = false;
+    }, 285);
   };
   const sendDetailRose = () => {
     const id = profileDetailState.profileId;
-    if (id) openRoseModal(id);
+    if (id && !detailActionBusy) openRoseModal(id);
   };
   const handleDetailTap = (clientX, target) => {
     if (!target.closest(mediaSelector)) return;
@@ -4434,17 +4463,21 @@ function setupProfileDetailGestures() {
 
   screen.addEventListener('pointermove', e => {
     if (!tracking) return;
+    if (detailActionBusy) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     if (!axis && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) axis = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
     if (axis === 'h' && startedOnMedia) {
       e.preventDefault();
       hero.style.transition = 'none';
-      hero.style.transform = `translate3d(${dx * (startedInCenter ? .18 : .35)}px,0,0)`;
+      hero.style.transform = `translate3d(${dx * (startedInCenter ? .42 : .35)}px,0,0) rotate(${startedInCenter ? Math.max(-7, Math.min(7, dx * .022)) : 0}deg)`;
+      if (startedInCenter) showDetailHint(dx);
+      else clearDetailHints();
     } else if (axis === 'v' && startScroll <= 1 && dy > 0) {
       e.preventDefault();
       screen.style.transition = 'none';
       screen.style.transform = `translate3d(0,${Math.min(150,dy * .55)}px,0)`;
+      clearDetailHints();
     }
   });
 
@@ -4458,13 +4491,16 @@ function setupProfileDetailGestures() {
     screen.style.transition = 'transform .2s ease-out';
     screen.style.transform = '';
 
+    const actionThreshold = Math.min(150, Math.max(118, hero.clientWidth * .34));
     if (axis === 'h' && Math.abs(dx) > 55 && startedOnMedia) {
-      if (startedInCenter && Math.abs(dx) > 82) performDetailAction(dx);
+      if (startedInCenter && Math.abs(dx) > actionThreshold) performDetailAction(dx);
       else nudgeDetailPhoto(dx < 0 ? 1 : -1);
     } else if (axis === 'v' && startScroll <= 1 && dy > 80) {
       closeProfileDetail();
     } else if ((!axis || (Math.abs(dx) < 8 && Math.abs(dy) < 8)) && startedOnMedia) {
       handleDetailTap(e.clientX, e.target);
+    } else {
+      clearDetailHints();
     }
   };
 
@@ -4473,6 +4509,7 @@ function setupProfileDetailGestures() {
     tracking = false;
     hero.style.transform = '';
     screen.style.transform = '';
+    clearDetailHints();
   });
 
   screen.addEventListener('touchstart', e => {
@@ -4489,6 +4526,7 @@ function setupProfileDetailGestures() {
 
   screen.addEventListener('touchmove', e => {
     if (!touchTracking) return;
+    if (detailActionBusy) return;
     const touch = e.touches[0];
     if (!touch) return;
     const dx = touch.clientX - touchStartX;
@@ -4496,11 +4534,14 @@ function setupProfileDetailGestures() {
     if (touchOnMedia && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
       e.preventDefault();
       hero.style.transition = 'none';
-      hero.style.transform = `translate3d(${dx * (touchInCenter ? .18 : .35)}px,0,0)`;
+      hero.style.transform = `translate3d(${dx * (touchInCenter ? .42 : .35)}px,0,0) rotate(${touchInCenter ? Math.max(-7, Math.min(7, dx * .022)) : 0}deg)`;
+      if (touchInCenter) showDetailHint(dx);
+      else clearDetailHints();
     } else if (touchStartScroll <= 1 && dy > 8 && Math.abs(dy) > Math.abs(dx)) {
       e.preventDefault();
       screen.style.transition = 'none';
       screen.style.transform = `translate3d(0,${Math.min(160,dy * .58)}px,0)`;
+      clearDetailHints();
     }
   }, { passive:false });
 
@@ -4515,13 +4556,16 @@ function setupProfileDetailGestures() {
     screen.style.transition = 'transform .2s ease-out';
     screen.style.transform = '';
 
+    const actionThreshold = Math.min(150, Math.max(112, hero.clientWidth * .32));
     if (touchOnMedia && Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy)) {
-      if (touchInCenter && Math.abs(dx) > 76) performDetailAction(dx);
+      if (touchInCenter && Math.abs(dx) > actionThreshold) performDetailAction(dx);
       else nudgeDetailPhoto(dx < 0 ? 1 : -1);
     } else if (touchStartScroll <= 1 && dy > 68 && Math.abs(dy) > Math.abs(dx)) {
       closeProfileDetail();
     } else if (touchOnMedia && Math.abs(dx) < 10 && Math.abs(dy) < 10) {
       handleDetailTap(touch.clientX, e.target);
+    } else {
+      clearDetailHints();
     }
   }, { passive:true });
 
@@ -4529,6 +4573,7 @@ function setupProfileDetailGestures() {
     touchTracking = false;
     hero.style.transform = '';
     screen.style.transform = '';
+    clearDetailHints();
   }, { passive:true });
 }
 
@@ -5061,13 +5106,18 @@ let roseTargetId = null;
 let roseSheetTouchStartY = 0;
 let roseSheetTouchStartTime = 0;
 let roseSheetDragging = false;
+let roseModalBusyUntil = 0;
 
 function openRoseModal(profileId) {
+  const now = Date.now();
+  if (now < roseModalBusyUntil) return;
   roseTargetId = profileId;
   const p = PROFILES.find(x => x.id === profileId);
   if (p) document.getElementById('rose-modal-name').textContent = 'to ' + p.name;
   const modal = document.getElementById('rose-modal');
   const sheet = document.getElementById('rose-sheet');
+  if (modal.style.display === 'flex') return;
+  roseModalBusyUntil = now + 420;
   sheet.style.transition = 'none';
   sheet.style.transform = '';
   modal.style.background = 'rgba(0,0,0,0.5)';
@@ -5076,6 +5126,7 @@ function openRoseModal(profileId) {
 }
 
 function closeRoseModal() {
+  roseModalBusyUntil = Date.now() + 320;
   const modal = document.getElementById('rose-modal');
   const sheet = document.getElementById('rose-sheet');
   sheet.style.transition = 'transform .22s ease-in';
