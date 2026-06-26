@@ -4365,7 +4365,59 @@ function setupProfileDetailGestures() {
   screen.dataset.gesturesReady = 'true';
   let startX = 0, startY = 0, startScroll = 0, tracking = false, axis = null;
   let startedOnMedia = false;
+  let startedInCenter = false;
   let touchStartX = 0, touchStartY = 0, touchStartScroll = 0, touchTracking = false, touchOnMedia = false;
+  let touchInCenter = false;
+  let lastDetailTap = 0;
+
+  const mediaSelector = '.profile-detail-hero,.detail-media,.detail-video';
+  const getMediaBounds = target => {
+    const media = target.closest(mediaSelector) || hero;
+    return media.getBoundingClientRect();
+  };
+  const isCenterGesture = (clientX, target) => {
+    const bounds = getMediaBounds(target);
+    const x = clientX - bounds.left;
+    return x > bounds.width * .28 && x < bounds.width * .72;
+  };
+  const nudgeDetailPhoto = direction => {
+    const next = profileDetailState.index + direction;
+    if (next < 0) {
+      closeProfileDetail();
+    } else {
+      showProfileDetailPhoto(next);
+    }
+  };
+  const performDetailAction = direction => {
+    const id = profileDetailState.profileId;
+    if (!id) return;
+    if (direction < 0) {
+      closeProfileDetail();
+      doPass(id);
+    } else {
+      closeProfileDetail();
+      doConnect(id);
+    }
+  };
+  const sendDetailRose = () => {
+    const id = profileDetailState.profileId;
+    if (id) openRoseModal(id);
+  };
+  const handleDetailTap = (clientX, target) => {
+    if (!target.closest(mediaSelector)) return;
+    if (isCenterGesture(clientX, target)) {
+      const now = Date.now();
+      if (now - lastDetailTap < 340) {
+        lastDetailTap = 0;
+        sendDetailRose();
+      } else {
+        lastDetailTap = now;
+      }
+      return;
+    }
+    const bounds = getMediaBounds(target);
+    nudgeDetailPhoto(clientX - bounds.left < bounds.width / 2 ? -1 : 1);
+  };
 
   screen.addEventListener('pointerdown', e => {
     if (e.pointerType === 'touch') return;
@@ -4375,7 +4427,8 @@ function setupProfileDetailGestures() {
     startScroll = screen.scrollTop;
     axis = null;
     tracking = true;
-    startedOnMedia = Boolean(e.target.closest('.profile-detail-hero,.detail-media,.detail-video'));
+    startedOnMedia = Boolean(e.target.closest(mediaSelector));
+    startedInCenter = startedOnMedia && isCenterGesture(e.clientX, e.target);
     if (screen.setPointerCapture) screen.setPointerCapture(e.pointerId);
   });
 
@@ -4387,7 +4440,7 @@ function setupProfileDetailGestures() {
     if (axis === 'h' && startedOnMedia) {
       e.preventDefault();
       hero.style.transition = 'none';
-      hero.style.transform = `translate3d(${dx * .35}px,0,0)`;
+      hero.style.transform = `translate3d(${dx * (startedInCenter ? .18 : .35)}px,0,0)`;
     } else if (axis === 'v' && startScroll <= 1 && dy > 0) {
       e.preventDefault();
       screen.style.transition = 'none';
@@ -4406,13 +4459,12 @@ function setupProfileDetailGestures() {
     screen.style.transform = '';
 
     if (axis === 'h' && Math.abs(dx) > 55 && startedOnMedia) {
-      if (dx > 0 && profileDetailState.index === 0) {
-        closeProfileDetail();
-      } else {
-        showProfileDetailPhoto(profileDetailState.index + (dx < 0 ? 1 : -1));
-      }
+      if (startedInCenter && Math.abs(dx) > 82) performDetailAction(dx);
+      else nudgeDetailPhoto(dx < 0 ? 1 : -1);
     } else if (axis === 'v' && startScroll <= 1 && dy > 80) {
       closeProfileDetail();
+    } else if ((!axis || (Math.abs(dx) < 8 && Math.abs(dy) < 8)) && startedOnMedia) {
+      handleDetailTap(e.clientX, e.target);
     }
   };
 
@@ -4430,7 +4482,8 @@ function setupProfileDetailGestures() {
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
     touchStartScroll = screen.scrollTop;
-    touchOnMedia = Boolean(e.target.closest('.profile-detail-hero,.detail-media,.detail-video'));
+    touchOnMedia = Boolean(e.target.closest(mediaSelector));
+    touchInCenter = touchOnMedia && isCenterGesture(touch.clientX, e.target);
     touchTracking = true;
   }, { passive:true });
 
@@ -4443,7 +4496,7 @@ function setupProfileDetailGestures() {
     if (touchOnMedia && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
       e.preventDefault();
       hero.style.transition = 'none';
-      hero.style.transform = `translate3d(${dx * .35}px,0,0)`;
+      hero.style.transform = `translate3d(${dx * (touchInCenter ? .18 : .35)}px,0,0)`;
     } else if (touchStartScroll <= 1 && dy > 8 && Math.abs(dy) > Math.abs(dx)) {
       e.preventDefault();
       screen.style.transition = 'none';
@@ -4463,10 +4516,12 @@ function setupProfileDetailGestures() {
     screen.style.transform = '';
 
     if (touchOnMedia && Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 0 && profileDetailState.index === 0) closeProfileDetail();
-      else showProfileDetailPhoto(profileDetailState.index + (dx < 0 ? 1 : -1));
+      if (touchInCenter && Math.abs(dx) > 76) performDetailAction(dx);
+      else nudgeDetailPhoto(dx < 0 ? 1 : -1);
     } else if (touchStartScroll <= 1 && dy > 68 && Math.abs(dy) > Math.abs(dx)) {
       closeProfileDetail();
+    } else if (touchOnMedia && Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+      handleDetailTap(touch.clientX, e.target);
     }
   }, { passive:true });
 
