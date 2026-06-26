@@ -504,13 +504,19 @@
       padding:6px 10px; border-radius:999px; background:rgba(18,18,22,.28);
       color:rgba(255,255,255,.92); backdrop-filter:blur(8px);
       font-size:10px; font-weight:750; pointer-events:none;
+      animation:roseHintOnce 3.2s ease forwards;
+    }
+    @keyframes roseHintOnce {
+      0%,68% { opacity:1; transform:translateX(-50%) translateY(0); }
+      100% { opacity:0; transform:translateX(-50%) translateY(-5px); visibility:hidden; }
     }
     .pc-about-pill {
       position:absolute; z-index:5; left:14px; top:34px;
       min-height:38px; padding:8px 13px; display:flex; align-items:center; gap:6px;
-      border:1px solid rgba(255,255,255,.42); border-radius:999px;
-      background:rgba(18,18,22,.38); color:#fff; backdrop-filter:blur(16px);
-      box-shadow:0 7px 20px rgba(0,0,0,.16); font-size:11px; font-weight:800;
+      border:1px solid rgba(255,255,255,.28); border-radius:999px;
+      background:rgba(12,12,15,.20); color:#fff;
+      backdrop-filter:blur(12px) saturate(1.15);
+      box-shadow:0 7px 20px rgba(0,0,0,.10); font-size:11px; font-weight:800;
       cursor:pointer; white-space:nowrap;
     }
     .pc-about-pill span { color:#fff; font-size:14px; }
@@ -1969,7 +1975,7 @@
     .brand-lockup {
       display:inline-flex; align-items:center; gap:3px;
       width:172px; height:58px; line-height:1;
-      background:url('assets/linked-logo.png') center/contain no-repeat;
+      background:url('assets/linked-logo-transparent.png') center/contain no-repeat;
     }
     .brand-lockup .brand-name,.brand-lockup svg { display:none; }
     .brand-lockup.compact { width:102px; height:36px; }
@@ -2110,6 +2116,18 @@
       border-color:#29292E!important;
       color:#A6A6AD;
     }
+    body[data-theme="dark"] .roses-screen-title {
+      color:#FFFFFF!important;
+      text-shadow:0 1px 12px rgba(255,255,255,.08);
+    }
+    body[data-theme="dark"] #nav-standouts .nav-rose-img {
+      filter:grayscale(1) brightness(1.55) contrast(.82)!important;
+      opacity:.92;
+    }
+    body[data-theme="dark"] #nav-standouts.active .nav-rose-img {
+      filter:grayscale(1) brightness(1.85) contrast(.9)!important;
+      opacity:1;
+    }
     body[data-theme="dark"] #app[data-tab="discover"] .pc-actions {
       background:transparent!important;
     }
@@ -2121,6 +2139,13 @@
     body[data-theme="dark"] .act-connect {
       background:var(--red)!important;
       border-color:#FFFFFF!important;
+    }
+    body[data-theme="dark"] .profile-detail-screen,
+    body[data-theme="dark"] .profile-detail-body {
+      background:#09090B!important;
+    }
+    body[data-theme="dark"] .detail-actions {
+      background:transparent!important;
     }
     body[data-theme="dark"] .rose-product-art,
     body[data-theme="dark"] .nav-rose-img,
@@ -3291,6 +3316,7 @@ let S = {
   selectedLooking: null,
   exploreFilters: { location:'', looking:'', ageMin:18, ageMax:35, distance:50 },
   myProfileLayout: ['about','voice','photo1','prompt1','video','prompt2','photo2','interests','prompt3','photo3','prompt4'],
+  roseHintShown: false,
 };
 
 // ── SETUP ─────────────────────────────────────────────────
@@ -3547,6 +3573,10 @@ function buildProfileCard(p) {
   const dots = answerDefs.map((_, i) => `<div class="carousel-dot${i === 0 ? ' active' : ''}"></div>`).join('');
   const photos = p.photos?.length ? p.photos : [p.img];
   const photoProgress = photos.map((_, i) => `<div class="photo-prog${i === 0 ? ' active' : ''}"></div>`).join('');
+  const roseHint = !S.roseHintShown
+    ? '<div class="double-tap-rose-cue">Double tap centre to send a Rose</div>'
+    : '';
+  S.roseHintShown = true;
 
   const div = document.createElement('div');
   div.className = 'profile-card-full fade-in';
@@ -3555,7 +3585,7 @@ function buildProfileCard(p) {
     <div class="pc-photo" id="pc-photo-${p.id}">
       <div class="pc-photo-progress">${photoProgress}</div>
       <div class="photo-count" id="photo-count-${p.id}">1 / ${photos.length}</div>
-      <div class="double-tap-rose-cue">Double tap centre to send a Rose</div>
+      ${roseHint}
       <div class="photo-tap-cue left" aria-hidden="true">‹</div>
       <div class="photo-tap-cue right" aria-hidden="true">›</div>
       <img id="profile-image-${p.id}" src="${photos[0]}" alt="${p.name}" draggable="false"
