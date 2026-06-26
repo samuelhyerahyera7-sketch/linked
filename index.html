@@ -2225,6 +2225,148 @@
       -webkit-mask-image:none!important;
       mask-image:none!important;
     }
+
+    /* Keep onboarding and sign-up in the approved light Apple style.
+       Dark mode is an in-app preference and should not leak into registration. */
+    body[data-theme="dark"] #auth,
+    body[data-theme="dark"] #setup {
+      background:#FFFFFF!important;
+      color:#0B0B0C!important;
+      color-scheme:light!important;
+    }
+    body[data-theme="dark"] #auth *,
+    body[data-theme="dark"] #setup *,
+    body[data-theme="dark"] #dob-modal *,
+    body[data-theme="dark"] #gender-modal * {
+      color-scheme:light!important;
+    }
+    body[data-theme="dark"] #auth .auth-content,
+    body[data-theme="dark"] #setup .setup-inner {
+      background:#FFFFFF!important;
+      color:#0B0B0C!important;
+    }
+    body[data-theme="dark"] #setup {
+      background:#F7F7F8!important;
+    }
+    body[data-theme="dark"] #setup .setup-inner {
+      box-shadow:none!important;
+    }
+    body[data-theme="dark"] #auth .auth-heading,
+    body[data-theme="dark"] #setup .step-title,
+    body[data-theme="dark"] #setup .field-label,
+    body[data-theme="dark"] #dob-modal .dob-modal-title,
+    body[data-theme="dark"] #gender-modal .dob-modal-title {
+      color:#0B0B0C!important;
+      -webkit-text-fill-color:#0B0B0C!important;
+    }
+    body[data-theme="dark"] #auth .auth-heading span {
+      color:#E5091C!important;
+      -webkit-text-fill-color:#E5091C!important;
+    }
+    body[data-theme="dark"] #auth .auth-copy,
+    body[data-theme="dark"] #auth .auth-fine,
+    body[data-theme="dark"] #setup .step-sub,
+    body[data-theme="dark"] #setup .step-num,
+    body[data-theme="dark"] #setup .setup-photo-status,
+    body[data-theme="dark"] #setup .vibe-category-title,
+    body[data-theme="dark"] #setup .vibe-counter,
+    body[data-theme="dark"] #setup .picker-col-label {
+      color:#5F6068!important;
+      -webkit-text-fill-color:#5F6068!important;
+    }
+    body[data-theme="dark"] #setup .input-field,
+    body[data-theme="dark"] #setup .dob-field,
+    body[data-theme="dark"] #setup select.input-field,
+    body[data-theme="dark"] #setup textarea.input-field {
+      background:#F7F7F8!important;
+      border-color:#E3E3E7!important;
+      color:#111114!important;
+      -webkit-text-fill-color:#111114!important;
+      caret-color:#E5091C!important;
+    }
+    body[data-theme="dark"] #setup .input-field::placeholder {
+      color:#8B8C93!important;
+      -webkit-text-fill-color:#8B8C93!important;
+      opacity:1!important;
+    }
+    body[data-theme="dark"] #setup .input-field:focus {
+      border-color:#E5091C!important;
+      box-shadow:0 0 0 4px rgba(229,9,28,.08)!important;
+    }
+    body[data-theme="dark"] #setup .progress-bar {
+      background:#E5E5EA!important;
+    }
+    body[data-theme="dark"] #setup .progress-fill,
+    body[data-theme="dark"] #setup .btn-next,
+    body[data-theme="dark"] #auth .btn-coral {
+      background:linear-gradient(135deg,#E5091C,#FF3041)!important;
+      color:#FFFFFF!important;
+      -webkit-text-fill-color:#FFFFFF!important;
+    }
+    body[data-theme="dark"] #auth .btn-ghost {
+      background:transparent!important;
+      border-color:transparent!important;
+      color:#777882!important;
+      -webkit-text-fill-color:#777882!important;
+      box-shadow:none!important;
+    }
+    body[data-theme="dark"] #setup .vibe-btn,
+    body[data-theme="dark"] #setup .looking-card,
+    body[data-theme="dark"] #setup .setup-photo-slot {
+      background:#FFFFFF!important;
+      border-color:#E3E3E7!important;
+      color:#111114!important;
+      -webkit-text-fill-color:#111114!important;
+    }
+    body[data-theme="dark"] #setup .vibe-btn.sel {
+      background:#E5091C!important;
+      border-color:#E5091C!important;
+      color:#FFFFFF!important;
+      -webkit-text-fill-color:#FFFFFF!important;
+    }
+    body[data-theme="dark"] #dob-modal .dob-modal-card,
+    body[data-theme="dark"] #gender-modal .dob-modal-card {
+      background:#FFFFFF!important;
+      color:#111114!important;
+      border-color:transparent!important;
+    }
+    body[data-theme="dark"] #dob-modal .date-picker,
+    body[data-theme="dark"] #gender-modal .gender-picker {
+      background:#FFFFFF!important;
+      border-color:#E5E5EA!important;
+    }
+    body[data-theme="dark"] #dob-modal .picker-item,
+    body[data-theme="dark"] #gender-modal .picker-item,
+    body[data-theme="dark"] #dob-modal button,
+    body[data-theme="dark"] #gender-modal button {
+      color:#111114!important;
+      -webkit-text-fill-color:#111114!important;
+    }
+    body[data-theme="dark"] #dob-modal .picker-selection,
+    body[data-theme="dark"] #gender-modal .picker-selection {
+      border-color:#E5E5EA!important;
+    }
+    body[data-theme="dark"] #dob-modal .picker-fade-top,
+    body[data-theme="dark"] #gender-modal .picker-fade-top {
+      background:linear-gradient(to bottom,#FFFFFF 20%,rgba(255,255,255,0))!important;
+    }
+    body[data-theme="dark"] #dob-modal .picker-fade-bottom,
+    body[data-theme="dark"] #gender-modal .picker-fade-bottom {
+      background:linear-gradient(to top,#FFFFFF 20%,rgba(255,255,255,0))!important;
+    }
+    #auth .auth-content {
+      justify-content:flex-start;
+    }
+    #auth .auth-brand {
+      margin-top:clamp(8px,4.5dvh,44px);
+      margin-bottom:clamp(20px,3.2dvh,30px);
+    }
+    #auth .auth-heading {
+      margin-top:0!important;
+    }
+    #auth .auth-hero {
+      margin-top:clamp(18px,3dvh,32px)!important;
+    }
   </style>
 </head>
 <body>
