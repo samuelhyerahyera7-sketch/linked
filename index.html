@@ -852,9 +852,10 @@
       display: flex; align-items: center; gap: 10px;
       padding: 10px 16px env(safe-area-inset-bottom, 20px);
       border-top: 1px solid var(--border); flex-shrink: 0;
+      width:100%; min-width:0;
     }
     .chat-input {
-      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      flex: 1 1 auto; min-width:0; background: var(--surface); border: 1px solid var(--border);
       border-radius: 24px; padding: 11px 16px;
       color: var(--text); font-size: 14px; outline: none; font-family: inherit;
     }
@@ -904,8 +905,8 @@
     .chat-send {
       background: linear-gradient(135deg, var(--coral), var(--coral2));
       border: none; border-radius: 50%;
-      width: 40px; height: 40px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 40px; height: 40px; min-width:40px; min-height:40px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex:0 0 40px;
     }
     .chat-send svg { width: 17px; height: 17px; fill: white; }
 
@@ -1459,6 +1460,17 @@
       color:var(--text); cursor:pointer; flex:0 0 42px;
     }
     .chat-photo { max-width:220px; border-radius:16px; display:block; }
+    @media (max-width:380px) {
+      .chat-bar { gap:6px; padding-left:8px; padding-right:8px; }
+      .chat-photo-btn,
+      .mic-btn,
+      .chat-send {
+        width:38px; height:38px; min-width:38px; min-height:38px; flex-basis:38px;
+      }
+      .chat-input {
+        min-height:40px; padding:9px 12px; font-size:13px;
+      }
+    }
     .match-eyebrow { display:none; }
     .match-headline { color:var(--red); font-size:34px; margin-bottom:34px; }
     .m-av { border:3px solid #fff; box-shadow:0 8px 24px rgba(20,20,25,.13); }
