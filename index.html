@@ -2107,19 +2107,12 @@
       box-shadow:none!important;
     }
     body[data-theme="dark"] .brand-lockup {
-      background:none!important;
-      width:auto!important;
+      background:url('assets/linked-logo-transparent.png') center/contain no-repeat!important;
+      width:102px!important;
       min-width:102px;
-      color:var(--red);
     }
-    body[data-theme="dark"] .brand-lockup .brand-name {
-      display:block!important;
-      font-size:25px; line-height:1; font-weight:800; font-style:italic;
-      letter-spacing:-1.4px; color:var(--red);
-    }
-    body[data-theme="dark"] .brand-lockup svg {
-      display:block!important; width:25px; height:25px; color:var(--red);
-    }
+    body[data-theme="dark"] .brand-lockup .brand-name,
+    body[data-theme="dark"] .brand-lockup svg { display:none!important; }
     body[data-theme="dark"] .top-icon,
     body[data-theme="dark"] #app[data-tab="discover"] .top-icon,
     body[data-theme="dark"] #app[data-tab="discover"] .explore-filter-btn {
