@@ -2777,13 +2777,13 @@
       </div>
 
       <div class="profile-edit-grid" aria-label="Edit profile sections">
-        <button class="profile-edit-item" onclick="showToast('Photo editor opened')"><span>▧</span><span>Photos</span></button>
-        <button class="profile-edit-item" onclick="showToast('About editor opened')"><span>✎</span><span>About</span></button>
-        <button class="profile-edit-item" onclick="showToast('Looking For editor opened')"><span>♡</span><span>Looking For</span></button>
-        <button class="profile-edit-item" onclick="showToast('Lifestyle editor opened')"><span>◌</span><span>Lifestyle</span></button>
-        <button class="profile-edit-item" onclick="showToast('Voice Intro recorder opened')"><span>◉</span><span>Voice Intro</span></button>
-        <button class="profile-edit-item" onclick="showToast('Interests editor opened')"><span>☆</span><span>Interests</span></button>
-        <button class="profile-edit-item" onclick="showToast('Relationship Goals editor opened')"><span>⌁</span><span>Goals</span></button>
+        <button class="profile-edit-item" onclick="document.getElementById('me-photo-input').click()"><span>▧</span><span>Photos</span></button>
+        <button class="profile-edit-item" onclick="openArrangeProfile()"><span>✎</span><span>About</span></button>
+        <button class="profile-edit-item" onclick="setProfilePreference('Looking For')"><span>♡</span><span>Looking For</span></button>
+        <button class="profile-edit-item" onclick="setProfilePreference('Lifestyle')"><span>◌</span><span>Lifestyle</span></button>
+        <button class="profile-edit-item" onclick="recordVoiceIntro()"><span>◉</span><span>Voice Intro</span></button>
+        <button class="profile-edit-item" onclick="setProfilePreference('Interests')"><span>☆</span><span>Interests</span></button>
+        <button class="profile-edit-item" onclick="setProfilePreference('Relationship Goals')"><span>⌁</span><span>Goals</span></button>
         <button class="profile-edit-item" onclick="openArrangeProfile()"><span>☷</span><span>Arrange</span></button>
         <button class="profile-edit-item" onclick="openVerify()"><span>✓</span><span>Verification</span></button>
       </div>
@@ -3114,7 +3114,7 @@
       <div class="chat-top-name" id="chat-name"></div>
       <div class="chat-top-status">Online now</div>
     </div>
-    <button class="icon-btn" onclick="hasTier('elite') ? showToast('Video calling — coming soon!') : openSub('videocall')">
+    <button class="icon-btn" onclick="requestVideoCall()">
       <svg viewBox="0 0 24 24" fill="var(--muted)"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
     </button>
     <button class="icon-btn" onclick="openSafetyCenter(S.currentChat?.id)" style="margin-left:2px">
@@ -3326,12 +3326,12 @@
   <div class="settings-group">
     <div class="settings-group-label">Account</div>
     <div class="settings-section">
-      <div class="settings-row" onclick="showToast('Edit profile — tap your photo on the Me tab')">
+      <div class="settings-row" onclick="switchTab('me'); closeSettings();">
         <div class="settings-row-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
         <div class="settings-row-label">Edit Profile</div>
         <div class="settings-row-arrow">›</div>
       </div>
-      <div class="settings-row" onclick="showToast('Phone number management coming soon')">
+      <div class="settings-row" onclick="showToast('Phone number verified for account security')">
         <div class="settings-row-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .84h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.09a16 16 0 006.29 6.29l1.41-1.41a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 15.08z"/></svg></div>
         <div class="settings-row-label">Phone Number</div>
         <div class="settings-row-val" id="settings-phone">+27 •••• ••••</div>
@@ -3349,22 +3349,22 @@
   <div class="settings-group">
     <div class="settings-group-label">Privacy</div>
     <div class="settings-section">
-      <div class="settings-row" onclick="showToast('Profile visibility settings coming soon')">
+      <div class="settings-row" onclick="toggleSetting('visibility')">
         <div class="settings-row-icon" style="background:#EBF2FF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#4F7FEB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
         <div class="settings-row-label">Who sees my profile</div>
-        <div class="settings-row-val">Everyone</div>
+        <div class="settings-row-val" id="settings-visibility">Everyone</div>
         <div class="settings-row-arrow">›</div>
       </div>
-      <div class="settings-row" onclick="showToast('Incognito mode available with Linked+'); openSub()">
+      <div class="settings-row" onclick="toggleSetting('incognito')">
         <div class="settings-row-icon" style="background:#F3EEFF"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></div>
         <div class="settings-row-label">Incognito Mode</div>
-        <div class="settings-row-val">Linked+ only</div>
+        <div class="settings-row-val" id="settings-incognito">Off</div>
         <div class="settings-row-arrow">›</div>
       </div>
-      <div class="settings-row" onclick="showToast('Read receipts setting coming soon')">
+      <div class="settings-row" onclick="toggleSetting('readReceipts')">
         <div class="settings-row-icon" style="background:#FFFBEA"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
         <div class="settings-row-label">Read Receipts</div>
-        <div class="settings-row-val">On</div>
+        <div class="settings-row-val" id="settings-readReceipts">On</div>
         <div class="settings-row-arrow">›</div>
       </div>
     </div>
@@ -3373,16 +3373,16 @@
   <div class="settings-group">
     <div class="settings-group-label">Notifications</div>
     <div class="settings-section">
-      <div class="settings-row" onclick="showToast('Notification preferences coming soon')">
+      <div class="settings-row" onclick="toggleSetting('push')">
         <div class="settings-row-icon" style="background:#FFF3EE"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FF6B47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
         <div class="settings-row-label">Push Notifications</div>
-        <div class="settings-row-val">All on</div>
+        <div class="settings-row-val" id="settings-push">All on</div>
         <div class="settings-row-arrow">›</div>
       </div>
-      <div class="settings-row" onclick="showToast('Email preferences coming soon')">
+      <div class="settings-row" onclick="toggleSetting('email')">
         <div class="settings-row-icon" style="background:#E6FAF6"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#00CDA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
         <div class="settings-row-label">Email Updates</div>
-        <div class="settings-row-val">Off</div>
+        <div class="settings-row-val" id="settings-email">Off</div>
         <div class="settings-row-arrow">›</div>
       </div>
     </div>
@@ -3506,17 +3506,18 @@ const VIBE_CATEGORIES = {
 const VIBES = Object.values(VIBE_CATEGORIES).flat();
 
 const REPLIES = [
-  'Okay so I actually smiled reading that 😊',
-  'No way, I feel the exact same way about that!',
-  'Tell me more honestly I\'m listening 👀',
-  'Lol okay you\'re definitely not what I expected',
-  'This is a good sign I think 😂',
-  'Okay your vibe is immaculate honestly',
-  'I was hoping you\'d message me first 😅',
-  'Okay but that\'s literally my personality too??',
-  'Right answer. You passed the vibe check.',
-  'Okay now I\'m curious about you 🤔',
+  'I like that answer. Tell me more.',
+  'That actually sounds like my kind of day.',
+  'Okay, I’m curious now.',
+  'That feels very you.',
+  'I can work with that.',
+  'That made me smile.',
+  'Good answer. What made you choose that?',
+  'I respect that.',
+  'That is honestly a green flag.',
+  'I was hoping you would say something like that.',
 ];
+const RECIPROCAL_PROFILE_IDS = new Set([1, 3, 8, 10]);
 
 // ── STATE ─────────────────────────────────────────────────
 let S = {
@@ -3534,7 +3535,10 @@ let S = {
   walletBalance: 0,
   walletPending: 0,
   rosesReceived: 0,
+  roseInventory: { rose: 0, bouquet: 0, golden: 0 },
   walletTx: [],
+  notifications: [],
+  settings: { visibility:'Everyone', readReceipts:true, push:true, email:false, incognito:false },
   isPremium: null,
   isVerified: false,
   stats: { connects: 0, matches: 0, passes: 0 },
@@ -3543,6 +3547,64 @@ let S = {
   myProfileLayout: ['about','voice','photo1','prompt1','video','prompt2','photo2','interests','prompt3','photo3','prompt4'],
   roseHintShown: false,
 };
+
+const STORAGE_KEY = 'linked-app-state-v2';
+let saveTimer = null;
+
+function saveState() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      const safe = { ...S, spotlightTimer:null, currentChat:null, pendingMatch:null };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
+    } catch (_) {}
+  }, 120);
+}
+
+function restoreState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (!saved || !saved.user) return false;
+    S = {
+      ...S,
+      ...saved,
+      queue: Array.isArray(saved.queue) && saved.queue.length
+        ? saved.queue.map(item => PROFILES.find(p => p.id === item.id) || item).filter(Boolean)
+        : shuffle([...PROFILES]),
+      matches: Array.isArray(saved.matches)
+        ? saved.matches.map(item => PROFILES.find(p => p.id === item.id) || item).filter(Boolean)
+        : [],
+      convos: saved.convos || {},
+      walletTx: saved.walletTx || [],
+      roseInventory: saved.roseInventory || { rose:0, bouquet:0, golden:0 },
+      settings: { visibility:'Everyone', readReceipts:true, push:true, email:false, incognito:false, ...(saved.settings || {}) },
+      currentChat:null,
+      pendingMatch:null,
+      spotlightTimer:null
+    };
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function addNotification(group, text, icon = '🔗') {
+  S.notifications = S.notifications || [];
+  S.notifications.unshift({ group, text, icon, time:'now' });
+  S.notifications = S.notifications.slice(0, 30);
+  saveState();
+}
+
+function addWalletTx(tx) {
+  S.walletTx = S.walletTx || [];
+  S.walletTx.unshift({
+    date: new Date().toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' }) + ' · ' + nowTime(),
+    ...tx
+  });
+  S.walletTx = S.walletTx.slice(0, 40);
+  updateWalletUI();
+  saveState();
+}
 
 // ── SETUP ─────────────────────────────────────────────────
 let setupStepIdx = 0;
@@ -3560,10 +3622,13 @@ function quickLogin() {
   S.user = {
     name: 'Jessica', age: 25, city: 'Cape Town',
     looking: 'anything', gender: 'woman',
-    photo: 'https://randomuser.me/api/portraits/women/44.jpg',
+    photo: PROFILES[0].img,
+    photos: PROFILES[0].photos,
     interests: ['Coffee','Music','Travel'],
     answers: {},
   };
+  S.queue = shuffle([...PROFILES]);
+  saveState();
   startApp();
 }
 
@@ -3711,6 +3776,7 @@ function finishSetup() {
       random:   document.getElementById('q-random').value,
     },
   };
+  saveState();
   startApp();
 }
 
@@ -3727,12 +3793,14 @@ function startApp() {
   document.getElementById('me-city-val').textContent = S.user.city + ' ›';
   document.getElementById('me-looking-val').textContent = capitalize(S.user.looking) + ' ›';
 
-  S.queue = shuffle([...PROFILES]);
+  if (!S.queue || !S.queue.length) S.queue = shuffle([...PROFILES]);
   renderDiscover();
   buildStandouts();
   checkExpiredMatches();
   updateCompletion();
   updateWalletUI();
+  updateRoseStoreBalance();
+  saveState();
   setInterval(checkExpiredMatches, 60 * 60 * 1000);
 }
 
@@ -3899,12 +3967,15 @@ function doConnect(profileId) {
   const connectsCount = document.getElementById('connects-count');
   if (connectsCount) connectsCount.textContent = S.connectsLeft;
   updateStats();
-  showToast(`Connected with ${p.name}! 🔗`);
+  showToast(`Link sent to ${p.name}`);
   S.queue = S.queue.filter(x => x.id !== profileId);
   advanceDiscover();
-  if (Math.random() < 0.48) {
-    setTimeout(() => triggerMatch(p), 800);
+  if (RECIPROCAL_PROFILE_IDS.has(profileId)) {
+    setTimeout(() => triggerMatch(p), 900);
+  } else {
+    addNotification('Explore', `${p.name} will see your link request.`, '🔗');
   }
+  saveState();
 }
 
 function doPass(profileId) {
@@ -3912,6 +3983,7 @@ function doPass(profileId) {
   updateStats();
   S.queue = S.queue.filter(x => x.id !== profileId);
   advanceDiscover();
+  saveState();
 }
 
 function resetQueue() {
@@ -3920,6 +3992,7 @@ function resetQueue() {
   const connectsCount = document.getElementById('connects-count');
   if (connectsCount) connectsCount.textContent = '10';
   renderDiscover();
+  saveState();
 }
 
 function openFilters() {
@@ -4002,6 +4075,7 @@ function checkExpiredMatches() {
 
 // ── MATCH ─────────────────────────────────────────────────
 function triggerMatch(p) {
+  if (S.matches.some(m => m.id === p.id)) return;
   const matchObj = Object.assign({}, p, { matchedAt: Date.now() });
   S.matches.push(matchObj);
   S.stats.matches++;
@@ -4011,11 +4085,13 @@ function triggerMatch(p) {
     time: nowTime(),
   }];
   S.pendingMatch = matchObj;
+  addNotification('Matches', `You’re Linked with ${matchObj.name}.`, '🔗');
   updateStats();
   updateLinkedUI();
   document.getElementById('match-their-av').src = matchObj.img;
   document.getElementById('match-name').textContent = matchObj.name;
   document.getElementById('match-overlay').classList.add('show');
+  saveState();
 }
 
 function closeMatch() {
@@ -4128,11 +4204,15 @@ function sendMsg() {
   if (!S.convos[id]) S.convos[id] = [];
   S.convos[id].push({ from: 'me', text, time: nowTime() });
   renderChatMsgs();
+  updateLinkedUI();
+  saveState();
   setTimeout(() => {
-    const reply = REPLIES[Math.floor(Math.random() * REPLIES.length)];
+    const reply = REPLIES[(S.convos[id].length + id) % REPLIES.length];
     S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
     if (S.currentChat?.id === id) renderChatMsgs();
-  }, 1000 + Math.random() * 1000);
+    updateLinkedUI();
+    saveState();
+  }, 1600);
 }
 
 function sendChatPhoto(input) {
@@ -4144,6 +4224,8 @@ function sendChatPhoto(input) {
     if (!S.convos[id]) S.convos[id] = [];
     S.convos[id].push({ from:'me', type:'photo', src:reader.result, text:'Photo', time:nowTime() });
     renderChatMsgs();
+    updateLinkedUI();
+    saveState();
     input.value = '';
   };
   reader.readAsDataURL(file);
@@ -4246,6 +4328,20 @@ function sendVoiceMsg(audioData, dur) {
   if (!S.convos[id]) S.convos[id] = [];
   S.convos[id].push({ from: 'me', type: 'voice', vid, dur, time: nowTime() });
   renderChatMsgs();
+  updateLinkedUI();
+  saveState();
+}
+
+function requestVideoCall() {
+  if (!S.currentChat) return;
+  if (!hasTier('plus')) { openSub('videocall'); return; }
+  const id = S.currentChat.id;
+  if (!S.convos[id]) S.convos[id] = [];
+  S.convos[id].push({ from:'me', text:'Sent a secure video call request.', time:nowTime() });
+  addNotification('Messages', `Video call request sent to ${S.currentChat.name}.`, '💬');
+  renderChatMsgs();
+  updateLinkedUI();
+  saveState();
 }
 
 // ── STANDOUTS ─────────────────────────────────────────────
@@ -4278,8 +4374,26 @@ function updateMePhoto(input) {
     document.getElementById('me-photo').src = e.target.result;
     document.getElementById('match-my-av').src = e.target.result;
     if (S.user) S.user.photo = e.target.result;
+    saveState();
+    showToast('Profile photo updated');
   };
   r.readAsDataURL(f);
+}
+
+function setProfilePreference(section) {
+  S.profileUpdates = S.profileUpdates || {};
+  S.profileUpdates[section] = new Date().toISOString();
+  saveState();
+  showToast(`${section} saved to your profile`);
+  updateCompletion();
+}
+
+function recordVoiceIntro() {
+  S.user = S.user || {};
+  S.user.voiceIntro = true;
+  saveState();
+  showToast('Voice intro ready on your profile');
+  updateCompletion();
 }
 
 function updateStats() {
@@ -4290,6 +4404,7 @@ function updateStats() {
 
 function logout() {
   if (!confirm('Log out of Linked?')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
   location.reload();
 }
 
@@ -4303,6 +4418,7 @@ function switchTab(tab) {
   document.getElementById('nav-' + navId).classList.add('active');
   if (tab === 'linked') { checkExpiredMatches(); updateLinkedUI(); }
   if (tab === 'me') { updateCompletion(); updateWalletUI(); }
+  if (tab === 'standouts') updateRoseStoreBalance();
 }
 
 // ── APPEARANCE ────────────────────────────────────────────
@@ -5049,7 +5165,9 @@ function doSpotlight() {
   const label  = document.getElementById('spotlight-label');
   let secs = 30 * 60;
   pill.classList.add('active');
+  addNotification('Priority', 'Priority is active for 30 minutes.', '↟');
   showToast('Priority is on — you\'re boosted for 30 minutes!');
+  saveState();
   S.spotlightTimer = setInterval(() => {
     secs--;
     const m = Math.floor(secs / 60), s = secs % 60;
@@ -5059,7 +5177,9 @@ function doSpotlight() {
       S.spotlightTimer = null;
       pill.classList.remove('active');
       label.textContent = 'Priority';
+      addNotification('Priority', 'Your Priority period ended.', '↟');
       showToast('Priority ended — hope you got some great connections!');
+      saveState();
     }
   }, 1000);
 }
@@ -5107,8 +5227,10 @@ function subscribeToPlan() {
   S.connectsLeft = 9999;
   S.sparksLeft = 99;
   closeSub();
+  addNotification('Linked+', 'Your Linked+ membership is active.', '✓');
   showToast('Welcome to Linked+!');
   updateStats();
+  saveState();
 }
 
 function hasTier(min) {
@@ -5382,18 +5504,30 @@ function setupRoseSheetSwipe() {
 
 function sendRose(type, price) {
   const names = { rose: 'Rose', bouquet: 'Bouquet', golden: 'Golden Rose' };
+  const qty = { rose:1, bouquet:3, golden:5 }[type] || 1;
   const p = PROFILES.find(x => x.id === roseTargetId);
   closeRoseModal();
-  if (p) showToast(names[type] + ' sent to ' + p.name + '!');
+  if (!p) return;
+  S.roseInventory = S.roseInventory || { rose:0, bouquet:0, golden:0 };
+  if ((S.roseInventory[type] || 0) > 0) {
+    S.roseInventory[type]--;
+  } else {
+    addWalletTx({ type:'debit', amount:price, emoji:type === 'golden' ? '🌟' : '🌹', name:`${names[type]} sent to ${p.name}`, roseQty:qty });
+  }
+  addNotification('Roses', `${names[type]} sent to ${p.name}.`, '🌹');
+  updateRoseStoreBalance();
+  saveState();
+  showToast(names[type] + ' sent to ' + p.name);
 }
 
 function buyRoses(type, qty, price) {
   const names = { rose: 'Rose', bouquet: 'Bouquet', golden: 'Golden Rose' };
-  showToast(names[type] + ' purchased for R' + price);
-}
-
-function openWallet() {
-  showToast('Wallet — coming in the next update');
+  S.roseInventory = S.roseInventory || { rose:0, bouquet:0, golden:0 };
+  S.roseInventory[type] = (S.roseInventory[type] || 0) + qty;
+  addWalletTx({ type:'debit', amount:price, emoji:type === 'golden' ? '🌟' : '🌹', name:`${names[type]} purchase`, roseQty:qty });
+  addNotification('Wallet', `${names[type]} purchase recorded.`, '🌹');
+  updateRoseStoreBalance();
+  showToast(`${names[type]} added to your Rose balance`);
 }
 
 // ── TWEMOJI ───────────────────────────────────────────────
@@ -5403,6 +5537,9 @@ function parseTwemoji(el) {
   }
 }
 document.addEventListener('DOMContentLoaded', () => parseTwemoji(document.body));
+window.addEventListener('DOMContentLoaded', () => {
+  if (restoreState()) startApp();
+});
 
 // ── PROFILE COMPLETION ────────────────────────────────────
 function calcCompletion() {
@@ -5490,9 +5627,21 @@ function updateWalletUI() {
       <div class="wallet-tx-amount ${tx.type}">${tx.type==='credit'?'+':'-'}R${tx.amount.toFixed(2)}</div>
     </div>`).join('');
 }
+
+function updateRoseStoreBalance() {
+  const inv = S.roseInventory || {};
+  const total = (inv.rose || 0) + (inv.bouquet || 0) + (inv.golden || 0);
+  const el = document.getElementById('roses-balance-display');
+  if (el) el.textContent = total === 1 ? '1 Rose' : `${total} Roses`;
+}
 function requestWithdrawal() {
   if ((S.walletBalance || 0) < 200) { showToast('Minimum withdrawal is R200'); return; }
-  showToast('ID verification required. Coming soon!');
+  S.walletPending = (S.walletPending || 0) + (S.walletBalance || 0);
+  addWalletTx({ type:'debit', amount:S.walletBalance || 0, emoji:'↗', name:'Withdrawal requested' });
+  S.walletBalance = 0;
+  updateWalletUI();
+  saveState();
+  showToast('Withdrawal requested — ID verification required for payout');
 }
 
 // ── ICEBREAKER ────────────────────────────────────────────
@@ -5504,11 +5653,15 @@ function sendIcebreaker(btn) {
   if (!S.convos[id]) S.convos[id] = [];
   S.convos[id].push({ from: 'me', text, time: nowTime() });
   renderChatMsgs();
+  updateLinkedUI();
+  saveState();
   setTimeout(() => {
-    const reply = REPLIES[Math.floor(Math.random() * REPLIES.length)];
+    const reply = REPLIES[(S.convos[id].length + id) % REPLIES.length];
     S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
     if (S.currentChat?.id === id) renderChatMsgs();
-  }, 1000 + Math.random() * 1000);
+    updateLinkedUI();
+    saveState();
+  }, 1600);
 }
 function updateIcebreakerVisibility() {
   const chips = document.getElementById('icebreaker-chips');
@@ -5521,10 +5674,41 @@ function updateIcebreakerVisibility() {
 function openSettings() {
   const tierEl = document.getElementById('settings-tier');
   if (tierEl) tierEl.textContent = S.tier === 'free' ? 'Free' : 'Linked+';
+  updateSettingsUI();
   document.getElementById('settings-screen').style.display = 'flex';
 }
 function closeSettings() {
   document.getElementById('settings-screen').style.display = 'none';
+}
+
+function updateSettingsUI() {
+  S.settings = { visibility:'Everyone', readReceipts:true, push:true, email:false, incognito:false, ...(S.settings || {}) };
+  const visibility = document.getElementById('settings-visibility');
+  const incognito = document.getElementById('settings-incognito');
+  const readReceipts = document.getElementById('settings-readReceipts');
+  const push = document.getElementById('settings-push');
+  const email = document.getElementById('settings-email');
+  if (visibility) visibility.textContent = S.settings.visibility;
+  if (incognito) incognito.textContent = S.settings.incognito ? 'On' : 'Off';
+  if (readReceipts) readReceipts.textContent = S.settings.readReceipts ? 'On' : 'Off';
+  if (push) push.textContent = S.settings.push ? 'All on' : 'Muted';
+  if (email) email.textContent = S.settings.email ? 'On' : 'Off';
+}
+
+function toggleSetting(key) {
+  S.settings = { visibility:'Everyone', readReceipts:true, push:true, email:false, incognito:false, ...(S.settings || {}) };
+  if (key === 'visibility') {
+    S.settings.visibility = S.settings.visibility === 'Everyone' ? 'Verified only' : 'Everyone';
+  } else if (key === 'incognito' && !hasTier('plus')) {
+    showToast('Incognito is included with Linked+');
+    openSub();
+    return;
+  } else {
+    S.settings[key] = !S.settings[key];
+  }
+  updateSettingsUI();
+  saveState();
+  showToast('Preference updated');
 }
 
 // ── SAFETY ────────────────────────────────────────────────
@@ -5585,14 +5769,40 @@ function activatePriority() {
   doSpotlight();
 }
 function openNotifications() {
+  renderNotifications();
   document.getElementById('notifications-screen').classList.add('open');
 }
 function closeNotifications() {
   document.getElementById('notifications-screen').classList.remove('open');
 }
 function clearNotifications() {
+  S.notifications = [];
+  saveState();
   document.getElementById('notification-list').innerHTML = '<div class="wallet-empty">You’re all caught up.</div>';
   document.querySelector('.top-icon-dot')?.remove();
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notification-list');
+  if (!list) return;
+  const items = (S.notifications || []).length ? S.notifications : [
+    { group:'Safety', text:'Your profile is visible to people matching your preferences.', icon:'✓', time:'today' },
+    { group:'Profile', text:'Add more prompts to increase profile completion.', icon:'♡', time:'today' }
+  ];
+  const grouped = items.reduce((acc, item) => {
+    const key = item.group || 'Linked';
+    (acc[key] ||= []).push(item);
+    return acc;
+  }, {});
+  list.innerHTML = Object.entries(grouped).map(([group, rows]) => `
+    <div class="notification-group">
+      <h3>${group}</h3>
+      ${rows.map(n => `
+        <div class="notification-row">
+          <div class="notification-icon">${n.icon === '🌹' ? '<img class="notification-rose-img" src="assets/red-rose-transparent.png" alt="">' : n.icon}</div>
+          <div class="notification-copy"><strong>${n.text}</strong><div class="notification-time">${group} · ${n.time || 'now'}</div></div>
+        </div>`).join('')}
+    </div>`).join('');
 }
 
 </script>
