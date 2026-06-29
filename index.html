@@ -2950,7 +2950,7 @@
           </div>
           <div class="me-row-val">›</div>
         </div>
-        <div class="me-row" onclick="openAdminDashboard()" style="cursor:pointer">
+        <div class="me-row" id="admin-dashboard-row" onclick="openAdminDashboard()" style="cursor:pointer;display:none">
           <div class="me-row-l">
             <div class="me-icon" style="background:#EEF2FF;color:#4F46E5">▦</div>
             <div class="me-row-label">Admin Dashboard</div>
@@ -3638,6 +3638,7 @@ let S = {
 };
 
 const STORAGE_KEY = 'linked-app-state-v2';
+const ADMIN_OWNER_NAME = 'samuel hyera';
 let saveTimer = null;
 
 function saveState() {
@@ -3693,6 +3694,16 @@ function addWalletTx(tx) {
   S.walletTx = S.walletTx.slice(0, 40);
   updateWalletUI();
   saveState();
+}
+
+function isSamuelAdmin() {
+  const name = (S.user?.name || '').trim().toLowerCase();
+  return name === ADMIN_OWNER_NAME || name === 'samuel' || name === 'samuelh';
+}
+
+function updateAdminAccessUI() {
+  const row = document.getElementById('admin-dashboard-row');
+  if (row) row.style.display = isSamuelAdmin() ? 'flex' : 'none';
 }
 
 // ── SETUP ─────────────────────────────────────────────────
@@ -3896,6 +3907,7 @@ function startApp() {
   updateWalletUI();
   updateRoseStoreBalance();
   updateSettingsUI();
+  updateAdminAccessUI();
   saveState();
   setInterval(checkExpiredMatches, 60 * 60 * 1000);
 }
@@ -5936,6 +5948,10 @@ window.addEventListener('appinstalled', () => {
 
 // ── ADMIN DASHBOARD ───────────────────────────────────────
 function openAdminDashboard() {
+  if (!isSamuelAdmin()) {
+    showToast('Admin access is only available to Samuel Hyera.');
+    return;
+  }
   refreshAdminDashboard();
   document.getElementById('admin-screen').classList.add('open');
 }
