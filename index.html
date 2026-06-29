@@ -172,8 +172,9 @@
       background: linear-gradient(90deg, var(--coral), var(--coral2));
       transition: width 0.4s ease;
     }
-    .setup-step { display: none; flex-direction: column; gap: 20px; flex: 1; }
+    .setup-step { display: none; flex-direction: column; gap: 20px; flex: 1; min-height:0; }
     .setup-step.active { display: flex; }
+    .setup-step.scroll-step { overflow-y:auto; padding-bottom:calc(18px + env(safe-area-inset-bottom,0px)); -webkit-overflow-scrolling:touch; }
 
     .setup-logo { font-size: 24px; font-weight: 900; letter-spacing: -0.8px; background: linear-gradient(135deg, var(--coral), var(--teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 4px; }
     .step-num { font-size: 12px; font-weight: 700; color: var(--coral); text-transform: uppercase; letter-spacing: 1px; }
@@ -192,7 +193,7 @@
 
     textarea.input-field { resize: none; font-family: inherit; line-height: 1.5; }
 
-    .vibe-grid { display:grid; gap:16px; }
+    .vibe-grid { display:grid; gap:16px; padding-bottom:8px; }
     .vibe-category { display:grid; gap:9px; }
     .vibe-category-title {
       font-size:12px; font-weight:800; color:#55575E;
@@ -207,7 +208,7 @@
     }
     .vibe-counter.ready { background:#F0FAF4; border-color:#CDECD9; color:#26764A; }
     .vibe-btn {
-      padding: 10px 16px; border-radius: 50px;
+      padding: 10px 14px; border-radius: 50px;
       border: 1.5px solid var(--border);
       background: var(--surface); color: var(--text);
       font-size: 13px; cursor: pointer; transition: all 0.15s;
@@ -424,7 +425,7 @@
     #app {
       display: none; flex-direction: column;
       width: 100%; max-width: none; height: 100dvh; min-height: 100dvh;
-      padding-bottom: env(safe-area-inset-bottom,0px);
+      padding-bottom: 0;
     }
 
     /* ─── TOP BAR ────────────────────────────────────────── */
@@ -1174,7 +1175,7 @@
     .bottom-nav {
       display: flex; background: var(--bg);
       border-top: 1px solid var(--border);
-      padding: 6px 0 env(safe-area-inset-bottom, 16px);
+      padding: 6px 0 calc(16px + env(safe-area-inset-bottom, 0px));
       flex-shrink: 0;
     }
     .nav-btn {
@@ -1295,7 +1296,7 @@
       box-shadow:0 18px 50px rgba(18,18,24,.18); backdrop-filter:blur(18px);
     }
     .install-card.show { display:flex; }
-    .install-icon { width:42px; height:42px; flex:0 0 42px; border-radius:12px; background:url('assets/linked-logo-transparent.png') center/contain no-repeat,#fff; }
+    .install-icon { width:48px; height:48px; flex:0 0 48px; border-radius:14px; background:#fff; background-image:url('assets/linked-logo.png'); background-position:center; background-size:92% 92%; background-repeat:no-repeat; box-shadow:inset 0 0 0 1px rgba(0,0,0,.06); }
     .install-copy { flex:1; min-width:0; }
     .install-copy strong { display:block; font-size:14px; color:var(--text); }
     .install-copy span { display:block; margin-top:2px; font-size:12px; color:var(--muted); line-height:1.35; }
@@ -1422,8 +1423,8 @@
     .act-rose img { width:46px; height:46px; object-fit:contain; }
     .act-connect { background:var(--red); color:#fff; border-color:var(--red); }
     .bottom-nav {
-      min-height:calc(72px + env(safe-area-inset-bottom,0px));
-      padding:7px 4px max(7px,env(safe-area-inset-bottom,0px));
+      min-height:calc(78px + env(safe-area-inset-bottom,0px));
+      padding:7px 4px calc(12px + env(safe-area-inset-bottom,0px));
       box-shadow:0 -8px 28px rgba(20,20,25,.05);
       z-index:20;
     }
@@ -1727,8 +1728,10 @@
     .arrange-row {
       display:flex; align-items:center; gap:12px; min-height:58px; padding:10px 12px;
       border:1px solid var(--border); border-radius:15px; background:#fff;
+      touch-action:none;
     }
-    .arrange-handle { color:#A0A1A7; font-size:20px; }
+    .arrange-row.dragging { opacity:.72; transform:scale(.985); box-shadow:0 14px 36px rgba(18,18,24,.16); }
+    .arrange-handle { color:#A0A1A7; font-size:20px; cursor:grab; user-select:none; }
     .arrange-name { flex:1; font-size:14px; font-weight:750; }
     .arrange-controls { display:flex; gap:5px; }
     .arrange-controls button {
@@ -2070,14 +2073,18 @@
     }
     .auth-fine { text-align:center; margin-top:7px; font-size:10px; }
 
-    #setup { background:#F7F7F8; }
+    #setup { background:#FFFFFF; }
     .setup-inner {
       max-width:430px; margin:0 auto; width:100%;
-      padding:34px 22px 36px; background:#fff;
+      padding:34px 22px calc(36px + env(safe-area-inset-bottom,0px)); background:#fff;
     }
     .progress-bar { height:5px; border-radius:5px; margin-bottom:30px; }
     .progress-fill { border-radius:5px; }
     .setup-step { gap:17px; }
+    #step-3.active { gap:14px; }
+    #step-3 .vibe-grid { grid-template-columns:1fr; }
+    #step-3 .vibe-options { gap:7px; }
+    #step-3 .vibe-btn { font-size:12px; padding:9px 12px; background:#fff; }
     .step-num { color:#8B8C93; font-size:11px; }
     .step-title { font-size:31px; letter-spacing:-1.2px; font-weight:700; }
     .step-sub { font-size:15px; }
@@ -2221,6 +2228,29 @@
     body[data-theme="dark"] .chat-top {
       background:#111114!important;
       border-color:#2B2B31!important;
+    }
+    body[data-theme="dark"] .overlay-back,
+    body[data-theme="dark"] .wallet-back,
+    body[data-theme="dark"] .settings-back,
+    body[data-theme="dark"] .chat-back,
+    body[data-theme="dark"] .profile-detail-close,
+    body[data-theme="dark"] .sub-close {
+      background:#232328!important;
+      color:#FFFFFF!important;
+      border:1px solid #3A3A42!important;
+      box-shadow:0 8px 24px rgba(0,0,0,.28)!important;
+    }
+    body[data-theme="dark"] .overlay-back svg,
+    body[data-theme="dark"] .wallet-back svg,
+    body[data-theme="dark"] .settings-back svg,
+    body[data-theme="dark"] .chat-back svg {
+      fill:#FFFFFF!important;
+      stroke:#FFFFFF!important;
+    }
+    body[data-theme="dark"] .me-row-val,
+    body[data-theme="dark"] .settings-row-val,
+    body[data-theme="dark"] .settings-row-arrow {
+      color:#CFCFD6!important;
     }
     body[data-theme="dark"] .filter-select,
     body[data-theme="dark"] .filter-input,
@@ -2536,7 +2566,7 @@
     </div>
 
     <!-- Step 3: Interests -->
-    <div class="setup-step" id="step-3">
+    <div class="setup-step scroll-step" id="step-3">
       <div class="brand-lockup setup-brand"><span class="brand-name">linked</span><svg viewBox="0 0 30 30" fill="none"><path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></div>
       <div class="step-num">Step 4 of 5</div>
       <div class="step-title">Your vibe check</div>
@@ -2632,7 +2662,12 @@
         <div class="picker-item">Woman</div>
         <div class="picker-item">Man</div>
         <div class="picker-item">Non-binary</div>
+        <div class="picker-item">Trans woman</div>
+        <div class="picker-item">Trans man</div>
+        <div class="picker-item">Genderfluid</div>
+        <div class="picker-item">Agender</div>
         <div class="picker-item">Other</div>
+        <div class="picker-item">Prefer not to say</div>
         <div class="picker-spacer"></div>
       </div>
     </div>
@@ -2798,7 +2833,7 @@
       </div>
 
       <div class="me-section" style="margin-top:12px">
-        <div class="me-row" onclick="openFilters()" style="cursor:pointer">
+        <div class="me-row" onclick="toggleTheme()" style="cursor:pointer">
           <div class="me-row-l">
             <div class="me-icon" style="background:#EEEEFF;color:#555">◐</div>
             <div>
@@ -2806,7 +2841,7 @@
               <div style="font-size:11px;color:var(--muted);margin-top:2px">Use a darker appearance</div>
             </div>
           </div>
-          <div class="toggle" id="profile-theme-switch" role="switch" aria-checked="false" onclick="toggleTheme()"></div>
+          <div class="toggle" id="profile-theme-switch" role="switch" aria-checked="false" onclick="event.stopPropagation();toggleTheme()"></div>
         </div>
       </div>
 
@@ -2886,7 +2921,7 @@
           </div>
           <div class="me-row-val">50 km ›</div>
         </div>
-        <div class="me-row">
+        <div class="me-row" onclick="openFilters()" style="cursor:pointer">
           <div class="me-row-l">
             <div class="me-icon" style="background:#FFF0E8"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FB923C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10" width="20" height="11" rx="2"/><path d="M7 10V7a5 5 0 0110 0v3"/><line x1="12" y1="7" x2="12" y2="4"/></svg></div>
             <div class="me-row-label">Age range</div>
@@ -3585,11 +3620,12 @@ PROFILES.forEach(p => {
 });
 
 const VIBE_CATEGORIES = {
-  'Everyday Life': ['Coffee','Cooking','Foodie','Reading','Gaming','Movies','Plants','Pets'],
-  'Active & Outdoors': ['Running','Gym','Yoga','Hiking','Cycling','Beach','Outdoors','Adventure'],
-  'Creative & Culture': ['Art','Photography','Music','Live Music','Dancing','Fashion','Theatre','Museums'],
-  'Social Energy': ['Nightlife','Brunch','Festivals','Hosting','Road Trips','Travel','Quiet Nights','Spontaneous Plans'],
-  'Values & Goals': ['Family','Career Driven','Wellness','Faith','Personal Growth','Community','Marriage Minded','Open-minded']
+  'Everyday Life': ['Coffee','Cooking','Foodie','Reading','Gaming','Movies','Plants','Pets','Podcasts','Homebody'],
+  'Active & Outdoors': ['Running','Gym','Yoga','Hiking','Cycling','Beach','Outdoors','Adventure','Swimming','Football'],
+  'Creative & Culture': ['Art','Photography','Music','Live Music','Dancing','Fashion','Theatre','Museums','Writing','Design'],
+  'Social Energy': ['Nightlife','Brunch','Festivals','Hosting','Road Trips','Travel','Quiet Nights','Spontaneous Plans','Deep Talks','Comedy'],
+  'Values & Goals': ['Family','Career Driven','Wellness','Faith','Personal Growth','Community','Marriage Minded','Open-minded','Ambitious','Emotionally Available'],
+  'Relationship Style': ['Intentional','Slow Burn','Romantic','Playful','Consistent','Affectionate','Independent','Quality Time']
 };
 const VIBES = Object.values(VIBE_CATEGORIES).flat();
 
@@ -5009,8 +5045,8 @@ function closeArrangeProfile() {
 function renderArrangeProfile() {
   const list = document.getElementById('arrange-profile-list');
   list.innerHTML = S.myProfileLayout.map((key, index) => `
-    <div class="arrange-row">
-      <span class="arrange-handle">☷</span>
+    <div class="arrange-row" data-index="${index}">
+      <span class="arrange-handle" onpointerdown="startArrangePointer(event,${index})" title="Drag to rearrange">☷</span>
       <span class="arrange-name">${PROFILE_BLOCK_LABELS[key]}</span>
       <div class="arrange-controls">
         <button onclick="moveProfileBlock(${index},-1)" aria-label="Move ${PROFILE_BLOCK_LABELS[key]} up">↑</button>
@@ -5024,7 +5060,50 @@ function moveProfileBlock(index, direction) {
   if (target < 0 || target >= S.myProfileLayout.length) return;
   [S.myProfileLayout[index], S.myProfileLayout[target]] = [S.myProfileLayout[target], S.myProfileLayout[index]];
   renderArrangeProfile();
+  saveState();
   showToast('Profile order updated');
+}
+
+let arrangePointer = { index: null, row: null, startY: 0 };
+
+function startArrangePointer(e, index) {
+  if (e.button !== undefined && e.button !== 0) return;
+  const row = e.currentTarget.closest('.arrange-row');
+  if (!row) return;
+  e.preventDefault();
+  arrangePointer = { index, row, startY: e.clientY };
+  row.classList.add('dragging');
+  row.setPointerCapture?.(e.pointerId);
+  window.addEventListener('pointermove', moveArrangePointer);
+  window.addEventListener('pointerup', endArrangePointer, { once: true });
+}
+
+function moveArrangePointer(e) {
+  if (!arrangePointer.row) return;
+  const delta = Math.max(-110, Math.min(110, e.clientY - arrangePointer.startY));
+  arrangePointer.row.style.transform = `translateY(${delta}px) scale(.985)`;
+}
+
+function endArrangePointer(e) {
+  window.removeEventListener('pointermove', moveArrangePointer);
+  const source = arrangePointer.index;
+  const row = arrangePointer.row;
+  if (row) {
+    row.classList.remove('dragging');
+    row.style.transform = '';
+    row.style.pointerEvents = 'none';
+  }
+  const targetRow = document.elementFromPoint(e.clientX, e.clientY)?.closest('.arrange-row');
+  if (row) row.style.pointerEvents = '';
+  const target = Number(targetRow?.dataset.index);
+  if (Number.isInteger(source) && Number.isInteger(target) && target !== source) {
+    const [item] = S.myProfileLayout.splice(source, 1);
+    S.myProfileLayout.splice(target, 0, item);
+    renderArrangeProfile();
+    saveState();
+    showToast('Profile order updated');
+  }
+  arrangePointer = { index: null, row: null, startY: 0 };
 }
 
 function setupPhotoSwipe(profileId) {
@@ -5519,7 +5598,7 @@ function normalizeUserProfile() {
 
 document.addEventListener('DOMContentLoaded', buildDatePicker);
 
-const GENDERS = ['Woman', 'Man', 'Non-binary', 'Other'];
+const GENDERS = ['Woman', 'Man', 'Non-binary', 'Trans woman', 'Trans man', 'Genderfluid', 'Agender', 'Other', 'Prefer not to say'];
 
 function openGenderPicker() {
   document.getElementById('gender-modal').classList.add('open');
