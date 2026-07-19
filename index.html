@@ -10,6 +10,11 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/linked-logo.png">
   <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+  <!-- Firebase SDKs — loaded only when FIREBASE_CONFIG.apiKey is filled in -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
   <style>
     img.emoji { height: 1.2em; width: 1.2em; vertical-align: -0.15em; display: inline-block; }
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -2463,9 +2468,33 @@
     <h1 class="auth-heading">Find genuine <span>connections.</span></h1>
     <p class="auth-copy">Meet real people who are looking for something real.</p>
     <img class="auth-hero" src="assets/onboarding-couple-v2.png" alt="Two people smiling over coffee, each holding one cup">
-    <div class="auth-btns">
+    <!-- Default buttons (shown when Firebase is NOT configured) -->
+    <div id="auth-default-btns" class="auth-btns">
       <button class="btn-coral" onclick="showSetup()">Next</button>
       <button class="btn-ghost" onclick="quickLogin()">Skip</button>
+    </div>
+    <!-- Firebase phone auth (shown when Firebase IS configured) -->
+    <div id="auth-phone-flow" style="display:none;flex-direction:column;gap:12px;width:100%">
+      <div id="fb-phone-flow" style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface)">
+          <span style="padding:14px 12px 14px 16px;font-size:15px;color:var(--muted);border-right:1.5px solid var(--border);white-space:nowrap">+27</span>
+          <input id="fb-phone-input" type="tel" inputmode="numeric" placeholder="81 234 5678"
+            style="flex:1;padding:14px 16px;border:none;background:transparent;font-size:15px;color:var(--text);outline:none"
+            onkeydown="if(event.key==='Enter')fbSendOTP()">
+        </div>
+        <div id="recaptcha-container"></div>
+        <button class="btn-coral" onclick="fbSendOTP()">Get started</button>
+        <button class="btn-ghost" onclick="showSetup()">Continue as guest</button>
+      </div>
+      <div id="fb-otp-flow" style="display:none;flex-direction:column;gap:10px">
+        <p style="font-size:13px;color:var(--muted);text-align:center;line-height:1.5">Enter the 6-digit code sent to your number</p>
+        <input id="fb-otp-input" type="text" inputmode="numeric" maxlength="6" placeholder="000 000"
+          style="text-align:center;letter-spacing:6px;font-size:24px;font-weight:700;padding:16px;
+                 border:1.5px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);outline:none;width:100%"
+          onkeydown="if(event.key==='Enter')fbVerifyOTP()">
+        <button class="btn-coral" onclick="fbVerifyOTP()">Verify code</button>
+        <button class="btn-ghost" onclick="fbResendOTP()">Resend code</button>
+      </div>
     </div>
     <p class="auth-fine">By joining you agree to our <span onclick="openTerms()" style="text-decoration:underline;cursor:pointer;color:var(--coral)">Terms &amp; Privacy Policy</span>.</p>
   </div>
@@ -3575,6 +3604,322 @@
 </div>
 
 <script>
+// ═══ FIREBASE BACKEND ════════════════════════════════════════════════════════
+// Fill in your Firebase config (Firebase console → Project settings → Your apps → Web app)
+// Leave apiKey empty to run in offline demo mode (no real users, no sync).
+const FIREBASE_CONFIG = {
+  apiKey:            "",
+  authDomain:        "",
+  projectId:         "",
+  storageBucket:     "",
+  messagingSenderId: "",
+  appId:             ""
+};
+
+let db = null, fbAuth = null, fbStorage = null, fbCurrentUid = null;
+const IS_FIREBASE_LIVE = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
+if (IS_FIREBASE_LIVE) {
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db        = firebase.firestore();
+    fbAuth    = firebase.auth();
+    fbStorage = firebase.storage();
+  } catch(e) { console.warn('Firebase init failed:', e); }
+}
+
+// ── FIREBASE AUTH ──────────────────────────────────────────
+let fbConfirmationResult = null, fbRecaptchaVerifier = null;
+
+function initFirebaseAuth() {
+  fbAuth.onAuthStateChanged(async user => {
+    if (user) {
+      fbCurrentUid = user.uid;
+      try {
+        const profile = await fbLoadProfile(user.uid);
+        if (profile && profile.user) {
+          S = mergeFirebaseState(profile);
+          await fbLoadMatchesAndConvos(user.uid);
+          if (!S.queue || !S.queue.length) S.queue = shuffle([...PROFILES]);
+          startApp();
+          fbLoadRealUsersIntoQueue();
+        } else {
+          // New Firebase user — show profile setup
+          document.getElementById('auth').style.display = 'none';
+          document.getElementById('setup').style.display = 'flex';
+          S._photos = [];
+          renderSetupPhotos();
+          buildVibeGrid();
+        }
+      } catch(e) {
+        console.warn('Profile load error:', e);
+        document.getElementById('auth').style.display = 'none';
+        document.getElementById('setup').style.display = 'flex';
+        S._photos = [];
+        renderSetupPhotos();
+        buildVibeGrid();
+      }
+    } else {
+      fbCurrentUid = null;
+      showFbAuthScreen();
+    }
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+    maybeShowInstallPrompt();
+  });
+}
+
+function showFbAuthScreen() {
+  document.getElementById('auth').style.display = '';
+  const defaultBtns = document.getElementById('auth-default-btns');
+  const phoneFlow   = document.getElementById('auth-phone-flow');
+  if (defaultBtns) defaultBtns.style.display = 'none';
+  if (phoneFlow)   phoneFlow.style.display    = 'flex';
+  initRecaptcha();
+}
+
+function initRecaptcha() {
+  if (fbRecaptchaVerifier) return;
+  try {
+    fbRecaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'invisible', callback: () => {}
+    });
+    fbRecaptchaVerifier.render();
+  } catch(e) { console.warn('reCAPTCHA init:', e); }
+}
+
+async function fbSendOTP() {
+  const raw = (document.getElementById('fb-phone-input').value || '').trim().replace(/\s+/g, '');
+  if (!raw) { showToast('Enter your phone number'); return; }
+  const phone = raw.startsWith('+') ? raw : '+27' + raw.replace(/^0/, '');
+  const btn = document.querySelector('#fb-phone-flow .btn-coral');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  try {
+    fbConfirmationResult = await fbAuth.signInWithPhoneNumber(phone, fbRecaptchaVerifier);
+    document.getElementById('fb-phone-flow').style.display = 'none';
+    document.getElementById('fb-otp-flow').style.display = 'flex';
+    showToast('Code sent to ' + phone);
+  } catch(e) {
+    const msg = e.code === 'auth/invalid-phone-number' ? 'Invalid phone number'
+              : e.code === 'auth/too-many-requests'    ? 'Too many attempts — wait a moment'
+              : (e.message || 'Could not send code');
+    showToast(msg);
+    if (btn) { btn.disabled = false; btn.textContent = 'Get started'; }
+    if (fbRecaptchaVerifier) { try { fbRecaptchaVerifier.clear(); } catch(_) {} fbRecaptchaVerifier = null; }
+    initRecaptcha();
+  }
+}
+
+async function fbVerifyOTP() {
+  const code = (document.getElementById('fb-otp-input').value || '').trim();
+  if (code.length < 6) { showToast('Enter the 6-digit code'); return; }
+  const btn = document.querySelector('#fb-otp-flow .btn-coral');
+  if (btn) { btn.disabled = true; btn.textContent = 'Verifying…'; }
+  try {
+    await fbConfirmationResult.confirm(code);
+    // Auth state change fires → initFirebaseAuth handles the rest
+  } catch(e) {
+    showToast('Incorrect code — please try again');
+    if (btn) { btn.disabled = false; btn.textContent = 'Verify code'; }
+  }
+}
+
+function fbResendOTP() {
+  document.getElementById('fb-otp-flow').style.display = 'none';
+  document.getElementById('fb-phone-flow').style.display = 'flex';
+  const btn = document.querySelector('#fb-phone-flow .btn-coral');
+  if (btn) { btn.disabled = false; btn.textContent = 'Get started'; }
+  fbConfirmationResult = null;
+  if (fbRecaptchaVerifier) { try { fbRecaptchaVerifier.clear(); } catch(_) {} fbRecaptchaVerifier = null; }
+  initRecaptcha();
+}
+
+// ── FIRESTORE DATA ─────────────────────────────────────────
+async function fbLoadProfile(uid) {
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    return doc.exists ? doc.data() : null;
+  } catch(e) { console.warn('fbLoadProfile:', e); return null; }
+}
+
+function mergeFirebaseState(profile) {
+  const result = { ...S };
+  if (profile.user)                      result.user          = profile.user;
+  if (profile.tier)                      result.tier          = profile.tier;
+  if (profile.connectsLeft  !== undefined) result.connectsLeft  = profile.connectsLeft;
+  if (profile.sparksLeft    !== undefined) result.sparksLeft    = profile.sparksLeft;
+  if (profile.walletBalance !== undefined) result.walletBalance = profile.walletBalance;
+  if (profile.walletPending !== undefined) result.walletPending = profile.walletPending;
+  if (profile.rosesReceived !== undefined) result.rosesReceived = profile.rosesReceived;
+  if (profile.roseInventory)             result.roseInventory = profile.roseInventory;
+  if (profile.walletTx)                  result.walletTx      = profile.walletTx;
+  if (profile.stats)                     result.stats         = profile.stats;
+  if (profile.settings)                  result.settings      = profile.settings;
+  result.isVerified   = profile.isVerified || false;
+  result.queue        = shuffle([...PROFILES]);
+  result.matches      = [];
+  result.convos       = {};
+  result.currentChat  = null;
+  result.pendingMatch = null;
+  return result;
+}
+
+async function fbLoadMatchesAndConvos(uid) {
+  try {
+    const matchSnap = await db.collection('users').doc(uid)
+      .collection('matches').orderBy('matchedAt', 'desc').limit(50).get();
+    const matchPromises = matchSnap.docs.map(async doc => {
+      const data  = doc.data();
+      const muid  = doc.id;
+      const demoP = PROFILES.find(p => String(p.id) === muid);
+      if (demoP) return { ...demoP, matchedAt: data.matchedAt?.toMillis?.() || Date.now() };
+      try {
+        const uDoc = await db.collection('users').doc(muid).get();
+        if (uDoc.exists) return buildFbProfile(muid, uDoc.data(), data);
+      } catch(_) {}
+      return null;
+    });
+    const resolved = (await Promise.all(matchPromises)).filter(Boolean);
+    S.matches       = resolved;
+    S.stats.matches = S.matches.length;
+
+    for (const match of S.matches) {
+      try {
+        const chatId  = makeChatId(uid, String(match.id));
+        const msgSnap = await db.collection('conversations').doc(chatId)
+          .collection('messages').orderBy('createdAt').limit(100).get();
+        S.convos[match.id] = msgSnap.docs.map(d => ({
+          from: d.data().from === uid ? 'me' : 'them',
+          text: d.data().text || '', type: d.data().type || 'text',
+          time: d.data().time || nowTime(), vid: d.data().vid, src: d.data().src, dur: d.data().dur,
+        }));
+      } catch(_) {}
+    }
+  } catch(e) { console.warn('fbLoadMatchesAndConvos:', e); }
+}
+
+function buildFbProfile(uid, data, matchData) {
+  const u      = data.user || {};
+  const photos = u.photos?.length ? u.photos : (u.photo ? [u.photo] : []);
+  return {
+    id: uid, name: u.name || 'User', age: u.age || 0, city: u.city || '',
+    looking: u.looking || 'anything', compat: Math.floor(Math.random() * 25 + 70),
+    dist: '? km', bio: u.bio || '', verified: data.isVerified || false,
+    interests: u.interests || [], img: photos[0] || '', photos,
+    answers: u.answers || {}, videoIntro: false,
+    profileLayout: ['about','photo1','prompt1','photo2','prompt2','interests','prompt3'],
+    matchedAt: matchData?.matchedAt?.toMillis?.() || Date.now(),
+    isRealUser: true,
+  };
+}
+
+function makeChatId(a, b) { return [String(a), String(b)].sort().join('_'); }
+
+let fbSaveTimer = null;
+async function fbSaveProfile() {
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !db) return;
+  try {
+    const safe = {
+      user: S.user, tier: S.tier, connectsLeft: S.connectsLeft, sparksLeft: S.sparksLeft,
+      walletBalance: S.walletBalance, walletPending: S.walletPending,
+      rosesReceived: S.rosesReceived, roseInventory: S.roseInventory,
+      walletTx: (S.walletTx || []).slice(0, 40), stats: S.stats, settings: S.settings,
+      isVerified: S.isVerified || false, updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    await db.collection('users').doc(fbCurrentUid).set(safe, { merge: true });
+  } catch(e) { console.warn('fbSaveProfile:', e); }
+}
+function fbSaveProfileDebounced() {
+  clearTimeout(fbSaveTimer);
+  fbSaveTimer = setTimeout(fbSaveProfile, 2500);
+}
+
+async function fbSaveMatch(matchObj) {
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !db) return;
+  try {
+    const muid = String(matchObj.id);
+    const ts   = firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection('users').doc(fbCurrentUid).collection('matches').doc(muid).set({ matchedAt: ts });
+    if (matchObj.isRealUser) {
+      await db.collection('users').doc(muid).collection('matches').doc(fbCurrentUid).set({ matchedAt: ts });
+    }
+  } catch(e) { console.warn('fbSaveMatch:', e); }
+}
+
+async function fbSendMessageToFirestore(matchId, msg) {
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !db) return;
+  try {
+    const chatId = makeChatId(fbCurrentUid, String(matchId));
+    await db.collection('conversations').doc(chatId).collection('messages').add({
+      from: fbCurrentUid, text: msg.text || '', type: msg.type || 'text',
+      time: msg.time || nowTime(), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch(e) { console.warn('fbSendMessage:', e); }
+}
+
+// ── FIREBASE STORAGE ───────────────────────────────────────
+async function fbUploadPhoto(dataUrl, filename) {
+  if (!IS_FIREBASE_LIVE || !fbStorage || !fbCurrentUid) return dataUrl;
+  if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
+  try {
+    const ref  = fbStorage.ref(`users/${fbCurrentUid}/${filename}`);
+    const snap = await ref.putString(dataUrl, 'data_url');
+    return await snap.ref.getDownloadURL();
+  } catch(e) { console.warn('fbUploadPhoto:', e); return dataUrl; }
+}
+
+async function fbUploadAllSetupPhotos() {
+  if (!IS_FIREBASE_LIVE || !(S._photos?.length)) return;
+  showToast('Uploading your photos…');
+  const uploaded = await Promise.all(
+    S._photos.map((p, i) => fbUploadPhoto(p, `photo_${i}_${Date.now()}.jpg`))
+  );
+  S._photos = uploaded;
+  S._photo  = uploaded[0] || S._photo;
+}
+
+// ── REAL USER DISCOVERY ────────────────────────────────────
+async function fbLoadRealUsersIntoQueue() {
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !S.user) return;
+  try {
+    const city    = S.user.city || '';
+    const snap    = await db.collection('users').where('user.city', '==', city).limit(30).get();
+    const seenIds = new Set([fbCurrentUid, ...S.matches.map(m => String(m.id))]);
+    const realUsers = snap.docs
+      .filter(d => !seenIds.has(d.id))
+      .map(d => buildFbProfile(d.id, d.data(), {}))
+      .filter(u => u.name && u.name !== 'User' && u.age > 0);
+    if (realUsers.length) {
+      S.queue = shuffle([...realUsers, ...S.queue.filter(q => !realUsers.some(r => r.id === q.id))]);
+      renderDiscover();
+    }
+  } catch(e) { console.warn('fbLoadRealUsers:', e); }
+}
+
+// ── REAL-TIME MESSAGES ─────────────────────────────────────
+let fbMsgUnsub = null;
+function fbListenMessages(matchId) {
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !db) return;
+  if (fbMsgUnsub) { fbMsgUnsub(); fbMsgUnsub = null; }
+  try {
+    const chatId = makeChatId(fbCurrentUid, String(matchId));
+    fbMsgUnsub = db.collection('conversations').doc(chatId)
+      .collection('messages').orderBy('createdAt').limit(200)
+      .onSnapshot(snap => {
+        if (!S.currentChat || S.currentChat.id !== matchId) return;
+        S.convos[matchId] = snap.docs.map(d => ({
+          from: d.data().from === fbCurrentUid ? 'me' : 'them',
+          text: d.data().text || '', type: d.data().type || 'text',
+          time: d.data().time || nowTime(),
+        }));
+        renderChatMsgs();
+        updateLinkedUI();
+      });
+  } catch(e) { console.warn('fbListenMessages:', e); }
+}
+function fbStopMsgs() { if (fbMsgUnsub) { fbMsgUnsub(); fbMsgUnsub = null; } }
+
+// ─────────────────────────────────────────────────────────
 // ── DATA ─────────────────────────────────────────────────
 const PROFILES = [
   { id:1, name:'Aisha', age:23, city:'Cape Town', looking:'dating', compat:91, dist:'3 km', bio:'', verified:true, interests:['Music','Beach','Coffee'], img:'https://randomuser.me/api/portraits/women/44.jpg', answers:{ sunday:'Brunch with the girls then a sunset walk on Camps Bay 🌊', hottake:'The best braai is the one someone else makes for you', obsessed:'Amapiano and overpriced matcha lattes', random:'I once accidentally crashed a Tinder date wearing the same dress as the other girl' } },
@@ -3684,6 +4029,7 @@ function saveState() {
       const safe = { ...S, spotlightTimer:null, currentChat:null, pendingMatch:null };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
     } catch (_) {}
+    if (IS_FIREBASE_LIVE) fbSaveProfileDebounced();
   }, 120);
 }
 
@@ -3887,7 +4233,7 @@ function go(from) {
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
-function finishSetup() {
+async function finishSetup() {
   const interests = [...document.querySelectorAll('.vibe-btn.sel')].map(el => el.textContent);
   if ((S._photos || []).length < 3) {
     showToast('Add at least 3 photos before creating your profile');
@@ -3898,6 +4244,10 @@ function finishSetup() {
     return;
   }
   const dobInfo = getPickerDob();
+
+  // Upload photos to Firebase Storage if configured
+  if (IS_FIREBASE_LIVE) await fbUploadAllSetupPhotos();
+
   S.user = {
     name: document.getElementById('s-name').value.trim(),
     age: dobInfo.age,
@@ -3916,8 +4266,13 @@ function finishSetup() {
       random:   document.getElementById('q-random').value,
     },
   };
+
+  // Save to Firestore immediately so the profile is live
+  if (IS_FIREBASE_LIVE) await fbSaveProfile();
+
   saveState();
   startApp();
+  if (IS_FIREBASE_LIVE) fbLoadRealUsersIntoQueue();
 }
 
 // ── APP INIT ──────────────────────────────────────────────
@@ -4223,6 +4578,7 @@ function triggerMatch(p) {
   const matchObj = Object.assign({}, p, { matchedAt: Date.now() });
   S.matches.push(matchObj);
   S.stats.matches++;
+  if (IS_FIREBASE_LIVE) fbSaveMatch(matchObj);
   S.convos[matchObj.id] = [{
     from: 'them',
     text: `Hey ${S.user?.name || 'you'}! Glad we linked 😊 Love your profile answers by the way.`,
@@ -4310,9 +4666,11 @@ function openChat(p) {
   updateIcebreakerVisibility();
   document.getElementById('chat-view').classList.add('open');
   setTimeout(() => document.getElementById('chat-input').focus(), 300);
+  if (IS_FIREBASE_LIVE && p.isRealUser) fbListenMessages(p.id);
 }
 
 function closeChat() {
+  fbStopMsgs();
   document.getElementById('chat-view').classList.remove('open');
   S.currentChat = null;
   updateLinkedUI();
@@ -4344,12 +4702,21 @@ function sendMsg() {
   inp.value = '';
   const chips = document.getElementById('icebreaker-chips');
   if (chips) chips.style.display = 'none';
-  const id = S.currentChat.id;
+  const id  = S.currentChat.id;
+  const msg = { from: 'me', text, time: nowTime() };
   if (!S.convos[id]) S.convos[id] = [];
-  S.convos[id].push({ from: 'me', text, time: nowTime() });
+  S.convos[id].push(msg);
   renderChatMsgs();
   updateLinkedUI();
   saveState();
+
+  // For real Firebase users: persist message and wait for their reply
+  if (IS_FIREBASE_LIVE && S.currentChat.isRealUser) {
+    fbSendMessageToFirestore(id, msg);
+    return;
+  }
+
+  // Demo profiles: auto-reply
   setTimeout(() => {
     const reply = REPLIES[(S.convos[id].length + id) % REPLIES.length];
     S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
@@ -4549,7 +4916,12 @@ function updateStats() {
 function logout() {
   if (!confirm('Log out of Linked?')) return;
   try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
-  location.reload();
+  fbStopMsgs();
+  if (IS_FIREBASE_LIVE && fbAuth) {
+    fbAuth.signOut().catch(() => {}).finally(() => location.reload());
+  } else {
+    location.reload();
+  }
 }
 
 // ── NAV ───────────────────────────────────────────────────
@@ -5804,11 +6176,17 @@ function parseTwemoji(el) {
 }
 document.addEventListener('DOMContentLoaded', () => parseTwemoji(document.body));
 window.addEventListener('DOMContentLoaded', () => {
-  if (restoreState()) startApp();
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (IS_FIREBASE_LIVE) {
+    // Firebase mode: auth state drives everything
+    initFirebaseAuth();
+  } else {
+    // Demo / offline mode: fall back to localStorage
+    if (restoreState()) startApp();
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+    maybeShowInstallPrompt();
   }
-  maybeShowInstallPrompt();
 });
 
 // ── PROFILE COMPLETION ────────────────────────────────────
