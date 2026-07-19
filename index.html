@@ -10,11 +10,8 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/linked-logo.png">
   <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
-  <!-- Firebase SDKs — loaded only when FIREBASE_CONFIG.apiKey is filled in -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     img.emoji { height: 1.2em; width: 1.2em; vertical-align: -0.15em; display: inline-block; }
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -3604,46 +3601,32 @@
 </div>
 
 <script>
-// ═══ FIREBASE BACKEND ════════════════════════════════════════════════════════
-// Fill in your Firebase config (Firebase console → Project settings → Your apps → Web app)
-// Leave apiKey empty to run in offline demo mode (no real users, no sync).
-const FIREBASE_CONFIG = {
-  apiKey:            "",
-  authDomain:        "",
-  projectId:         "",
-  storageBucket:     "",
-  messagingSenderId: "",
-  appId:             ""
-};
-
-let db = null, fbAuth = null, fbStorage = null, fbCurrentUid = null;
-const IS_FIREBASE_LIVE = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
+// ═══ SUPABASE BACKEND ════════════════════════════════════════════════════════
+const SUPABASE_URL      = "https://byguszmbooiampuvsrfz.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3Vzem1ib29pYW1wdXZzcmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NjU1MDMsImV4cCI6MjEwMDA0MTUwM30.uxfuMJ2FYjPNKAjZRJ7JcLtrqKmzv4n00YLPniX7Wzs";
+let sb = null, fbCurrentUid = null;
+const IS_FIREBASE_LIVE = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 if (IS_FIREBASE_LIVE) {
-  try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    db        = firebase.firestore();
-    fbAuth    = firebase.auth();
-    fbStorage = firebase.storage();
-  } catch(e) { console.warn('Firebase init failed:', e); }
+  try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+  catch(e) { console.warn('Supabase init failed:', e); }
 }
 
-// ── FIREBASE AUTH ──────────────────────────────────────────
-let fbConfirmationResult = null, fbRecaptchaVerifier = null;
+// ── SUPABASE AUTH ──────────────────────────────────────────
+let sbPhoneNumber = null;
 
 function initFirebaseAuth() {
-  fbAuth.onAuthStateChanged(async user => {
-    if (user) {
-      fbCurrentUid = user.uid;
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session && session.user) {
+      fbCurrentUid = session.user.id;
       try {
-        const profile = await fbLoadProfile(user.uid);
-        if (profile && profile.user) {
+        const profile = await fbLoadProfile(fbCurrentUid);
+        if (profile && profile.user_data && profile.user_data.name) {
           S = mergeFirebaseState(profile);
-          await fbLoadMatchesAndConvos(user.uid);
+          await fbLoadMatchesAndConvos(fbCurrentUid);
           if (!S.queue || !S.queue.length) S.queue = shuffle([...PROFILES]);
           startApp();
           fbLoadRealUsersIntoQueue();
         } else {
-          // New Firebase user — show profile setup
           document.getElementById('auth').style.display = 'none';
           document.getElementById('setup').style.display = 'flex';
           S._photos = [];
@@ -3660,7 +3643,7 @@ function initFirebaseAuth() {
       }
     } else {
       fbCurrentUid = null;
-      showFbAuthScreen();
+      if (event !== 'INITIAL_SESSION') showFbAuthScreen();
     }
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
       navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -3675,18 +3658,9 @@ function showFbAuthScreen() {
   const phoneFlow   = document.getElementById('auth-phone-flow');
   if (defaultBtns) defaultBtns.style.display = 'none';
   if (phoneFlow)   phoneFlow.style.display    = 'flex';
-  initRecaptcha();
 }
 
-function initRecaptcha() {
-  if (fbRecaptchaVerifier) return;
-  try {
-    fbRecaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-      size: 'invisible', callback: () => {}
-    });
-    fbRecaptchaVerifier.render();
-  } catch(e) { console.warn('reCAPTCHA init:', e); }
-}
+function initRecaptcha() {}
 
 async function fbSendOTP() {
   const raw = (document.getElementById('fb-phone-input').value || '').trim().replace(/\s+/g, '');
@@ -3695,18 +3669,15 @@ async function fbSendOTP() {
   const btn = document.querySelector('#fb-phone-flow .btn-coral');
   if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
   try {
-    fbConfirmationResult = await fbAuth.signInWithPhoneNumber(phone, fbRecaptchaVerifier);
+    const { error } = await sb.auth.signInWithOtp({ phone });
+    if (error) throw error;
+    sbPhoneNumber = phone;
     document.getElementById('fb-phone-flow').style.display = 'none';
     document.getElementById('fb-otp-flow').style.display = 'flex';
     showToast('Code sent to ' + phone);
   } catch(e) {
-    const msg = e.code === 'auth/invalid-phone-number' ? 'Invalid phone number'
-              : e.code === 'auth/too-many-requests'    ? 'Too many attempts — wait a moment'
-              : (e.message || 'Could not send code');
-    showToast(msg);
+    showToast(e.message || 'Could not send code');
     if (btn) { btn.disabled = false; btn.textContent = 'Get started'; }
-    if (fbRecaptchaVerifier) { try { fbRecaptchaVerifier.clear(); } catch(_) {} fbRecaptchaVerifier = null; }
-    initRecaptcha();
   }
 }
 
@@ -3716,8 +3687,8 @@ async function fbVerifyOTP() {
   const btn = document.querySelector('#fb-otp-flow .btn-coral');
   if (btn) { btn.disabled = true; btn.textContent = 'Verifying…'; }
   try {
-    await fbConfirmationResult.confirm(code);
-    // Auth state change fires → initFirebaseAuth handles the rest
+    const { error } = await sb.auth.verifyOtp({ phone: sbPhoneNumber, token: code, type: 'sms' });
+    if (error) throw error;
   } catch(e) {
     showToast('Incorrect code — please try again');
     if (btn) { btn.disabled = false; btn.textContent = 'Verify code'; }
@@ -3729,33 +3700,33 @@ function fbResendOTP() {
   document.getElementById('fb-phone-flow').style.display = 'flex';
   const btn = document.querySelector('#fb-phone-flow .btn-coral');
   if (btn) { btn.disabled = false; btn.textContent = 'Get started'; }
-  fbConfirmationResult = null;
-  if (fbRecaptchaVerifier) { try { fbRecaptchaVerifier.clear(); } catch(_) {} fbRecaptchaVerifier = null; }
-  initRecaptcha();
+  sbPhoneNumber = null;
 }
 
-// ── FIRESTORE DATA ─────────────────────────────────────────
+// ── SUPABASE DB ────────────────────────────────────────────
 async function fbLoadProfile(uid) {
   try {
-    const doc = await db.collection('users').doc(uid).get();
-    return doc.exists ? doc.data() : null;
+    const { data, error } = await sb.from('profiles').select('*').eq('id', uid).single();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
   } catch(e) { console.warn('fbLoadProfile:', e); return null; }
 }
 
 function mergeFirebaseState(profile) {
   const result = { ...S };
-  if (profile.user)                      result.user          = profile.user;
-  if (profile.tier)                      result.tier          = profile.tier;
-  if (profile.connectsLeft  !== undefined) result.connectsLeft  = profile.connectsLeft;
-  if (profile.sparksLeft    !== undefined) result.sparksLeft    = profile.sparksLeft;
-  if (profile.walletBalance !== undefined) result.walletBalance = profile.walletBalance;
-  if (profile.walletPending !== undefined) result.walletPending = profile.walletPending;
-  if (profile.rosesReceived !== undefined) result.rosesReceived = profile.rosesReceived;
-  if (profile.roseInventory)             result.roseInventory = profile.roseInventory;
-  if (profile.walletTx)                  result.walletTx      = profile.walletTx;
-  if (profile.stats)                     result.stats         = profile.stats;
-  if (profile.settings)                  result.settings      = profile.settings;
-  result.isVerified   = profile.isVerified || false;
+  const u = profile.user_data || {};
+  if (u.name)                               result.user          = u;
+  if (profile.tier)                         result.tier          = profile.tier;
+  if (profile.connects_left  !== undefined) result.connectsLeft  = profile.connects_left;
+  if (profile.sparks_left    !== undefined) result.sparksLeft    = profile.sparks_left;
+  if (profile.wallet_balance !== undefined) result.walletBalance = profile.wallet_balance;
+  if (profile.wallet_pending !== undefined) result.walletPending = profile.wallet_pending;
+  if (profile.roses_received !== undefined) result.rosesReceived = profile.roses_received;
+  if (profile.rose_inventory)              result.roseInventory = profile.rose_inventory;
+  if (profile.wallet_tx)                   result.walletTx      = profile.wallet_tx;
+  if (profile.stats)                       result.stats         = profile.stats;
+  if (profile.settings)                    result.settings      = profile.settings;
+  result.isVerified   = profile.is_verified || false;
   result.queue        = shuffle([...PROFILES]);
   result.matches      = [];
   result.convos       = {};
@@ -3766,16 +3737,16 @@ function mergeFirebaseState(profile) {
 
 async function fbLoadMatchesAndConvos(uid) {
   try {
-    const matchSnap = await db.collection('users').doc(uid)
-      .collection('matches').orderBy('matchedAt', 'desc').limit(50).get();
-    const matchPromises = matchSnap.docs.map(async doc => {
-      const data  = doc.data();
-      const muid  = doc.id;
+    const { data: matchRows } = await sb.from('matches')
+      .select('*').eq('user_id', uid).order('matched_at', { ascending: false }).limit(50);
+    if (!matchRows) return;
+    const matchPromises = matchRows.map(async row => {
+      const muid  = row.matched_user_id;
       const demoP = PROFILES.find(p => String(p.id) === muid);
-      if (demoP) return { ...demoP, matchedAt: data.matchedAt?.toMillis?.() || Date.now() };
+      if (demoP) return { ...demoP, matchedAt: new Date(row.matched_at).getTime() };
       try {
-        const uDoc = await db.collection('users').doc(muid).get();
-        if (uDoc.exists) return buildFbProfile(muid, uDoc.data(), data);
+        const { data: uData } = await sb.from('profiles').select('*').eq('id', muid).single();
+        if (uData) return buildFbProfile(muid, uData, row);
       } catch(_) {}
       return null;
     });
@@ -3785,13 +3756,13 @@ async function fbLoadMatchesAndConvos(uid) {
 
     for (const match of S.matches) {
       try {
-        const chatId  = makeChatId(uid, String(match.id));
-        const msgSnap = await db.collection('conversations').doc(chatId)
-          .collection('messages').orderBy('createdAt').limit(100).get();
-        S.convos[match.id] = msgSnap.docs.map(d => ({
-          from: d.data().from === uid ? 'me' : 'them',
-          text: d.data().text || '', type: d.data().type || 'text',
-          time: d.data().time || nowTime(), vid: d.data().vid, src: d.data().src, dur: d.data().dur,
+        const chatId = makeChatId(uid, String(match.id));
+        const { data: msgs } = await sb.from('messages')
+          .select('*').eq('chat_id', chatId).order('created_at').limit(100);
+        S.convos[match.id] = (msgs || []).map(d => ({
+          from: d.from_user_id === uid ? 'me' : 'them',
+          text: d.text || '', type: d.msg_type || 'text',
+          time: d.time || nowTime(),
         }));
       } catch(_) {}
     }
@@ -3799,16 +3770,16 @@ async function fbLoadMatchesAndConvos(uid) {
 }
 
 function buildFbProfile(uid, data, matchData) {
-  const u      = data.user || {};
+  const u      = data.user_data || {};
   const photos = u.photos?.length ? u.photos : (u.photo ? [u.photo] : []);
   return {
     id: uid, name: u.name || 'User', age: u.age || 0, city: u.city || '',
     looking: u.looking || 'anything', compat: Math.floor(Math.random() * 25 + 70),
-    dist: '? km', bio: u.bio || '', verified: data.isVerified || false,
+    dist: '? km', bio: u.bio || '', verified: data.is_verified || false,
     interests: u.interests || [], img: photos[0] || '', photos,
     answers: u.answers || {}, videoIntro: false,
     profileLayout: ['about','photo1','prompt1','photo2','prompt2','interests','prompt3'],
-    matchedAt: matchData?.matchedAt?.toMillis?.() || Date.now(),
+    matchedAt: matchData?.matched_at ? new Date(matchData.matched_at).getTime() : Date.now(),
     isRealUser: true,
   };
 }
@@ -3817,16 +3788,19 @@ function makeChatId(a, b) { return [String(a), String(b)].sort().join('_'); }
 
 let fbSaveTimer = null;
 async function fbSaveProfile() {
-  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !db) return;
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !sb) return;
   try {
-    const safe = {
-      user: S.user, tier: S.tier, connectsLeft: S.connectsLeft, sparksLeft: S.sparksLeft,
-      walletBalance: S.walletBalance, walletPending: S.walletPending,
-      rosesReceived: S.rosesReceived, roseInventory: S.roseInventory,
-      walletTx: (S.walletTx || []).slice(0, 40), stats: S.stats, settings: S.settings,
-      isVerified: S.isVerified || false, updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    const row = {
+      id: fbCurrentUid,
+      user_data: S.user, tier: S.tier,
+      connects_left: S.connectsLeft, sparks_left: S.sparksLeft,
+      wallet_balance: S.walletBalance, wallet_pending: S.walletPending,
+      roses_received: S.rosesReceived, rose_inventory: S.roseInventory,
+      wallet_tx: (S.walletTx || []).slice(0, 40),
+      stats: S.stats, settings: S.settings,
+      is_verified: S.isVerified || false, updated_at: new Date().toISOString(),
     };
-    await db.collection('users').doc(fbCurrentUid).set(safe, { merge: true });
+    await sb.from('profiles').upsert(row);
   } catch(e) { console.warn('fbSaveProfile:', e); }
 }
 function fbSaveProfileDebounced() {
@@ -3835,36 +3809,49 @@ function fbSaveProfileDebounced() {
 }
 
 async function fbSaveMatch(matchObj) {
-  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !db) return;
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !sb) return;
   try {
     const muid = String(matchObj.id);
-    const ts   = firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection('users').doc(fbCurrentUid).collection('matches').doc(muid).set({ matchedAt: ts });
+    const ts   = new Date().toISOString();
+    await sb.from('matches').upsert({ user_id: fbCurrentUid, matched_user_id: muid, matched_at: ts });
     if (matchObj.isRealUser) {
-      await db.collection('users').doc(muid).collection('matches').doc(fbCurrentUid).set({ matchedAt: ts });
+      await sb.from('matches').upsert({ user_id: muid, matched_user_id: fbCurrentUid, matched_at: ts });
     }
   } catch(e) { console.warn('fbSaveMatch:', e); }
 }
 
 async function fbSendMessageToFirestore(matchId, msg) {
-  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !db) return;
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !sb) return;
   try {
     const chatId = makeChatId(fbCurrentUid, String(matchId));
-    await db.collection('conversations').doc(chatId).collection('messages').add({
-      from: fbCurrentUid, text: msg.text || '', type: msg.type || 'text',
-      time: msg.time || nowTime(), createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    await sb.from('messages').insert({
+      chat_id: chatId, from_user_id: fbCurrentUid,
+      text: msg.text || '', msg_type: msg.type || 'text',
+      time: msg.time || nowTime(), created_at: new Date().toISOString(),
     });
   } catch(e) { console.warn('fbSendMessage:', e); }
 }
 
-// ── FIREBASE STORAGE ───────────────────────────────────────
+// ── SUPABASE STORAGE ───────────────────────────────────────
+function dataURLtoBlob(dataUrl) {
+  const [header, data] = dataUrl.split(',');
+  const mime = header.match(/:(.*?);/)[1];
+  const bin  = atob(data);
+  const arr  = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 async function fbUploadPhoto(dataUrl, filename) {
-  if (!IS_FIREBASE_LIVE || !fbStorage || !fbCurrentUid) return dataUrl;
+  if (!IS_FIREBASE_LIVE || !sb || !fbCurrentUid) return dataUrl;
   if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl;
   try {
-    const ref  = fbStorage.ref(`users/${fbCurrentUid}/${filename}`);
-    const snap = await ref.putString(dataUrl, 'data_url');
-    return await snap.ref.getDownloadURL();
+    const blob = dataURLtoBlob(dataUrl);
+    const path = `${fbCurrentUid}/${filename}`;
+    const { error } = await sb.storage.from('photos').upload(path, blob, { upsert: true });
+    if (error) throw error;
+    const { data } = sb.storage.from('photos').getPublicUrl(path);
+    return data.publicUrl;
   } catch(e) { console.warn('fbUploadPhoto:', e); return dataUrl; }
 }
 
@@ -3882,12 +3869,13 @@ async function fbUploadAllSetupPhotos() {
 async function fbLoadRealUsersIntoQueue() {
   if (!IS_FIREBASE_LIVE || !fbCurrentUid || !S.user) return;
   try {
-    const city    = S.user.city || '';
-    const snap    = await db.collection('users').where('user.city', '==', city).limit(30).get();
+    const city = S.user.city || '';
+    const { data: rows } = await sb.from('profiles')
+      .select('*').neq('id', fbCurrentUid).limit(30);
     const seenIds = new Set([fbCurrentUid, ...S.matches.map(m => String(m.id))]);
-    const realUsers = snap.docs
-      .filter(d => !seenIds.has(d.id))
-      .map(d => buildFbProfile(d.id, d.data(), {}))
+    const realUsers = (rows || [])
+      .filter(d => !seenIds.has(d.id) && d.user_data?.city === city)
+      .map(d => buildFbProfile(d.id, d, {}))
       .filter(u => u.name && u.name !== 'User' && u.age > 0);
     if (realUsers.length) {
       S.queue = shuffle([...realUsers, ...S.queue.filter(q => !realUsers.some(r => r.id === q.id))]);
@@ -3899,22 +3887,26 @@ async function fbLoadRealUsersIntoQueue() {
 // ── REAL-TIME MESSAGES ─────────────────────────────────────
 let fbMsgUnsub = null;
 function fbListenMessages(matchId) {
-  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !db) return;
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !sb) return;
   if (fbMsgUnsub) { fbMsgUnsub(); fbMsgUnsub = null; }
   try {
     const chatId = makeChatId(fbCurrentUid, String(matchId));
-    fbMsgUnsub = db.collection('conversations').doc(chatId)
-      .collection('messages').orderBy('createdAt').limit(200)
-      .onSnapshot(snap => {
-        if (!S.currentChat || S.currentChat.id !== matchId) return;
-        S.convos[matchId] = snap.docs.map(d => ({
-          from: d.data().from === fbCurrentUid ? 'me' : 'them',
-          text: d.data().text || '', type: d.data().type || 'text',
-          time: d.data().time || nowTime(),
-        }));
-        renderChatMsgs();
-        updateLinkedUI();
-      });
+    const channel = sb.channel(`msgs:${chatId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
+        payload => {
+          if (!S.currentChat || S.currentChat.id !== matchId) return;
+          const d = payload.new;
+          if (!S.convos[matchId]) S.convos[matchId] = [];
+          S.convos[matchId].push({
+            from: d.from_user_id === fbCurrentUid ? 'me' : 'them',
+            text: d.text || '', type: d.msg_type || 'text',
+            time: d.time || nowTime(),
+          });
+          renderChatMsgs();
+          updateLinkedUI();
+        })
+      .subscribe();
+    fbMsgUnsub = () => sb.removeChannel(channel);
   } catch(e) { console.warn('fbListenMessages:', e); }
 }
 function fbStopMsgs() { if (fbMsgUnsub) { fbMsgUnsub(); fbMsgUnsub = null; } }
@@ -4917,8 +4909,8 @@ function logout() {
   if (!confirm('Log out of Linked?')) return;
   try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
   fbStopMsgs();
-  if (IS_FIREBASE_LIVE && fbAuth) {
-    fbAuth.signOut().catch(() => {}).finally(() => location.reload());
+  if (IS_FIREBASE_LIVE && sb) {
+    sb.auth.signOut().catch(() => {}).finally(() => location.reload());
   } else {
     location.reload();
   }
