@@ -2471,7 +2471,7 @@
     <p class="auth-fine">By joining you agree to our <span onclick="openTerms()" style="text-decoration:underline;cursor:pointer;color:var(--coral)">Terms &amp; Privacy Policy</span>.</p>
   </div>
 
-  <!-- Phone input screen -->
+  <!-- Email input screen -->
   <div class="auth-content" id="auth-phone" style="display:none;flex-direction:column;justify-content:center">
     <div class="brand-lockup" aria-label="Linked" style="margin-bottom:32px">
       <span class="brand-name">linked</span>
@@ -2481,13 +2481,10 @@
         <path d="M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
       </svg>
     </div>
-    <h1 class="auth-heading" style="font-size:26px;margin-bottom:8px">What's your number?</h1>
-    <p class="auth-copy" style="margin-bottom:28px">We'll send a one-time code to verify it's you.</p>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:15px 14px;font-size:16px;font-weight:700;color:var(--text);white-space:nowrap">🇿🇦 +27</div>
-      <input id="phone-input" class="input-field" type="tel" placeholder="71 234 5678" style="margin:0;flex:1"
-        onkeydown="if(event.key==='Enter')sendOTP()">
-    </div>
+    <h1 class="auth-heading" style="font-size:26px;margin-bottom:8px">What's your email?</h1>
+    <p class="auth-copy" style="margin-bottom:28px">We'll send a 6-digit code to sign you in.</p>
+    <input id="phone-input" class="input-field" type="email" placeholder="you@example.com"
+      style="margin-bottom:14px" onkeydown="if(event.key==='Enter')sendOTP()">
     <button id="send-otp-btn" class="btn-coral" onclick="sendOTP()">Send Code</button>
     <button class="btn-ghost" onclick="showAuthLanding()" style="margin-top:10px">Back</button>
   </div>
@@ -2502,8 +2499,8 @@
         <path d="M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
       </svg>
     </div>
-    <h1 class="auth-heading" style="font-size:26px;margin-bottom:8px">Enter the code</h1>
-    <p class="auth-copy" id="otp-subtext" style="margin-bottom:28px">Check your SMS for the 6-digit code.</p>
+    <h1 class="auth-heading" style="font-size:26px;margin-bottom:8px">Check your email</h1>
+    <p class="auth-copy" id="otp-subtext" style="margin-bottom:28px">Enter the 6-digit code we sent you.</p>
     <input id="otp-input" class="input-field" type="number" placeholder="123456"
       style="margin-bottom:14px;font-size:22px;letter-spacing:6px;text-align:center"
       onkeydown="if(event.key==='Enter')verifyOTP()">
@@ -3645,27 +3642,27 @@ function showOtpScreen() {
   setTimeout(() => document.getElementById('otp-input').focus(), 100);
 }
 
-let _phoneForOtp = '';
+let _emailForOtp = '';
 
 async function sendOTP() {
-  const raw = document.getElementById('phone-input').value.trim().replace(/\s/g, '');
-  if (!raw || raw.length < 7) { showToast('Enter a valid phone number'); return; }
-  _phoneForOtp = raw.startsWith('+') ? raw : '+27' + raw.replace(/^0/, '');
+  const email = document.getElementById('phone-input').value.trim();
+  if (!email || !email.includes('@')) { showToast('Enter a valid email address'); return; }
+  _emailForOtp = email;
   const btn = document.getElementById('send-otp-btn');
   btn.textContent = 'Sending…'; btn.disabled = true;
-  const { error } = await sb.auth.signInWithOtp({ phone: _phoneForOtp });
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
   btn.textContent = 'Send Code'; btn.disabled = false;
   if (error) { showToast(error.message); return; }
-  document.getElementById('otp-subtext').textContent = `Code sent to ${_phoneForOtp}`;
+  document.getElementById('otp-subtext').textContent = `Code sent to ${email}`;
   showOtpScreen();
 }
 
 async function verifyOTP() {
   const token = document.getElementById('otp-input').value.trim();
-  if (token.length < 4) { showToast('Enter the code from your SMS'); return; }
+  if (token.length < 6) { showToast('Enter the 6-digit code from your email'); return; }
   const btn = document.getElementById('verify-otp-btn');
   btn.textContent = 'Verifying…'; btn.disabled = true;
-  const { data, error } = await sb.auth.verifyOtp({ phone: _phoneForOtp, token, type: 'sms' });
+  const { data, error } = await sb.auth.verifyOtp({ email: _emailForOtp, token, type: 'email' });
   btn.textContent = 'Verify'; btn.disabled = false;
   if (error) { showToast(error.message); return; }
   _sbSession = data.session;
