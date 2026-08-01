@@ -10,6 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="assets/linked-logo.png">
   <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     img.emoji { height: 1.2em; width: 1.2em; vertical-align: -0.15em; display: inline-block; }
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -2449,7 +2450,7 @@
 
 <!-- ═══ AUTH ════════════════════════════════════════════ -->
 <div id="auth">
-  <div class="auth-content">
+  <div class="auth-content" id="auth-landing">
     <div class="auth-brand">
       <div class="brand-lockup" aria-label="Linked">
         <span class="brand-name">linked</span>
@@ -2464,10 +2465,50 @@
     <p class="auth-copy">Meet real people who are looking for something real.</p>
     <img class="auth-hero" src="assets/onboarding-couple-v2.png" alt="Two people smiling over coffee, each holding one cup">
     <div class="auth-btns">
-      <button class="btn-coral" onclick="showSetup()">Next</button>
-      <button class="btn-ghost" onclick="quickLogin()">Skip</button>
+      <button class="btn-coral" onclick="showPhoneInput()">Get Started</button>
+      <button class="btn-ghost" onclick="quickLogin()">Try Demo</button>
     </div>
     <p class="auth-fine">By joining you agree to our <span onclick="openTerms()" style="text-decoration:underline;cursor:pointer;color:var(--coral)">Terms &amp; Privacy Policy</span>.</p>
+  </div>
+
+  <!-- Phone input screen -->
+  <div class="auth-content" id="auth-phone" style="display:none;flex-direction:column;justify-content:center">
+    <div class="brand-lockup" aria-label="Linked" style="margin-bottom:32px">
+      <span class="brand-name">linked</span>
+      <svg viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="auth-heading" style="font-size:26px;margin-bottom:8px">What's your number?</h1>
+    <p class="auth-copy" style="margin-bottom:28px">We'll send a one-time code to verify it's you.</p>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:15px 14px;font-size:16px;font-weight:700;color:var(--text);white-space:nowrap">🇿🇦 +27</div>
+      <input id="phone-input" class="input-field" type="tel" placeholder="71 234 5678" style="margin:0;flex:1"
+        onkeydown="if(event.key==='Enter')sendOTP()">
+    </div>
+    <button id="send-otp-btn" class="btn-coral" onclick="sendOTP()">Send Code</button>
+    <button class="btn-ghost" onclick="showAuthLanding()" style="margin-top:10px">Back</button>
+  </div>
+
+  <!-- OTP verification screen -->
+  <div class="auth-content" id="auth-otp" style="display:none;flex-direction:column;justify-content:center">
+    <div class="brand-lockup" aria-label="Linked" style="margin-bottom:32px">
+      <span class="brand-name">linked</span>
+      <svg viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <path d="M12.2 17.8l-2.1 2.1a5 5 0 01-7.1-7.1l4-4a5 5 0 017.1 0" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M17.8 12.2l2.1-2.1a5 5 0 017.1 7.1l-4 4a5 5 0 01-7.1 0" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M10.5 19.5l9-9" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="auth-heading" style="font-size:26px;margin-bottom:8px">Enter the code</h1>
+    <p class="auth-copy" id="otp-subtext" style="margin-bottom:28px">Check your SMS for the 6-digit code.</p>
+    <input id="otp-input" class="input-field" type="number" placeholder="123456"
+      style="margin-bottom:14px;font-size:22px;letter-spacing:6px;text-align:center"
+      onkeydown="if(event.key==='Enter')verifyOTP()">
+    <button id="verify-otp-btn" class="btn-coral" onclick="verifyOTP()">Verify</button>
+    <button class="btn-ghost" onclick="showPhoneInput()" style="margin-top:10px">Resend code</button>
   </div>
 </div>
 
@@ -3575,6 +3616,198 @@
 </div>
 
 <script>
+// ── SUPABASE ──────────────────────────────────────────────
+const SUPABASE_URL  = 'https://byguszmbooiampuvsrfz.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3Vzem1ib29pYW1wdXZzcmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NjU1MDMsImV4cCI6MjEwMDA0MTUwM30.uxfuMJ2FYjPNKAjZRJ7JcLtrqKmzv4n00YLPniX7Wzs';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let _sbSession = null;
+let _msgChannel = null;
+
+// ── AUTH SCREEN HELPERS ───────────────────────────────────
+function showAuthLanding() {
+  document.getElementById('auth-landing').style.display = 'flex';
+  document.getElementById('auth-phone').style.display = 'none';
+  document.getElementById('auth-otp').style.display = 'none';
+}
+
+function showPhoneInput() {
+  document.getElementById('auth-landing').style.display = 'none';
+  document.getElementById('auth-phone').style.display = 'flex';
+  document.getElementById('auth-otp').style.display = 'none';
+  setTimeout(() => document.getElementById('phone-input').focus(), 100);
+}
+
+function showOtpScreen() {
+  document.getElementById('auth-landing').style.display = 'none';
+  document.getElementById('auth-phone').style.display = 'none';
+  document.getElementById('auth-otp').style.display = 'flex';
+  setTimeout(() => document.getElementById('otp-input').focus(), 100);
+}
+
+let _phoneForOtp = '';
+
+async function sendOTP() {
+  const raw = document.getElementById('phone-input').value.trim().replace(/\s/g, '');
+  if (!raw || raw.length < 7) { showToast('Enter a valid phone number'); return; }
+  _phoneForOtp = raw.startsWith('+') ? raw : '+27' + raw.replace(/^0/, '');
+  const btn = document.getElementById('send-otp-btn');
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  const { error } = await sb.auth.signInWithOtp({ phone: _phoneForOtp });
+  btn.textContent = 'Send Code'; btn.disabled = false;
+  if (error) { showToast(error.message); return; }
+  document.getElementById('otp-subtext').textContent = `Code sent to ${_phoneForOtp}`;
+  showOtpScreen();
+}
+
+async function verifyOTP() {
+  const token = document.getElementById('otp-input').value.trim();
+  if (token.length < 4) { showToast('Enter the code from your SMS'); return; }
+  const btn = document.getElementById('verify-otp-btn');
+  btn.textContent = 'Verifying…'; btn.disabled = true;
+  const { data, error } = await sb.auth.verifyOtp({ phone: _phoneForOtp, token, type: 'sms' });
+  btn.textContent = 'Verify'; btn.disabled = false;
+  if (error) { showToast(error.message); return; }
+  _sbSession = data.session;
+  S._dbUserId = data.user.id;
+  const loaded = await loadProfileFromDB(data.user.id);
+  if (loaded) { startApp(); } else { showSetup(); }
+}
+
+// ── DB: LOAD PROFILE ─────────────────────────────────────
+async function loadProfileFromDB(userId) {
+  const { data: profile, error } = await sb.from('profiles').select('*').eq('id', userId).single();
+  if (error || !profile) return false;
+
+  const [{ data: swipes }, { data: matchRows }] = await Promise.all([
+    sb.from('swipes').select('target_id').eq('user_id', userId),
+    sb.from('matches').select('*').eq('user_id', userId),
+  ]);
+
+  const swipedIds = new Set((swipes || []).map(s => s.target_id));
+  const matchIds  = (matchRows || []).map(m => m.id);
+
+  let allMessages = [];
+  if (matchIds.length) {
+    const { data: msgs } = await sb.from('messages').select('*')
+      .in('match_id', matchIds).order('created_at');
+    allMessages = msgs || [];
+  }
+
+  S.user = {
+    name: profile.name, age: profile.age, dob: profile.dob,
+    dobLabel: profile.dob_label, gender: profile.gender,
+    city: profile.city, looking: profile.looking, bio: profile.bio || '',
+    interests: profile.interests || [], answers: profile.answers || {},
+    photos: profile.photos || [], photo: (profile.photos || [])[0] || '',
+  };
+  S.tier           = profile.tier || 'free';
+  S.connectsLeft   = profile.connects_left ?? 20;
+  S.sparksLeft     = profile.sparks_left ?? 1;
+  S.walletBalance  = profile.wallet_balance || 0;
+  S.roseInventory  = profile.rose_inventory || { rose:0, bouquet:0, golden:0 };
+  S.isVerified     = profile.is_verified || false;
+  S.settings       = { ...S.settings, ...(profile.settings || {}) };
+  S.stats          = profile.stats || { connects:0, matches:0, passes:0 };
+  S._dbUserId      = userId;
+
+  S.queue = shuffle(PROFILES.filter(p => !swipedIds.has(String(p.id))));
+
+  const matchMap = {};
+  (matchRows || []).forEach(m => { matchMap[m.target_id] = m; });
+  S.matches = PROFILES.filter(p => matchMap[String(p.id)]).map(p => {
+    const m = matchMap[String(p.id)];
+    return Object.assign({}, p, { matchedAt: new Date(m.matched_at).getTime(), _matchId: m.id });
+  });
+
+  S.convos = {};
+  (matchRows || []).forEach(m => {
+    const pid = isNaN(m.target_id) ? m.target_id : Number(m.target_id);
+    S.convos[pid] = allMessages
+      .filter(msg => msg.match_id === m.id)
+      .map(msg => ({
+        from: msg.sender === 'me' ? 'me' : 'them',
+        text: msg.content, type: msg.msg_type || 'text',
+        time: new Date(msg.created_at).toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit' }),
+      }));
+  });
+
+  return true;
+}
+
+// ── DB: SAVE PROFILE ─────────────────────────────────────
+async function saveProfileToDB() {
+  if (S._isDemo || !S._dbUserId) return;
+  await sb.from('profiles').upsert({
+    id: S._dbUserId,
+    name: S.user.name, age: S.user.age, dob: S.user.dob,
+    dob_label: S.user.dobLabel, gender: S.user.gender,
+    city: S.user.city, looking: S.user.looking, bio: S.user.bio || '',
+    interests: S.user.interests || [], answers: S.user.answers || {},
+    photos: S.user.photos || [],
+    tier: S.tier, connects_left: S.connectsLeft, sparks_left: S.sparksLeft,
+    wallet_balance: S.walletBalance, rose_inventory: S.roseInventory,
+    is_verified: S.isVerified, settings: S.settings, stats: S.stats,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+// ── DB: SWIPES / MATCHES / MESSAGES ──────────────────────
+async function syncSwipe(targetId, direction) {
+  if (S._isDemo || !S._dbUserId) return;
+  await sb.from('swipes').upsert(
+    { user_id: S._dbUserId, target_id: String(targetId), direction },
+    { onConflict: 'user_id,target_id' }
+  );
+}
+
+async function syncMatch(profileId) {
+  if (S._isDemo || !S._dbUserId) return;
+  const expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await sb.from('matches').upsert(
+    { user_id: S._dbUserId, target_id: String(profileId), expires_at: expiresAt },
+    { onConflict: 'user_id,target_id' }
+  ).select().single();
+  if (!error && data) {
+    const match = S.matches.find(m => m.id === profileId);
+    if (match) match._matchId = data.id;
+    const greeting = S.convos[profileId]?.[0];
+    if (greeting) await syncMessage(profileId, 'them', greeting.text);
+  }
+}
+
+async function syncMessage(profileId, sender, content, type = 'text') {
+  if (S._isDemo || !S._dbUserId) return;
+  const match = S.matches.find(m => m.id === profileId);
+  if (!match?._matchId) return;
+  await sb.from('messages').insert({ match_id: match._matchId, sender, content, msg_type: type });
+}
+
+// ── REALTIME: CHAT SUBSCRIPTION ──────────────────────────
+function subscribeToChat(profileId) {
+  if (_msgChannel) { sb.removeChannel(_msgChannel); _msgChannel = null; }
+  if (S._isDemo || !S._dbUserId) return;
+  const match = S.matches.find(m => m.id === profileId);
+  if (!match?._matchId) return;
+  _msgChannel = sb.channel('chat-' + match._matchId)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'messages',
+      filter: `match_id=eq.${match._matchId}`
+    }, ({ new: msg }) => {
+      if (msg.sender === 'me') return;
+      const id = S.currentChat?.id;
+      if (id !== profileId) return;
+      if (!S.convos[id]) S.convos[id] = [];
+      S.convos[id].push({
+        from: 'them', text: msg.content, type: msg.msg_type || 'text',
+        time: new Date(msg.created_at).toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit' }),
+      });
+      renderChatMsgs();
+      updateLinkedUI();
+    })
+    .subscribe();
+}
+
 // ── DATA ─────────────────────────────────────────────────
 const PROFILES = [
   { id:1, name:'Aisha', age:23, city:'Cape Town', looking:'dating', compat:91, dist:'3 km', bio:'', verified:true, interests:['Music','Beach','Coffee'], img:'https://randomuser.me/api/portraits/women/44.jpg', answers:{ sunday:'Brunch with the girls then a sunset walk on Camps Bay 🌊', hottake:'The best braai is the one someone else makes for you', obsessed:'Amapiano and overpriced matcha lattes', random:'I once accidentally crashed a Tinder date wearing the same dress as the other girl' } },
@@ -3755,6 +3988,7 @@ function showSetup() {
 }
 
 function quickLogin() {
+  S._isDemo = true;
   S.user = {
     name: 'Jessica', age: 25, city: 'Cape Town',
     dob:'2001-01-01', dobLabel:'01 Jan 2001',
@@ -3847,11 +4081,26 @@ async function handlePhotos(input) {
   if (!files.length) return;
   const room = Math.max(0, 6 - (S._photos?.length || 0));
   const selected = files.slice(0, room);
-  const results = await Promise.all(selected.map(file => new Promise(resolve => {
+
+  const toBase64 = file => new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = e => resolve(e.target.result);
     reader.readAsDataURL(file);
-  })));
+  });
+
+  const results = await Promise.all(selected.map(async file => {
+    if (!S._isDemo && S._dbUserId) {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${S._dbUserId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { data, error } = await sb.storage.from('photos').upload(path, file, { upsert: true });
+      if (!error) {
+        const { data: { publicUrl } } = sb.storage.from('photos').getPublicUrl(data.path);
+        return publicUrl;
+      }
+    }
+    return toBase64(file);
+  }));
+
   S._photos = [...(S._photos || []), ...results].slice(0, 6);
   S._photo = S._photos[0];
   input.value = '';
@@ -3887,7 +4136,7 @@ function go(from) {
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
-function finishSetup() {
+async function finishSetup() {
   const interests = [...document.querySelectorAll('.vibe-btn.sel')].map(el => el.textContent);
   if ((S._photos || []).length < 3) {
     showToast('Add at least 3 photos before creating your profile');
@@ -3917,6 +4166,10 @@ function finishSetup() {
     },
   };
   saveState();
+  if (!S._isDemo && S._dbUserId) {
+    showToast('Creating your profile…');
+    await saveProfileToDB();
+  }
   startApp();
 }
 
@@ -4114,6 +4367,7 @@ function doConnect(profileId) {
   showToast(`Link sent to ${p.name}`);
   S.queue = S.queue.filter(x => x.id !== profileId);
   advanceDiscover();
+  syncSwipe(profileId, 'like');
   if (RECIPROCAL_PROFILE_IDS.has(profileId)) {
     setTimeout(() => triggerMatch(p), 900);
   } else {
@@ -4127,6 +4381,7 @@ function doPass(profileId) {
   updateStats();
   S.queue = S.queue.filter(x => x.id !== profileId);
   advanceDiscover();
+  syncSwipe(profileId, 'pass');
   saveState();
 }
 
@@ -4224,17 +4479,18 @@ function triggerMatch(p) {
   S.matches.push(matchObj);
   S.stats.matches++;
   S.convos[matchObj.id] = [{
-    from: 'them',
-    text: `Hey ${S.user?.name || 'you'}! Glad we linked 😊 Love your profile answers by the way.`,
+    from: ‘them’,
+    text: `Hey ${S.user?.name || ‘you’}! Glad we linked 😊 Love your profile answers by the way.`,
     time: nowTime(),
   }];
   S.pendingMatch = matchObj;
-  addNotification('Matches', `You’re Linked with ${matchObj.name}.`, '🔗');
+  addNotification(‘Matches’, `You’re Linked with ${matchObj.name}.`, ‘🔗’);
   updateStats();
   updateLinkedUI();
-  document.getElementById('match-their-av').src = matchObj.img;
-  document.getElementById('match-name').textContent = matchObj.name;
-  document.getElementById('match-overlay').classList.add('show');
+  document.getElementById(‘match-their-av’).src = matchObj.img;
+  document.getElementById(‘match-name’).textContent = matchObj.name;
+  document.getElementById(‘match-overlay’).classList.add(‘show’);
+  syncMatch(p.id);
   saveState();
 }
 
@@ -4310,6 +4566,7 @@ function openChat(p) {
   updateIcebreakerVisibility();
   document.getElementById('chat-view').classList.add('open');
   setTimeout(() => document.getElementById('chat-input').focus(), 300);
+  subscribeToChat(p.id);
 }
 
 function closeChat() {
@@ -4350,12 +4607,14 @@ function sendMsg() {
   renderChatMsgs();
   updateLinkedUI();
   saveState();
+  syncMessage(id, 'me', text);
   setTimeout(() => {
     const reply = REPLIES[(S.convos[id].length + id) % REPLIES.length];
     S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
     if (S.currentChat?.id === id) renderChatMsgs();
     updateLinkedUI();
     saveState();
+    syncMessage(id, 'them', reply);
   }, 1600);
 }
 
@@ -4546,8 +4805,10 @@ function updateStats() {
   document.getElementById('s-passes').textContent = S.stats.passes;
 }
 
-function logout() {
+async function logout() {
   if (!confirm('Log out of Linked?')) return;
+  if (_msgChannel) { sb.removeChannel(_msgChannel); _msgChannel = null; }
+  await sb.auth.signOut();
   try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
   location.reload();
 }
@@ -5454,10 +5715,14 @@ function subscribeToPlan() {
   showToast('Welcome to Linked+!');
   updateStats();
   saveState();
+  saveProfileToDB();
 }
 
 function hasTier(min) {
-  return S.tier !== 'free';
+  const tiers = ['free', 'linkedplus', 'elite'];
+  const userIdx = tiers.indexOf(S.tier);
+  const minIdx  = tiers.indexOf(min === 'plus' ? 'linkedplus' : (min || 'linkedplus'));
+  return userIdx >= minIdx;
 }
 
 // ── VERIFICATION ─────────────────────────────────────────
@@ -5803,12 +6068,31 @@ function parseTwemoji(el) {
   }
 }
 document.addEventListener('DOMContentLoaded', () => parseTwemoji(document.body));
-window.addEventListener('DOMContentLoaded', () => {
-  if (restoreState()) startApp();
+window.addEventListener('DOMContentLoaded', async () => {
+  // Try resuming an existing Supabase session first
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    _sbSession = session;
+    S._dbUserId = session.user.id;
+    const loaded = await loadProfileFromDB(session.user.id);
+    if (loaded) { startApp(); }
+    else { showSetup(); }
+  } else if (restoreState()) {
+    // Fall back to localStorage (previously saved demo or local session)
+    startApp();
+  }
+  // else: auth screen shown by default
+
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
   maybeShowInstallPrompt();
+
+  // Keep Supabase session alive across page reloads
+  sb.auth.onAuthStateChange((event, session) => {
+    _sbSession = session;
+    if (session) S._dbUserId = session.user.id;
+  });
 });
 
 // ── PROFILE COMPLETION ────────────────────────────────────
