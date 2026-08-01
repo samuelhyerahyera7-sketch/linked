@@ -83,7 +83,7 @@ create policy "messages_own"
   using (
     exists (
       select 1 from public.matches
-      where id = match_id and user_id = auth.uid()
+      where matches.id = messages.match_id and matches.user_id = auth.uid()
     )
   );
 
