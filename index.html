@@ -919,6 +919,110 @@
     }
     .chat-send svg { width: 17px; height: 17px; fill: white; }
 
+    /* ─── GIF BUTTON ─────────────────────────────────────── */
+    .chat-gif-btn {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      background: var(--surface2); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--coral); font-size: 11px; font-weight: 800; letter-spacing: -0.5px;
+    }
+
+    /* ─── GIF PANEL ──────────────────────────────────────── */
+    .gif-panel {
+      display: none; flex-direction: column;
+      border-top: 1px solid var(--border);
+      background: var(--bg); height: 260px; flex-shrink: 0;
+    }
+    .gif-panel.open { display: flex; }
+    .gif-search-wrap {
+      padding: 10px 12px 8px; flex-shrink: 0;
+    }
+    .gif-search-inp {
+      width: 100%; background: var(--surface2); border: none; border-radius: 20px;
+      padding: 8px 14px; color: var(--text); font-size: 14px; outline: none;
+      font-family: inherit;
+    }
+    .gif-grid {
+      flex: 1; overflow-y: auto; display: grid;
+      grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 0 8px 8px;
+    }
+    .gif-item {
+      border-radius: 8px; overflow: hidden; cursor: pointer;
+      background: var(--surface2); aspect-ratio: 1;
+    }
+    .gif-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gif-item:active { opacity: 0.7; }
+
+    /* ─── REPLY BAR ──────────────────────────────────────── */
+    .reply-bar {
+      display: none; align-items: center; gap: 10px;
+      padding: 8px 16px; border-top: 1px solid var(--border);
+      background: var(--surface); flex-shrink: 0;
+    }
+    .reply-bar.visible { display: flex; }
+    .reply-bar-line {
+      width: 3px; height: 36px; border-radius: 3px;
+      background: var(--coral); flex-shrink: 0;
+    }
+    .reply-bar-text { flex: 1; min-width: 0; }
+    .reply-bar-label { font-size: 11px; color: var(--coral); font-weight: 600; }
+    .reply-bar-preview {
+      font-size: 13px; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .reply-cancel {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); padding: 4px; font-size: 18px; line-height: 1;
+    }
+
+    /* ─── GIF MESSAGE BUBBLE ─────────────────────────────── */
+    .chat-gif-img {
+      max-width: 200px; border-radius: 12px; display: block;
+      cursor: pointer;
+    }
+    .bubble.b-out .chat-gif-img { border-bottom-right-radius: 2px; }
+    .bubble.b-in  .chat-gif-img { border-bottom-left-radius: 2px; }
+
+    /* ─── MESSAGE CONTEXT MENU ───────────────────────────── */
+    .msg-menu-overlay {
+      position: fixed; inset: 0; z-index: 900;
+      background: rgba(0,0,0,0.4); display: none;
+    }
+    .msg-menu-overlay.open { display: block; }
+    .msg-menu {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 901;
+      background: var(--surface); border-radius: 20px 20px 0 0;
+      padding: 12px 0 env(safe-area-inset-bottom, 20px);
+      transform: translateY(100%); transition: transform 0.25s ease;
+    }
+    .msg-menu-overlay.open .msg-menu { transform: translateY(0); }
+    .msg-menu-preview {
+      margin: 0 16px 12px; padding: 10px 14px;
+      background: var(--surface2); border-radius: 12px;
+      font-size: 13px; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .msg-menu-reactions {
+      display: flex; gap: 4px; padding: 4px 16px 12px;
+      border-bottom: 1px solid var(--border); justify-content: space-around;
+    }
+    .msg-menu-reaction {
+      background: none; border: none; font-size: 28px; cursor: pointer;
+      padding: 4px 8px; border-radius: 8px; transition: background 0.15s;
+    }
+    .msg-menu-reaction:active { background: var(--surface2); }
+    .msg-menu-action {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 20px; cursor: pointer; color: var(--text);
+      transition: background 0.15s; font-size: 15px;
+    }
+    .msg-menu-action:active { background: var(--surface2); }
+    .msg-menu-action svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--muted); }
+    .msg-menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
+    .msg-menu-translate-result {
+      padding: 0 20px 12px; font-size: 13px; color: var(--teal); display: none;
+    }
+
     /* ─── VERIFIED BADGE ─────────────────────────────────── */
     .verified-badge {
       display: inline-flex; align-items: center; justify-content: center;
@@ -3289,7 +3393,24 @@
     <button class="ic-chip" onclick="sendIcebreaker(this)">What makes you lose track of time?</button>
     <button class="ic-chip" onclick="sendIcebreaker(this)">What should I know about you?</button>
   </div>
+  <!-- GIF picker panel -->
+  <div class="gif-panel" id="gif-panel">
+    <div class="gif-search-wrap">
+      <input class="gif-search-inp" id="gif-search-inp" placeholder="Search GIFs…" oninput="onGifSearch(this.value)">
+    </div>
+    <div class="gif-grid" id="gif-grid"></div>
+  </div>
+  <!-- Reply preview bar -->
+  <div class="reply-bar" id="reply-bar">
+    <div class="reply-bar-line"></div>
+    <div class="reply-bar-text">
+      <div class="reply-bar-label">Reply</div>
+      <div class="reply-bar-preview" id="reply-bar-preview"></div>
+    </div>
+    <button class="reply-cancel" onclick="cancelReply()">✕</button>
+  </div>
   <div class="chat-bar" id="chat-bar">
+    <button class="chat-gif-btn" onclick="toggleGifPanel()" aria-label="GIF">GIF</button>
     <button class="chat-photo-btn" onclick="document.getElementById('chat-photo-input').click()" aria-label="Share a photo">
       <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 15l-5-5L5 20"/></svg>
     </button>
@@ -3305,6 +3426,34 @@
     <button class="chat-send" onclick="sendMsg()">
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>
+  </div>
+</div>
+
+<!-- Message context menu -->
+<div class="msg-menu-overlay" id="msg-menu-overlay" onclick="closeMsgMenu()">
+  <div class="msg-menu" id="msg-menu" onclick="event.stopPropagation()">
+    <div class="msg-menu-preview" id="msg-menu-preview"></div>
+    <div class="msg-menu-reactions">
+      <button class="msg-menu-reaction" onclick="msgMenuReact('❤️')">❤️</button>
+      <button class="msg-menu-reaction" onclick="msgMenuReact('😂')">😂</button>
+      <button class="msg-menu-reaction" onclick="msgMenuReact('😮')">😮</button>
+      <button class="msg-menu-reaction" onclick="msgMenuReact('😢')">😢</button>
+      <button class="msg-menu-reaction" onclick="msgMenuReact('🔥')">🔥</button>
+      <button class="msg-menu-reaction" onclick="msgMenuReact('👏')">👏</button>
+    </div>
+    <div class="msg-menu-action" onclick="msgMenuReply()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17l-5-5 5-5M20 18v-2a4 4 0 00-4-4H4"/></svg>
+      Reply
+    </div>
+    <div class="msg-menu-action" onclick="msgMenuCopy()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Copy
+    </div>
+    <div class="msg-menu-action" onclick="msgMenuTranslate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h12M9 3v2m-3.232 13.232l3.536-3.536M2 17l4.5-9 4.5 9M12 17h7m0 0l-2-4m2 4l2-4M7 10a9 9 0 006 6"/></svg>
+      Translate
+    </div>
+    <div class="msg-menu-translate-result" id="msg-menu-translate-result"></div>
   </div>
 </div>
 
@@ -4568,6 +4717,9 @@ function openChat(p) {
 
 function closeChat() {
   document.getElementById('chat-view').classList.remove('open');
+  closeGifPanel();
+  cancelReply();
+  closeMsgMenu();
   S.currentChat = null;
   updateLinkedUI();
 }
@@ -4576,17 +4728,33 @@ function renderChatMsgs() {
   const container = document.getElementById('chat-msgs');
   container.innerHTML = `<div class="chat-date-sep">Today</div>`;
   const msgs = S.convos[S.currentChat?.id] || [];
-  msgs.forEach(m => {
+  msgs.forEach((m, idx) => {
     const el = document.createElement('div');
     el.className = 'bubble ' + (m.from === 'me' ? 'b-out' : 'b-in');
     if (m.type === 'voice') {
       el.innerHTML = voiceBubbleHTML(m);
     } else if (m.type === 'photo') {
       el.innerHTML = `<img class="chat-photo" src="${m.src}" alt="Shared photo">`;
+    } else if (m.type === 'gif') {
+      el.style.padding = '4px';
+      el.innerHTML = `<img class="chat-gif-img" src="${m.src}" alt="${m.text || 'GIF'}">`;
     } else {
-      el.textContent = m.text;
+      if (m.replyTo) {
+        const rq = document.createElement('div');
+        rq.style.cssText = 'font-size:12px;opacity:0.6;border-left:2px solid currentColor;padding-left:6px;margin-bottom:4px;';
+        rq.textContent = m.replyTo;
+        el.appendChild(rq);
+      }
+      el.appendChild(document.createTextNode(m.text));
     }
+    addLongPress(el, idx);
     container.appendChild(el);
+    if (m.reaction) {
+      const rx = document.createElement('div');
+      rx.style.cssText = 'font-size:16px;margin-top:-4px;margin-bottom:2px;' + (m.from === 'me' ? 'text-align:right;padding-right:4px;' : 'text-align:left;padding-left:4px;');
+      rx.textContent = m.reaction;
+      container.appendChild(rx);
+    }
   });
   container.scrollTop = container.scrollHeight;
 }
@@ -4600,7 +4768,9 @@ function sendMsg() {
   if (chips) chips.style.display = 'none';
   const id = S.currentChat.id;
   if (!S.convos[id]) S.convos[id] = [];
-  S.convos[id].push({ from: 'me', text, time: nowTime() });
+  const msgObj = { from: 'me', text, time: nowTime() };
+  if (_replyText) { msgObj.replyTo = _replyText; cancelReply(); }
+  S.convos[id].push(msgObj);
   renderChatMsgs();
   updateLinkedUI();
   saveState();
@@ -4613,6 +4783,160 @@ function sendMsg() {
     saveState();
     syncMessage(id, 'them', reply);
   }, 1600);
+}
+
+// ── GIF PICKER ────────────────────────────────────────────
+const GIPHY_KEY = 'dc6zaTOxFJmzC';
+let _gifSearchTimer = null;
+let _replyText = '';
+let _menuMsgIdx = -1;
+
+function toggleGifPanel() {
+  const panel = document.getElementById('gif-panel');
+  const open = panel.classList.toggle('open');
+  if (open) {
+    document.getElementById('gif-search-inp').value = '';
+    loadTrendingGifs();
+    document.getElementById('gif-search-inp').focus();
+  }
+}
+
+function closeGifPanel() {
+  document.getElementById('gif-panel').classList.remove('open');
+}
+
+async function loadTrendingGifs() {
+  renderGifLoading();
+  try {
+    const r = await fetch(`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_KEY}&limit=18&rating=g`);
+    const j = await r.json();
+    renderGifs(j.data || []);
+  } catch(e) { renderGifs([]); }
+}
+
+function onGifSearch(q) {
+  clearTimeout(_gifSearchTimer);
+  if (!q.trim()) { loadTrendingGifs(); return; }
+  _gifSearchTimer = setTimeout(async () => {
+    renderGifLoading();
+    try {
+      const r = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=18&rating=g`);
+      const j = await r.json();
+      renderGifs(j.data || []);
+    } catch(e) { renderGifs([]); }
+  }, 400);
+}
+
+function renderGifLoading() {
+  document.getElementById('gif-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:13px;">Loading…</div>';
+}
+
+function renderGifs(items) {
+  const grid = document.getElementById('gif-grid');
+  if (!items.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:13px;">No GIFs found</div>';
+    return;
+  }
+  grid.innerHTML = items.map(g => {
+    const preview = g.images?.fixed_width_downsampled?.url || g.images?.fixed_width?.url || '';
+    const full = g.images?.fixed_width?.url || preview;
+    const title = (g.title || 'GIF').replace(/"/g, '');
+    return `<div class="gif-item" onclick="sendGif('${full}','${title}')"><img src="${preview}" alt="${title}" loading="lazy"></div>`;
+  }).join('');
+}
+
+function sendGif(url, title) {
+  if (!S.currentChat) return;
+  closeGifPanel();
+  const id = S.currentChat.id;
+  if (!S.convos[id]) S.convos[id] = [];
+  const chips = document.getElementById('icebreaker-chips');
+  if (chips) chips.style.display = 'none';
+  S.convos[id].push({ from: 'me', type: 'gif', src: url, text: title, time: nowTime() });
+  renderChatMsgs();
+  updateLinkedUI();
+  saveState();
+  syncMessage(id, 'me', title, 'gif');
+}
+
+// ── LONG PRESS / MESSAGE MENU ──────────────────────────────
+function addLongPress(el, idx) {
+  let timer = null;
+  const trigger = () => { showMsgMenu(el, idx); };
+  el.addEventListener('touchstart', () => { timer = setTimeout(trigger, 500); }, { passive: true });
+  el.addEventListener('touchend', () => clearTimeout(timer), { passive: true });
+  el.addEventListener('touchmove', () => clearTimeout(timer), { passive: true });
+  el.addEventListener('contextmenu', e => { e.preventDefault(); trigger(); });
+}
+
+function showMsgMenu(el, idx) {
+  const msgs = S.convos[S.currentChat?.id] || [];
+  const m = msgs[idx];
+  if (!m) return;
+  _menuMsgIdx = idx;
+  const preview = m.type === 'gif' ? '🖼 GIF' : (m.text || '');
+  document.getElementById('msg-menu-preview').textContent = preview.length > 80 ? preview.slice(0, 80) + '…' : preview;
+  document.getElementById('msg-menu-translate-result').style.display = 'none';
+  document.getElementById('msg-menu-translate-result').textContent = '';
+  const overlay = document.getElementById('msg-menu-overlay');
+  overlay.classList.add('open');
+}
+
+function closeMsgMenu() {
+  document.getElementById('msg-menu-overlay').classList.remove('open');
+  _menuMsgIdx = -1;
+}
+
+function msgMenuReply() {
+  const msgs = S.convos[S.currentChat?.id] || [];
+  const m = msgs[_menuMsgIdx];
+  if (!m) return;
+  _replyText = m.type === 'gif' ? '🖼 GIF' : m.text;
+  document.getElementById('reply-bar-preview').textContent = _replyText;
+  document.getElementById('reply-bar').classList.add('visible');
+  closeMsgMenu();
+  document.getElementById('chat-input').focus();
+}
+
+function msgMenuCopy() {
+  const msgs = S.convos[S.currentChat?.id] || [];
+  const m = msgs[_menuMsgIdx];
+  if (!m || m.type === 'gif') { closeMsgMenu(); return; }
+  navigator.clipboard?.writeText(m.text).catch(() => {});
+  showToast('Copied');
+  closeMsgMenu();
+}
+
+async function msgMenuTranslate() {
+  const msgs = S.convos[S.currentChat?.id] || [];
+  const m = msgs[_menuMsgIdx];
+  if (!m || m.type === 'gif') { closeMsgMenu(); return; }
+  const resultEl = document.getElementById('msg-menu-translate-result');
+  resultEl.style.display = 'block';
+  resultEl.textContent = 'Translating…';
+  try {
+    const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(m.text)}&langpair=auto|en`);
+    const j = await r.json();
+    const translated = j.responseData?.translatedText || m.text;
+    resultEl.textContent = '🌐 ' + translated;
+  } catch(e) {
+    resultEl.textContent = 'Translation failed';
+  }
+}
+
+function msgMenuReact(emoji) {
+  const msgs = S.convos[S.currentChat?.id] || [];
+  const m = msgs[_menuMsgIdx];
+  if (!m) return;
+  m.reaction = emoji;
+  closeMsgMenu();
+  renderChatMsgs();
+  showToast(`Reacted ${emoji}`);
+}
+
+function cancelReply() {
+  _replyText = '';
+  document.getElementById('reply-bar').classList.remove('visible');
 }
 
 function sendChatPhoto(input) {
