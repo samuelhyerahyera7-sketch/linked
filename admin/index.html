@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linked Admin</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+    background: #0f0f13; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .card {
+    width: min(360px, 92vw); padding: 36px 28px;
+    background: #1a1a22; border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.07);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  }
+  .logo {
+    width: 56px; height: 56px; border-radius: 16px;
+    background: linear-gradient(135deg, #FF6B6B, #FF4B8B);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; margin: 0 auto 20px;
+  }
+  h1 { font-size: 22px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 4px; }
+  p  { font-size: 13px; color: rgba(255,255,255,0.45); text-align: center; margin-bottom: 28px; }
+  label { display: block; font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.5);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .input-wrap { position: relative; }
+  input[type="password"], input[type="text"] {
+    width: 100%; padding: 13px 44px 13px 16px;
+    background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 12px; color: #fff; font-size: 15px; outline: none;
+    font-family: inherit; transition: border-color 0.2s;
+  }
+  input:focus { border-color: #FF6B6B; }
+  .toggle-vis {
+    position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    cursor: pointer; font-size: 16px; padding: 4px; line-height: 1;
+  }
+  .btn {
+    width: 100%; margin-top: 16px; padding: 15px;
+    background: linear-gradient(135deg, #FF6B6B, #FF4B8B);
+    border: none; border-radius: 12px; color: #fff;
+    font-size: 15px; font-weight: 800; cursor: pointer;
+    transition: opacity 0.2s; font-family: inherit;
+  }
+  .btn:active { opacity: 0.85; }
+  .error {
+    margin-top: 12px; padding: 10px 14px;
+    background: rgba(255,59,48,0.15); border-radius: 10px;
+    color: #FF6B6B; font-size: 13px; text-align: center; display: none;
+  }
+  .error.show { display: block; }
+  .hint { margin-top: 20px; text-align: center; font-size: 11px; color: rgba(255,255,255,0.2); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🔗</div>
+  <h1>Admin Access</h1>
+  <p>Linked Dating · Internal Dashboard</p>
+
+  <label for="pw">Password</label>
+  <div class="input-wrap">
+    <input type="password" id="pw" placeholder="Enter admin password" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')tryLogin()">
+    <button class="toggle-vis" onclick="toggleVis()" type="button" aria-label="Show/hide">👁</button>
+  </div>
+  <button class="btn" onclick="tryLogin()">Enter Dashboard</button>
+  <div class="error" id="err">Incorrect password. Try again.</div>
+  <div class="hint">Access is logged and monitored.</div>
+</div>
+
+<script>
+// Password is hashed — not stored in plain text
+// To change: compute SHA-256 of your new password and update HASH below
+const HASH = 'c2859087c85d975316fe85bc8401000b939321e7f090b424c2c70a0cfd3e3904';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function tryLogin() {
+  const pw = document.getElementById('pw').value;
+  const hash = await sha256(pw);
+  if (hash === HASH) {
+    sessionStorage.setItem('linked-admin-token', 'lnkd-sh-9x2k');
+    location.replace('/');
+  } else {
+    const err = document.getElementById('err');
+    err.classList.add('show');
+    document.getElementById('pw').value = '';
+    document.getElementById('pw').focus();
+    setTimeout(() => err.classList.remove('show'), 3000);
+  }
+}
+
+function toggleVis() {
+  const inp = document.getElementById('pw');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+</script>
+</body>
+</html>

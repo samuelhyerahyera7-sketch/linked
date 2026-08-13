@@ -4394,9 +4394,11 @@ function startApp() {
   saveState();
   setInterval(checkExpiredMatches, 60 * 60 * 1000);
 
-  // Auto-open admin dashboard if URL has ?admin=CODE
+  // Auto-open admin dashboard if arriving from /admin page or via URL param
   const urlParams = new URLSearchParams(location.search);
-  if (urlParams.get('admin') === ADMIN_URL_CODE && isSamuelAdmin()) {
+  const sessionToken = sessionStorage.getItem('linked-admin-token');
+  if ((sessionToken === ADMIN_URL_CODE || urlParams.get('admin') === ADMIN_URL_CODE) && isSamuelAdmin()) {
+    sessionStorage.removeItem('linked-admin-token');
     setTimeout(() => openAdminDashboard(), 400);
   }
 }
