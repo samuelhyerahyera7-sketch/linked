@@ -1,0 +1,13 @@
+Options -Indexes
+DirectoryIndex index.html
+
+RewriteEngine On
+RewriteBase /
+
+# Route /admin to the admin login page
+RewriteRule ^admin/?$ /admin/index.html [L]
+
+# Serve the PWA for all other paths (SPA fallback)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /index.html [L]
