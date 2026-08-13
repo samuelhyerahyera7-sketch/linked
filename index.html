@@ -1419,6 +1419,39 @@
     .admin-row:first-of-type { border-top:0; }
     .admin-row span { font-size:13px; color:var(--muted); }
     .admin-row strong { font-size:13px; color:var(--text); text-align:right; }
+    .admin-user-search {
+      width:100%; background:var(--surface2); border:none; border-radius:20px;
+      padding:10px 16px; color:var(--text); font-size:14px; outline:none;
+      font-family:inherit; margin-bottom:12px;
+    }
+    .admin-user-list { display:flex; flex-direction:column; gap:10px; }
+    .admin-user-card {
+      display:flex; align-items:center; gap:12px;
+      padding:10px 12px; border-radius:14px;
+      background:var(--surface2); cursor:pointer; transition:opacity 0.15s;
+    }
+    .admin-user-card:active { opacity:0.7; }
+    .admin-user-ava {
+      width:44px; height:44px; border-radius:50%; object-fit:cover; flex-shrink:0;
+      background:var(--border);
+    }
+    .admin-user-info { flex:1; min-width:0; }
+    .admin-user-name { font-size:14px; font-weight:700; color:var(--text); }
+    .admin-user-meta { font-size:12px; color:var(--muted); margin-top:2px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .admin-user-badges { display:flex; gap:4px; align-items:center; flex-shrink:0; }
+    .admin-badge {
+      font-size:10px; font-weight:800; padding:2px 7px; border-radius:20px;
+      white-space:nowrap;
+    }
+    .admin-badge.free  { background:var(--surface); color:var(--muted); border:1px solid var(--border); }
+    .admin-badge.plus  { background:#FEF3C7; color:#92400E; }
+    .admin-badge.elite { background:linear-gradient(135deg,#6366F1,#A855F7); color:white; }
+    .admin-badge.ver   { background:#DBEAFE; color:#1D4ED8; }
+    .admin-load-more {
+      text-align:center; padding:12px; font-size:13px; color:var(--coral);
+      font-weight:700; cursor:pointer; border-radius:12px; border:1.5px dashed var(--border);
+    }
 
     /* ─── SETTINGS SCREEN ────────────────────────────────── */
     #settings-screen { position:fixed; inset:0; z-index:9990; background:var(--surface2); display:none; flex-direction:column; width:100%; max-width:none; margin:0; overflow-y:auto; }
@@ -3182,37 +3215,41 @@
 </div>
 
 <!-- ═══ ADMIN DASHBOARD ═══════════════════════════════════ -->
-<div id="admin-screen" class="screen-overlay">
-  <div class="overlay-top">
+<div id="admin-screen" class="screen-overlay" style="overflow-y:auto">
+  <div class="overlay-top" style="position:sticky;top:0;z-index:10;background:var(--bg)">
     <button class="overlay-back" onclick="closeAdminDashboard()" aria-label="Back">‹</button>
-    <div class="overlay-title">Admin Dashboard</div>
-    <button onclick="refreshAdminDashboard()" style="border:0;background:none;color:var(--red);font-size:13px;font-weight:800">Refresh</button>
+    <div class="overlay-title">Admin</div>
+    <button onclick="refreshAdminDashboard()" style="border:0;background:none;color:var(--coral);font-size:13px;font-weight:800">↻ Refresh</button>
   </div>
+  <!-- Stats grid -->
   <div class="admin-grid">
-    <div class="admin-card"><small>Total users</small><strong id="admin-users">0</strong></div>
-    <div class="admin-card"><small>Active profiles</small><strong id="admin-active">0</strong></div>
-    <div class="admin-card"><small>Revenue</small><strong id="admin-revenue">R0</strong></div>
-    <div class="admin-card"><small>Roses sold</small><strong id="admin-roses">0</strong></div>
-    <div class="admin-card"><small>Links</small><strong id="admin-links">0</strong></div>
-    <div class="admin-card"><small>Reports</small><strong id="admin-reports">0</strong></div>
+    <div class="admin-card"><small>Total users</small><strong id="admin-users">—</strong></div>
+    <div class="admin-card"><small>Verified</small><strong id="admin-active">—</strong></div>
+    <div class="admin-card"><small>Linked+</small><strong id="admin-premium">—</strong></div>
+    <div class="admin-card"><small>Matches</small><strong id="admin-links">—</strong></div>
+    <div class="admin-card"><small>Revenue</small><strong id="admin-revenue">—</strong></div>
+    <div class="admin-card"><small>Reports</small><strong id="admin-reports">—</strong></div>
   </div>
+  <!-- Breakdown row -->
   <div class="admin-section">
-    <div class="admin-section-title">Wallet & payouts</div>
-    <div class="admin-row"><span>Available balances</span><strong id="admin-wallet-available">R0.00</strong></div>
-    <div class="admin-row"><span>Pending payouts</span><strong id="admin-wallet-pending">R0.00</strong></div>
+    <div class="admin-section-title">Platform stats</div>
+    <div class="admin-row"><span>New today</span><strong id="admin-new-today">—</strong></div>
+    <div class="admin-row"><span>Total messages</span><strong id="admin-msg-count">—</strong></div>
+    <div class="admin-row"><span>Total swipes</span><strong id="admin-swipe-count">—</strong></div>
     <div class="admin-row"><span>Platform fee</span><strong>30%</strong></div>
-    <div class="admin-row"><span>Withdrawal fee</span><strong>R15</strong></div>
   </div>
+  <!-- Recent activity -->
   <div class="admin-section">
     <div class="admin-section-title">Recent activity</div>
     <div id="admin-activity"></div>
   </div>
+  <!-- All users -->
   <div class="admin-section">
-    <div class="admin-section-title">User overview</div>
-    <div class="admin-row"><span>Current user</span><strong id="admin-current-user">—</strong></div>
-    <div class="admin-row"><span>Verification</span><strong id="admin-verification">Not verified</strong></div>
-    <div class="admin-row"><span>Subscription</span><strong id="admin-subscription">Free</strong></div>
-    <div class="admin-row"><span>Profile completion</span><strong id="admin-completion">0%</strong></div>
+    <div class="admin-section-title" style="margin-bottom:10px">All users</div>
+    <input class="admin-user-search" id="admin-user-search" placeholder="Search by name, city…" oninput="filterAdminUsers(this.value)">
+    <div class="admin-user-list" id="admin-user-list">
+      <div style="text-align:center;padding:32px;color:var(--muted);font-size:13px">Loading…</div>
+    </div>
   </div>
 </div>
 
@@ -4111,7 +4148,11 @@ function addWalletTx(tx) {
   saveState();
 }
 
+const ADMIN_EMAIL = 'deniloans6@gmail.com';
+
 function isSamuelAdmin() {
+  const email = _sbSession?.user?.email || '';
+  if (email && email === ADMIN_EMAIL) return true;
   const name = (S.user?.name || '').trim().toLowerCase();
   return name === ADMIN_OWNER_NAME || name === 'samuel' || name === 'samuelh';
 }
@@ -6666,37 +6707,26 @@ window.addEventListener('appinstalled', () => {
 });
 
 // ── ADMIN DASHBOARD ───────────────────────────────────────
+let _adminAllUsers = [];
+
 function openAdminDashboard() {
   if (!isSamuelAdmin()) {
     showToast('Admin access is only available to Samuel Hyera.');
     return;
   }
-  refreshAdminDashboard();
   document.getElementById('admin-screen').classList.add('open');
+  refreshAdminDashboard();
 }
 
 function closeAdminDashboard() {
   document.getElementById('admin-screen').classList.remove('open');
 }
 
-function refreshAdminDashboard() {
+const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+
+async function refreshAdminDashboard() {
+  // Local activity (wallet transactions and notifications)
   const txs = S.walletTx || [];
-  const revenue = txs.filter(tx => tx.type === 'debit').reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
-  const roses = txs.reduce((sum, tx) => sum + (Number(tx.roseQty || tx.qty) || 0), 0);
-  const reports = (S.adminReports || []).length;
-  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-  setText('admin-users', (PROFILES.length + (S.user ? 1 : 0)).toLocaleString());
-  setText('admin-active', PROFILES.filter(p => p.verified).length + (S.user ? 1 : 0));
-  setText('admin-revenue', 'R' + revenue.toFixed(0));
-  setText('admin-roses', roses.toLocaleString());
-  setText('admin-links', (S.matches?.length || 0).toLocaleString());
-  setText('admin-reports', reports.toLocaleString());
-  setText('admin-wallet-available', 'R' + Number(S.walletBalance || 0).toFixed(2));
-  setText('admin-wallet-pending', 'R' + Number(S.walletPending || 0).toFixed(2));
-  setText('admin-current-user', S.user ? `${S.user.name}, ${S.user.age}` : 'Not signed in');
-  setText('admin-verification', (S.isVerified || S.user?.verified) ? 'Verified' : 'Not verified');
-  setText('admin-subscription', S.tier === 'free' ? 'Free' : 'Linked+');
-  setText('admin-completion', calcCompletion() + '%');
   const activity = document.getElementById('admin-activity');
   if (activity) {
     const rows = [
@@ -6704,9 +6734,104 @@ function refreshAdminDashboard() {
       ...(txs || []).slice(0, 5).map(tx => ['Wallet', `${tx.name} · R${Number(tx.amount || 0).toFixed(2)}`])
     ].slice(0, 8);
     activity.innerHTML = rows.length
-      ? rows.map(([left,right]) => `<div class="admin-row"><span>${left}</span><strong>${right}</strong></div>`).join('')
-      : '<div class="wallet-empty" style="padding:20px 8px">No activity yet.</div>';
+      ? rows.map(([l, r]) => `<div class="admin-row"><span>${l}</span><strong>${r}</strong></div>`).join('')
+      : '<div style="padding:16px 0;color:var(--muted);font-size:13px;text-align:center">No activity yet.</div>';
   }
+
+  if (S._isDemo || !S._dbUserId) {
+    setText('admin-users', '—');
+    setText('admin-active', '—');
+    setText('admin-premium', '—');
+    setText('admin-links', '—');
+    setText('admin-revenue', '—');
+    setText('admin-reports', '—');
+    setText('admin-new-today', '—');
+    setText('admin-msg-count', '—');
+    setText('admin-swipe-count', '—');
+    document.getElementById('admin-user-list').innerHTML =
+      '<div style="text-align:center;padding:32px;color:var(--muted);font-size:13px">Sign in with Supabase to see real data.</div>';
+    return;
+  }
+
+  // Fetch all stats in parallel
+  const [
+    { data: profiles, error: profErr },
+    { count: matchCount },
+    { count: swipeCount },
+    { count: msgCount },
+  ] = await Promise.all([
+    sb.from('profiles').select('*').order('created_at', { ascending: false }),
+    sb.from('matches').select('*', { count: 'exact', head: true }),
+    sb.from('swipes').select('*', { count: 'exact', head: true }),
+    sb.from('messages').select('*', { count: 'exact', head: true }),
+  ]);
+
+  if (profErr) {
+    document.getElementById('admin-user-list').innerHTML =
+      `<div style="text-align:center;padding:32px;color:var(--red);font-size:13px">
+        Could not load users.<br><small>Run the admin RLS policy in Supabase SQL Editor first.</small>
+      </div>`;
+    setText('admin-users', '—'); setText('admin-active', '—');
+    return;
+  }
+
+  _adminAllUsers = profiles || [];
+  const today = new Date().toISOString().slice(0, 10);
+  const newToday = _adminAllUsers.filter(p => (p.created_at || '').startsWith(today)).length;
+  const verified = _adminAllUsers.filter(p => p.is_verified).length;
+  const premium  = _adminAllUsers.filter(p => p.tier && p.tier !== 'free').length;
+  const reports  = (S.adminReports || []).length;
+
+  setText('admin-users',      _adminAllUsers.length.toLocaleString());
+  setText('admin-active',     verified.toLocaleString());
+  setText('admin-premium',    premium.toLocaleString());
+  setText('admin-links',      (matchCount || 0).toLocaleString());
+  setText('admin-revenue',    'R' + txs.filter(t => t.type === 'debit').reduce((s, t) => s + Number(t.amount || 0), 0).toFixed(0));
+  setText('admin-reports',    reports.toLocaleString());
+  setText('admin-new-today',  newToday.toLocaleString());
+  setText('admin-msg-count',  (msgCount || 0).toLocaleString());
+  setText('admin-swipe-count',(swipeCount || 0).toLocaleString());
+
+  renderAdminUsers(_adminAllUsers);
+}
+
+function renderAdminUsers(users) {
+  const list = document.getElementById('admin-user-list');
+  if (!list) return;
+  if (!users.length) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);font-size:13px">No users found.</div>';
+    return;
+  }
+  list.innerHTML = users.map(u => {
+    const avatar = (u.photos || [])[0] || '';
+    const avatarHtml = avatar
+      ? `<img class="admin-user-ava" src="${avatar}" alt="">`
+      : `<div class="admin-user-ava" style="display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--muted)">👤</div>`;
+    const tierBadge = u.tier && u.tier !== 'free'
+      ? `<span class="admin-badge ${u.tier === 'elite' ? 'elite' : 'plus'}">${u.tier === 'elite' ? 'Elite' : 'Linked+'}</span>` : '';
+    const verBadge = u.is_verified ? `<span class="admin-badge ver">✓ ID</span>` : '';
+    const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' }) : '';
+    return `<div class="admin-user-card">
+      ${avatarHtml}
+      <div class="admin-user-info">
+        <div class="admin-user-name">${u.name || '—'}${u.age ? ', ' + u.age : ''}</div>
+        <div class="admin-user-meta">${[u.city, u.gender ? capitalize(u.gender) : '', joined].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div class="admin-user-badges">${verBadge}${tierBadge}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterAdminUsers(q) {
+  const term = q.trim().toLowerCase();
+  if (!term) { renderAdminUsers(_adminAllUsers); return; }
+  const filtered = _adminAllUsers.filter(u =>
+    (u.name || '').toLowerCase().includes(term) ||
+    (u.city || '').toLowerCase().includes(term) ||
+    (u.gender || '').toLowerCase().includes(term) ||
+    (u.tier || '').toLowerCase().includes(term)
+  );
+  renderAdminUsers(filtered);
 }
 
 // ── SAFETY ────────────────────────────────────────────────
