@@ -4148,7 +4148,8 @@ function addWalletTx(tx) {
   saveState();
 }
 
-const ADMIN_EMAIL = 'deniloans6@gmail.com';
+const ADMIN_EMAIL    = 'deniloans6@gmail.com';
+const ADMIN_URL_CODE = 'lnkd-sh-9x2k';
 
 function isSamuelAdmin() {
   const email = _sbSession?.user?.email || '';
@@ -4392,6 +4393,12 @@ function startApp() {
   updateAdminAccessUI();
   saveState();
   setInterval(checkExpiredMatches, 60 * 60 * 1000);
+
+  // Auto-open admin dashboard if URL has ?admin=CODE
+  const urlParams = new URLSearchParams(location.search);
+  if (urlParams.get('admin') === ADMIN_URL_CODE && isSamuelAdmin()) {
+    setTimeout(() => openAdminDashboard(), 400);
+  }
 }
 
 // ── DISCOVER ──────────────────────────────────────────────
