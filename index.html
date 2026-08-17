@@ -3877,6 +3877,11 @@ async function loadProfileFromDB(userId) {
     allMessages = msgs || [];
   }
 
+  // Fetch all other users' profiles for the discovery queue
+  const { data: otherProfiles } = await sb.from('profiles').select('*').neq('id', userId);
+  const allCards = (otherProfiles || []).map(supabaseProfileToCard);
+  S._allProfiles = allCards;
+
   S.user = {
     name: profile.name, age: profile.age, dob: profile.dob,
     dobLabel: profile.dob_label, gender: profile.gender,
@@ -3894,11 +3899,11 @@ async function loadProfileFromDB(userId) {
   S.stats          = profile.stats || { connects:0, matches:0, passes:0 };
   S._dbUserId      = userId;
 
-  S.queue = shuffle(PROFILES.filter(p => !swipedIds.has(String(p.id))));
+  S.queue = shuffle(allCards.filter(p => !swipedIds.has(String(p.id))));
 
   const matchMap = {};
   (matchRows || []).forEach(m => { matchMap[m.target_id] = m; });
-  S.matches = PROFILES.filter(p => matchMap[String(p.id)]).map(p => {
+  S.matches = allCards.filter(p => matchMap[String(p.id)]).map(p => {
     const m = matchMap[String(p.id)];
     return Object.assign({}, p, { matchedAt: new Date(m.matched_at).getTime(), _matchId: m.id });
   });
@@ -4035,6 +4040,38 @@ PROFILES.forEach(p => {
   p.profileLayout = layouts[(p.id - 1) % layouts.length];
 });
 
+function supabaseProfileToCard(p) {
+  const photos = (p.photos || []).filter(Boolean);
+  const img = photos[0] || '';
+  const answers = p.answers || {};
+  return {
+    id: p.id,
+    name: p.name || 'Unknown',
+    age: p.age || ageFromDob(p.dob) || 0,
+    city: p.city || '',
+    looking: p.looking || 'anything',
+    bio: p.bio || '',
+    interests: p.interests || [],
+    answers,
+    photos: photos.length ? photos : (img ? [img] : []),
+    img,
+    verified: p.is_verified || false,
+    compat: Math.floor(65 + Math.random() * 30),
+    dist: p.city ? p.city : 'Nearby',
+    videoIntro: false,
+    profileLayout: ['about','photo1','prompt1','interests','prompt2','photo2','prompt3'],
+    _fromSupabase: true,
+  };
+}
+
+function findProfile(id) {
+  const strId = String(id);
+  return S.queue.find(p => String(p.id) === strId)
+    || S.matches.find(p => String(p.id) === strId)
+    || (S._allProfiles || []).find(p => String(p.id) === strId)
+    || PROFILES.find(p => String(p.id) === strId);
+}
+
 const VIBE_CATEGORIES = {
   'Everyday Life': ['Coffee','Cooking','Foodie','Reading','Gaming','Movies','Plants','Pets','Podcasts','Homebody'],
   'Active & Outdoors': ['Running','Gym','Yoga','Hiking','Cycling','Beach','Outdoors','Adventure','Swimming','Football'],
@@ -4087,6 +4124,7 @@ let S = {
   exploreFilters: { location:'', looking:'', ageMin:18, ageMax:35, distance:50 },
   myProfileLayout: ['about','voice','photo1','prompt1','video','prompt2','photo2','interests','prompt3','photo3','prompt4'],
   roseHintShown: false,
+  _allProfiles: [],
 };
 
 const STORAGE_KEY = 'linked-app-state-v2';
@@ -4111,11 +4149,12 @@ function restoreState() {
       ...S,
       ...saved,
       queue: Array.isArray(saved.queue) && saved.queue.length
-        ? saved.queue.map(item => PROFILES.find(p => p.id === item.id) || item).filter(Boolean)
+        ? saved.queue.filter(Boolean)
         : shuffle([...PROFILES]),
       matches: Array.isArray(saved.matches)
-        ? saved.matches.map(item => PROFILES.find(p => p.id === item.id) || item).filter(Boolean)
+        ? saved.matches.filter(Boolean)
         : [],
+      _allProfiles: saved._allProfiles || [],
       convos: saved.convos || {},
       walletTx: saved.walletTx || [],
       roseInventory: saved.roseInventory || { rose:0, bouquet:0, golden:0 },
@@ -4382,7 +4421,7 @@ function startApp() {
   document.getElementById('me-looking-val').textContent = capitalize(S.user.looking) + ' ›';
   updateVerificationUI();
 
-  if (!S.queue || !S.queue.length) S.queue = shuffle([...PROFILES]);
+  if (!S.queue || !S.queue.length) S.queue = shuffle([...(S._allProfiles?.length ? S._allProfiles : PROFILES)]);
   renderDiscover();
   buildStandouts();
   checkExpiredMatches();
@@ -4559,7 +4598,7 @@ function advanceDiscover() {
 
 function doConnect(profileId) {
   if (!hasTier('plus') && S.connectsLeft <= 0) { openSub('swipes'); return; }
-  const p = PROFILES.find(x => x.id === profileId);
+  const p = findProfile(profileId);
   if (!p) return;
   S.connectsLeft--;
   S.stats.connects++;
@@ -4588,7 +4627,7 @@ function doPass(profileId) {
 }
 
 function resetQueue() {
-  S.queue = shuffle([...PROFILES]);
+  S.queue = shuffle([...(S._allProfiles?.length ? S._allProfiles : PROFILES)]);
   S.connectsLeft = 10;
   const connectsCount = document.getElementById('connects-count');
   if (connectsCount) connectsCount.textContent = '10';
@@ -4630,7 +4669,8 @@ function applyFilters() {
     distance: Number(document.getElementById('filter-distance').value) || 50
   };
   S.exploreFilters = filters;
-  S.queue = shuffle(PROFILES.filter(p => {
+  const profilePool = S._allProfiles?.length ? S._allProfiles : PROFILES;
+  S.queue = shuffle(profilePool.filter(p => {
     const distance = Number.parseFloat(p.dist) || 0;
     return (!filters.location || p.city === filters.location)
       && (!filters.looking || p.looking === filters.looking)
@@ -4831,14 +4871,16 @@ function sendMsg() {
   updateLinkedUI();
   saveState();
   syncMessage(id, 'me', text);
-  setTimeout(() => {
-    const reply = REPLIES[(S.convos[id].length + id) % REPLIES.length];
-    S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
-    if (S.currentChat?.id === id) renderChatMsgs();
-    updateLinkedUI();
-    saveState();
-    syncMessage(id, 'them', reply);
-  }, 1600);
+  if (typeof id === 'number') {
+    setTimeout(() => {
+      const reply = REPLIES[(S.convos[id].length + id) % REPLIES.length];
+      S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
+      if (S.currentChat?.id === id) renderChatMsgs();
+      updateLinkedUI();
+      saveState();
+      syncMessage(id, 'them', reply);
+    }, 1600);
+  }
 }
 
 // ── GIF PICKER ────────────────────────────────────────────
@@ -5131,7 +5173,7 @@ function buildStandouts() {
 
 function doStandoutSpark(profileId) {
   if (S.sparksLeft <= 0) { openSub('sparks'); return; }
-  const p = PROFILES.find(x => x.id === profileId);
+  const p = findProfile(profileId);
   if (!p) return;
   S.sparksLeft--;
   S.stats.connects++;
@@ -5301,7 +5343,7 @@ function handleProfilePhotoClick(event, profileId) {
 }
 
 function changeProfilePhoto(profileId, direction = 1) {
-  const p = PROFILES.find(x => x.id === profileId);
+  const p = findProfile(profileId);
   const image = document.getElementById('profile-image-' + profileId);
   if (!p || !image || !p.photos?.length) return;
   const current = Number(image.dataset.photoIndex) || 0;
@@ -5323,7 +5365,7 @@ function changeProfilePhoto(profileId, direction = 1) {
 }
 
 function openProfileDetail(profileId, startIndex = null) {
-  const p = profileId === 'me' ? buildMyPreviewProfile() : PROFILES.find(x => x.id === profileId);
+  const p = profileId === 'me' ? buildMyPreviewProfile() : findProfile(profileId);
   if (!p) return;
   const sourcePhotos = p.photos?.length ? p.photos : [p.img];
   const visibleImage = document.getElementById('profile-image-' + profileId);
@@ -5334,12 +5376,13 @@ function openProfileDetail(profileId, startIndex = null) {
   document.getElementById('profile-detail-cover').alt = p.name;
   document.getElementById('profile-detail-name').textContent = `${p.name}, ${p.age}`;
   document.getElementById('profile-detail-meta').textContent = `${p.city} · ${p.dist} · ${p.verified ? 'Verified' : 'Profile'}`;
+  const ans = p.answers || {};
   const prompts = [
-    ['A real connection feels like', p.answers.sunday],
-    ['My green flag', p.answers.hottake],
-    ['I lose track of time when', p.answers.obsessed],
-    ['One thing to know about me', p.answers.random]
-  ];
+    ['A real connection feels like', ans.sunday],
+    ['My green flag', ans.hottake],
+    ['I lose track of time when', ans.obsessed],
+    ['One thing to know about me', ans.random]
+  ].filter(([, text]) => text);
   const blocks = {
     about: `<div class="detail-section">
       <div class="detail-kicker">About me</div>
@@ -5354,32 +5397,32 @@ function openProfileDetail(profileId, startIndex = null) {
       </div>
     </div>`,
     photo1: `<div class="detail-media"><img src="${photos[1] || photos[0]}" alt="${p.name}" loading="lazy" decoding="async"></div>`,
-    prompt1: `<div class="detail-section">
+    prompt1: prompts[0] ? `<div class="detail-section">
       <div class="detail-kicker">${prompts[0][0]}</div>
       <div class="detail-title">${prompts[0][1]}</div>
-    </div>`,
+    </div>` : '',
     video: `<div class="detail-video">
       <button onclick="showToast('${p.name}’s video intro is playing')">▶</button>
       <span>Video intro · 0:18</span>
     </div>`,
-    prompt2: `<div class="detail-section">
+    prompt2: prompts[1] ? `<div class="detail-section">
       <div class="detail-kicker">${prompts[1][0]}</div>
       <div class="detail-title">${prompts[1][1]}</div>
-    </div>`,
+    </div>` : '',
     photo2: `<div class="detail-media"><img src="${photos[2] || photos[0]}" alt="${p.name}" loading="lazy" decoding="async"></div>`,
     interests: `<div class="detail-section">
       <div class="detail-kicker">Interests</div>
       <div class="pc-interests" style="margin:10px 0 0">${p.interests.map(i => `<span class="interest-chip">${i}</span>`).join('')}</div>
     </div>`,
-    prompt3: `<div class="detail-section">
+    prompt3: prompts[2] ? `<div class="detail-section">
       <div class="detail-kicker">${prompts[2][0]}</div>
       <div class="detail-title">${prompts[2][1]}</div>
-    </div>`,
+    </div>` : '',
     photo3: `<div class="detail-media"><img src="${photos[3] || photos[0]}" alt="${p.name}" loading="lazy" decoding="async"></div>`,
-    prompt4: `<div class="detail-section">
+    prompt4: prompts[3] ? `<div class="detail-section">
       <div class="detail-kicker">${prompts[3][0]}</div>
       <div class="detail-title">${prompts[3][1]}</div>
-    </div>`
+    </div>` : ''
   };
   const layout = p.profileLayout || S.myProfileLayout || Object.keys(blocks);
   document.getElementById('profile-detail-body').innerHTML = layout.map(key => blocks[key] || '').join('');
@@ -6004,7 +6047,7 @@ function setupPhotoSwipe(profileId) {
 // ── SPARK ─────────────────────────────────────────────────
 function doSpark(profileId) {
   if (S.sparksLeft <= 0) { showToast('Only 1 Spark per day — come back tomorrow ⚡'); return; }
-  const p = PROFILES.find(x => x.id === profileId);
+  const p = findProfile(profileId);
   if (!p) return;
   S.sparksLeft--;
   S.connectsLeft = Math.max(0, S.connectsLeft - 1);
@@ -6325,7 +6368,7 @@ function openRoseModal(profileId) {
   const now = Date.now();
   if (now < roseModalBusyUntil) return;
   roseTargetId = profileId;
-  const p = PROFILES.find(x => x.id === profileId);
+  const p = findProfile(profileId);
   if (p) document.getElementById('rose-modal-name').textContent = 'to ' + p.name;
   const modal = document.getElementById('rose-modal');
   const sheet = document.getElementById('rose-sheet');
@@ -6442,7 +6485,7 @@ function setupRoseSheetSwipe() {
 function sendRose(type, price) {
   const names = { rose: 'Rose', bouquet: 'Bouquet', golden: 'Golden Rose' };
   const qty = { rose:1, bouquet:3, golden:5 }[type] || 1;
-  const p = PROFILES.find(x => x.id === roseTargetId);
+  const p = findProfile(roseTargetId);
   closeRoseModal();
   if (!p) return;
   S.roseInventory = S.roseInventory || { rose:0, bouquet:0, golden:0 };
@@ -6615,13 +6658,15 @@ function sendIcebreaker(btn) {
   renderChatMsgs();
   updateLinkedUI();
   saveState();
-  setTimeout(() => {
-    const reply = REPLIES[(S.convos[id].length + id) % REPLIES.length];
-    S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
-    if (S.currentChat?.id === id) renderChatMsgs();
-    updateLinkedUI();
-    saveState();
-  }, 1600);
+  if (typeof id === 'number') {
+    setTimeout(() => {
+      const reply = REPLIES[(S.convos[id].length + id) % REPLIES.length];
+      S.convos[id].push({ from: 'them', text: reply, time: nowTime() });
+      if (S.currentChat?.id === id) renderChatMsgs();
+      updateLinkedUI();
+      saveState();
+    }, 1600);
+  }
 }
 function updateIcebreakerVisibility() {
   const chips = document.getElementById('icebreaker-chips');
@@ -6849,7 +6894,7 @@ function openSafetyCenter(profileId) {
   _safetyTargetId = profileId;
   const titleEl = document.getElementById('safety-modal-title');
   if (titleEl) {
-    const p = PROFILES.find(x => x.id === profileId);
+    const p = findProfile(profileId);
     titleEl.textContent = p ? `Options for ${p.name}` : 'Safety Options';
   }
   const modal = document.getElementById('safety-modal');
@@ -6860,7 +6905,7 @@ function closeSafetyCenter() {
   _safetyTargetId = null;
 }
 function doReport() {
-  const target = PROFILES.find(p => p.id === _safetyTargetId);
+  const target = findProfile(_safetyTargetId);
   S.adminReports = S.adminReports || [];
   S.adminReports.unshift({ target: target?.name || 'General report', date: new Date().toISOString(), status:'Open' });
   addNotification('Safety', `Report submitted${target ? ' for ' + target.name : ''}.`, '✓');
