@@ -2576,6 +2576,28 @@
         </div>
       </div>
 
+      <div class="step-title" style="font-size:20px;margin-top:20px">Who do you want to meet?</div>
+      <div class="looking-opts" style="gap:8px;margin-top:10px">
+        <div class="looking-card" id="li-men" onclick="setInterestedIn('men')">
+          <div class="lc-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#FF6B47" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="5"/><path d="M3 21v-1a9 9 0 0118 0v1"/></svg></div>
+          <div class="lc-title">Men</div>
+        </div>
+        <div class="looking-card" id="li-women" onclick="setInterestedIn('women')">
+          <div class="lc-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#FF6B47" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="5"/><path d="M3 21v-1a9 9 0 0118 0v1"/></svg></div>
+          <div class="lc-title">Women</div>
+        </div>
+        <div class="looking-card" id="li-everyone" onclick="setInterestedIn('everyone')">
+          <div class="lc-icon"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#FF6B47" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M1 20v-1a7 7 0 0114 0v1"/><circle cx="18" cy="7" r="3"/><path d="M22 20v-.5a5 5 0 00-6-4.9"/></svg></div>
+          <div class="lc-title">Everyone</div>
+        </div>
+      </div>
+      <div class="step-title" style="font-size:20px;margin-top:20px">Age range</div>
+      <div style="display:flex;gap:12px;margin-top:10px">
+        <div style="flex:1"><label class="field-label">Min age</label>
+          <input class="input-field" id="s-age-min" type="number" min="18" max="80" value="18"></div>
+        <div style="flex:1"><label class="field-label">Max age</label>
+          <input class="input-field" id="s-age-max" type="number" min="18" max="80" value="45"></div>
+      </div>
       <button class="btn-next" onclick="go(1)">Continue</button>
     </div>
 
@@ -3604,7 +3626,7 @@
 // ═══ SUPABASE BACKEND ════════════════════════════════════════════════════════
 const SUPABASE_URL      = "https://byguszmbooiampuvsrfz.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5Z3Vzem1ib29pYW1wdXZzcmZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NjU1MDMsImV4cCI6MjEwMDA0MTUwM30.uxfuMJ2FYjPNKAjZRJ7JcLtrqKmzv4n00YLPniX7Wzs";
-let sb = null, fbCurrentUid = null;
+let sb = null, fbCurrentUid = null, fbIncomingLikesChannel = null;
 const IS_FIREBASE_LIVE = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 if (IS_FIREBASE_LIVE) {
   try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
@@ -3625,6 +3647,7 @@ function initFirebaseAuth() {
           await fbLoadMatchesAndConvos(fbCurrentUid);
           if (!S.queue || !S.queue.length) S.queue = shuffle([...PROFILES]);
           startApp();
+          fbListenForIncomingLikes();
           fbLoadRealUsersIntoQueue();
         } else {
           document.getElementById('auth').style.display = 'none';
@@ -3643,6 +3666,7 @@ function initFirebaseAuth() {
       }
     } else {
       fbCurrentUid = null;
+      if (fbIncomingLikesChannel) { sb.removeChannel(fbIncomingLikesChannel); fbIncomingLikesChannel = null; }
       if (event !== 'INITIAL_SESSION') showFbAuthScreen();
     }
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
@@ -3865,20 +3889,87 @@ async function fbUploadAllSetupPhotos() {
   S._photo  = uploaded[0] || S._photo;
 }
 
+// ── SWIPE RECORDING ────────────────────────────────────────
+async function fbRecordSwipe(profileId, direction) {
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !sb) return;
+  try {
+    await sb.from('swipes').upsert({
+      swiper_id: fbCurrentUid, swiped_id: String(profileId),
+      direction, created_at: new Date().toISOString(),
+    });
+  } catch(e) { console.warn('fbRecordSwipe:', e); }
+}
+
+async function fbCheckMutualSwipe(profileId) {
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !sb) return false;
+  try {
+    const { data } = await sb.from('swipes')
+      .select('direction').eq('swiper_id', String(profileId))
+      .eq('swiped_id', fbCurrentUid).eq('direction', 'right').maybeSingle();
+    return !!data;
+  } catch(e) { return false; }
+}
+
+function fbListenForIncomingLikes() {
+  if (!IS_FIREBASE_LIVE || !fbCurrentUid || !sb) return;
+  if (fbIncomingLikesChannel) { sb.removeChannel(fbIncomingLikesChannel); }
+  fbIncomingLikesChannel = sb.channel(`likes:${fbCurrentUid}`)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'swipes',
+        filter: `swiped_id=eq.${fbCurrentUid}` },
+      async payload => {
+        if (payload.new.direction !== 'right') return;
+        const likerId = payload.new.swiper_id;
+        // Check if I already liked them back → mutual match
+        const { data } = await sb.from('swipes').select('direction')
+          .eq('swiper_id', fbCurrentUid).eq('swiped_id', likerId)
+          .eq('direction', 'right').maybeSingle();
+        if (data) {
+          // Mutual — find their profile and trigger match
+          const { data: pData } = await sb.from('profiles').select('*').eq('id', likerId).single();
+          if (pData) triggerMatch(buildFbProfile(likerId, pData, {}));
+        } else {
+          // One-way — just notify
+          addNotification('Matches', 'Someone liked your profile!', '💚');
+        }
+      })
+    .subscribe();
+}
+
 // ── REAL USER DISCOVERY ────────────────────────────────────
 async function fbLoadRealUsersIntoQueue() {
   if (!IS_FIREBASE_LIVE || !fbCurrentUid || !S.user) return;
   try {
-    const city = S.user.city || '';
+    const interestedIn = S.user.interestedIn || 'everyone';
+    const ageMin = S.user.ageMin || 18;
+    const ageMax = S.user.ageMax || 80;
+    const myGender = S.user.gender || 'woman';
+
+    // Fetch all profiles except mine
     const { data: rows } = await sb.from('profiles')
-      .select('*').neq('id', fbCurrentUid).limit(30);
-    const seenIds = new Set([fbCurrentUid, ...S.matches.map(m => String(m.id))]);
-    const realUsers = (rows || [])
-      .filter(d => !seenIds.has(d.id) && d.user_data?.city === city)
-      .map(d => buildFbProfile(d.id, d, {}))
-      .filter(u => u.name && u.name !== 'User' && u.age > 0);
+      .select('*').neq('id', fbCurrentUid).limit(100);
+
+    // Fetch profiles I've already swiped on
+    const { data: mySwipes } = await sb.from('swipes')
+      .select('swiped_id').eq('swiper_id', fbCurrentUid);
+    const swipedIds = new Set((mySwipes || []).map(s => s.swiped_id));
+    const matchIds  = new Set(S.matches.map(m => String(m.id)));
+
+    const realUsers = (rows || []).filter(d => {
+      if (swipedIds.has(d.id) || matchIds.has(d.id)) return false;
+      const u = d.user_data || {};
+      // Gender filter: I want to see them
+      if (interestedIn !== 'everyone' && u.gender !== interestedIn) return false;
+      // Gender filter: they would want to see me
+      const theirPref = u.interestedIn || 'everyone';
+      if (theirPref !== 'everyone' && theirPref !== myGender) return false;
+      // Age filter
+      const age = u.age || 0;
+      if (age < ageMin || age > ageMax) return false;
+      return u.name && u.age > 0;
+    }).map(d => ({ ...buildFbProfile(d.id, d, {}), compat: calcCompat(buildFbProfile(d.id, d, {})) }));
+
     if (realUsers.length) {
-      S.queue = shuffle([...realUsers, ...S.queue.filter(q => !realUsers.some(r => r.id === q.id))]);
+      S.queue = [...realUsers, ...S.queue.filter(q => !realUsers.some(r => r.id === q.id))];
       renderDiscover();
     }
   } catch(e) { console.warn('fbLoadRealUsers:', e); }
@@ -4096,13 +4187,13 @@ function quickLogin() {
   S.user = {
     name: 'Jessica', age: 25, city: 'Cape Town',
     dob:'2001-01-01', dobLabel:'01 Jan 2001',
-    looking: 'anything', gender: 'woman',
+    looking: 'anything', gender: 'woman', interestedIn: 'men', ageMin: 18, ageMax: 45,
     photo: PROFILES[0].img,
     photos: PROFILES[0].photos,
     interests: ['Coffee','Music','Travel'],
     answers: {},
   };
-  S.queue = shuffle([...PROFILES]);
+  S.queue = buildFilteredQueue();
   saveState();
   startApp();
 }
@@ -4128,6 +4219,33 @@ function setDatingSub(val) {
   S.selectedDatingSub = val;
   document.querySelectorAll('.dating-sub-btn').forEach(el => el.classList.remove('sel'));
   document.getElementById('ds-' + val).classList.add('sel');
+}
+
+function setInterestedIn(val) {
+  S.selectedInterestedIn = val;
+  ['men','women','everyone'].forEach(v => {
+    document.getElementById('li-' + v).className = 'looking-card' + (v === val ? ' sel-dating' : '');
+  });
+}
+
+// gender lookup for the 12 demo profiles (avoids modifying each long line)
+const PROFILE_GENDERS = { 1:'woman',2:'woman',3:'woman',4:'woman',5:'woman',6:'woman',7:'man',8:'man',9:'man',10:'woman',11:'man',12:'woman' };
+
+function buildFilteredQueue() {
+  const interestedIn = S.user?.interestedIn || 'everyone';
+  return shuffle(PROFILES.map(p => ({ ...p, gender: PROFILE_GENDERS[p.id] || 'woman', compat: calcCompat(p) }))
+    .filter(p => interestedIn === 'everyone' || p.gender === interestedIn));
+}
+
+function calcCompat(p) {
+  const mine = new Set(S.user?.interests || []);
+  const theirs = p.interests || [];
+  const overlap = theirs.filter(i => mine.has(i)).length;
+  const possible = Math.min(mine.size, theirs.length) || 1;
+  const interestScore = Math.round((overlap / possible) * 40);
+  const myLooking = S.user?.looking || 'anything';
+  const lookingBonus = (myLooking === 'anything' || p.looking === 'anything' || myLooking === p.looking) ? 20 : 0;
+  return Math.min(99, 50 + interestScore + lookingBonus);
 }
 
 function buildVibeGrid() {
@@ -4212,6 +4330,9 @@ function go(from) {
   if (from === 1 && !S.selectedLooking) {
     showToast('Let us know what you\'re looking for'); return;
   }
+  if (from === 1 && !S.selectedInterestedIn) {
+    showToast('Tell us who you want to meet'); return;
+  }
   if (from === 2 && (S._photos || []).length < 3) {
     showToast('Add at least 3 photos to continue'); return;
   }
@@ -4246,6 +4367,9 @@ async function finishSetup() {
     dob: dobInfo.iso,
     dobLabel: dobInfo.label,
     gender: (document.getElementById('gender-display').textContent || 'Woman').toLowerCase().replace(' / prefer not to say',''),
+    interestedIn: S.selectedInterestedIn || 'everyone',
+    ageMin: Math.max(18, parseInt(document.getElementById('s-age-min').value) || 18),
+    ageMax: Math.min(80, parseInt(document.getElementById('s-age-max').value) || 45),
     city: document.getElementById('s-city').value,
     looking: S.selectedLooking || 'anything',
     photo: S._photos?.[0] || S._photo,
@@ -4282,7 +4406,7 @@ function startApp() {
   document.getElementById('me-looking-val').textContent = capitalize(S.user.looking) + ' ›';
   updateVerificationUI();
 
-  if (!S.queue || !S.queue.length) S.queue = shuffle([...PROFILES]);
+  if (!S.queue || !S.queue.length) S.queue = buildFilteredQueue();
   renderDiscover();
   buildStandouts();
   checkExpiredMatches();
@@ -4449,36 +4573,47 @@ function advanceDiscover() {
   }
 }
 
-function doConnect(profileId) {
+async function doConnect(profileId) {
   if (!hasTier('plus') && S.connectsLeft <= 0) { openSub('swipes'); return; }
-  const p = PROFILES.find(x => x.id === profileId);
+  const p = S.queue.find(x => x.id === profileId) || PROFILES.find(x => x.id === profileId);
   if (!p) return;
   S.connectsLeft--;
   S.stats.connects++;
   const connectsCount = document.getElementById('connects-count');
   if (connectsCount) connectsCount.textContent = S.connectsLeft;
   updateStats();
-  showToast(`Link sent to ${p.name}`);
   S.queue = S.queue.filter(x => x.id !== profileId);
   advanceDiscover();
-  if (RECIPROCAL_PROFILE_IDS.has(profileId)) {
+  if (p.isRealUser && IS_FIREBASE_LIVE) {
+    await fbRecordSwipe(profileId, 'right');
+    const mutual = await fbCheckMutualSwipe(profileId);
+    if (mutual) {
+      setTimeout(() => triggerMatch(p), 900);
+    } else {
+      showToast(`You liked ${p.name} — waiting for them to like back`);
+    }
+  } else if (RECIPROCAL_PROFILE_IDS.has(profileId)) {
+    showToast(`Link sent to ${p.name}`);
     setTimeout(() => triggerMatch(p), 900);
   } else {
+    showToast(`Link sent to ${p.name}`);
     addNotification('Explore', `${p.name} will see your link request.`, '🔗');
   }
   saveState();
 }
 
 function doPass(profileId) {
+  const p = S.queue.find(x => x.id === profileId);
   S.stats.passes++;
   updateStats();
   S.queue = S.queue.filter(x => x.id !== profileId);
   advanceDiscover();
+  if (p?.isRealUser && IS_FIREBASE_LIVE) fbRecordSwipe(profileId, 'left');
   saveState();
 }
 
 function resetQueue() {
-  S.queue = shuffle([...PROFILES]);
+  S.queue = buildFilteredQueue();
   S.connectsLeft = 10;
   const connectsCount = document.getElementById('connects-count');
   if (connectsCount) connectsCount.textContent = '10';
@@ -4520,14 +4655,14 @@ function applyFilters() {
     distance: Number(document.getElementById('filter-distance').value) || 50
   };
   S.exploreFilters = filters;
-  S.queue = shuffle(PROFILES.filter(p => {
+  S.queue = buildFilteredQueue().filter(p => {
     const distance = Number.parseFloat(p.dist) || 0;
     return (!filters.location || p.city === filters.location)
       && (!filters.looking || p.looking === filters.looking)
       && p.age >= filters.ageMin
       && p.age <= filters.ageMax
-      && distance <= filters.distance;
-  }));
+      && (p.isRealUser || distance <= filters.distance);
+  });
   const hasFilters = Boolean(filters.location || filters.looking || filters.ageMin !== 18 || filters.ageMax !== 35 || filters.distance !== 50);
   document.querySelector('.explore-filter-btn')?.classList.toggle('has-filters', hasFilters);
   closeFilters();
